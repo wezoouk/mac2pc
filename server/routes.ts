@@ -233,6 +233,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/admin/ad-placements/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const placement = await storage.updateAdPlacement(id, req.body);
+      if (!placement) {
+        res.status(404).json({ message: "Ad placement not found" });
+        return;
+      }
+      res.json(placement);
+    } catch (error) {
+      console.error("Error updating ad placement:", error);
+      res.status(500).json({ message: "Failed to update ad placement" });
+    }
+  });
+
   app.delete("/api/admin/ad-placements/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);

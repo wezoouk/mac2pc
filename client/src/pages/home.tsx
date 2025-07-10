@@ -329,6 +329,13 @@ export default function Home() {
       </header>
 
       <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        {/* Top Banner Ad */}
+        {adsEnabled && (
+          <div className="mb-6">
+            <DynamicAds position="top-banner" isEnabled={adsEnabled} />
+          </div>
+        )}
+
         {/* Status Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Device Info Card */}
@@ -431,6 +438,13 @@ export default function Home() {
           </Card>
         </div>
 
+        {/* Sidebar/Top Content Ad */}
+        {adsEnabled && (
+          <div className="mb-6">
+            <DynamicAds position="sidebar" isEnabled={adsEnabled} />
+          </div>
+        )}
+
         <Tabs defaultValue="radar" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="radar" className="flex items-center space-x-2">
@@ -500,6 +514,13 @@ export default function Home() {
         
         {/* Transfer History */}
         <TransferHistory transfers={transfers} currentDeviceId={deviceId} onClear={() => setTransfers([])} />
+
+        {/* Footer Ad */}
+        {adsEnabled && (
+          <div className="mt-8">
+            <DynamicAds position="footer" isEnabled={adsEnabled} />
+          </div>
+        )}
       </main>
 
       {/* Modals */}
