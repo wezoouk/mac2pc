@@ -8,12 +8,13 @@ import { MessagePanel } from "@/components/message-panel";
 import { TransferHistory } from "@/components/transfer-history";
 import { TransferModal } from "@/components/transfer-modal";
 import { ProgressModal } from "@/components/progress-modal";
+import { BannerAd } from "@/components/google-ads";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Share2, Laptop, Wifi, Signal, Lock, Radar, TestTube } from "lucide-react";
+import { Settings, Share2, Laptop, Wifi, Signal, Lock, Radar, TestTube, DollarSign, Eye, EyeOff } from "lucide-react";
 import { nanoid } from "nanoid";
 import { generateRandomDeviceName } from '@/lib/utils';
 import type { Device, Transfer } from "@shared/schema";
@@ -22,7 +23,9 @@ export default function Home() {
   const [deviceId] = useState(() => nanoid());
   const [deviceName, setDeviceName] = useState(() => generateRandomDeviceName());
   const [roomName, setRoomName] = useState("");
+  const [roomPassword, setRoomPassword] = useState("");
   const [currentRoom, setCurrentRoom] = useState<string | null>(null);
+  const [adsEnabled, setAdsEnabled] = useState(true);
   const [devices, setDevices] = useState<Device[]>([]);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [transfers, setTransfers] = useState<Transfer[]>([]);
@@ -152,6 +155,31 @@ export default function Home() {
         // Clear devices immediately and fetch local devices
         setDevices([]);
         setTimeout(() => fetchDevices(), 100);
+        break;
+      case 'room-error':
+        console.error('Room error:', message.message);
+        // Show error notification
+        const errorNotification = document.createElement('div');
+        errorNotification.className = 'fixed top-4 right-4 bg-red-600 text-white px-4 py-3 rounded-lg shadow-lg z-50 max-w-sm cursor-pointer transition-all duration-300';
+        errorNotification.innerHTML = `
+          <div class="flex items-center space-x-3">
+            <div class="w-2 h-2 bg-red-300 rounded-full animate-pulse"></div>
+            <div>
+              <div class="font-medium">Room Error</div>
+              <div class="text-sm opacity-90">${message.message}</div>
+            </div>
+          </div>
+        `;
+        
+        const removeErrorNotification = () => {
+          errorNotification.style.opacity = '0';
+          errorNotification.style.transform = 'translateX(100%)';
+          setTimeout(() => errorNotification.remove(), 300);
+        };
+        
+        errorNotification.addEventListener('click', removeErrorNotification);
+        document.body.appendChild(errorNotification);
+        setTimeout(removeErrorNotification, 5000);
         break;
       case 'room-devices':
         // Update devices from room - filter out self
@@ -381,11 +409,12 @@ export default function Home() {
     if (!roomName.trim()) return;
     
     try {
-      // Send join room message via WebSocket
+      // Send join room message via WebSocket with password
       sendMessage({
         type: 'join-room',
         roomId: roomName.trim(),
         deviceId,
+        password: roomPassword || undefined,
         data: {
           id: deviceId,
           name: deviceName,
@@ -396,6 +425,10 @@ export default function Home() {
       
       setCurrentRoom(roomName.trim());
       console.log(`Joining room: ${roomName.trim()}`);
+      
+      // Clear form fields
+      setRoomName("");
+      setRoomPassword("");
       
       // Clear devices immediately - room devices will come via WebSocket
       setDevices([]);
@@ -698,6 +731,13 @@ export default function Home() {
                     onChange={(e) => setRoomName(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && joinRoom()}
                   />
+                  <Input
+                    type="password"
+                    placeholder="Room password (optional)"
+                    value={roomPassword}
+                    onChange={(e) => setRoomPassword(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && joinRoom()}
+                  />
                   <Button onClick={joinRoom} className="w-full" disabled={!roomName.trim()}>
                     Join Room
                   </Button>
@@ -725,7 +765,7 @@ export default function Home() {
                 </>
               )}
               <div className="text-xs text-slate-500 text-center">
-                Share room name with remote users
+                Share room name and password with remote users
               </div>
             </CardContent>
           </Card>
@@ -753,6 +793,21 @@ export default function Home() {
                   <Lock size={12} className="inline mr-1" />
                   AES-256
                 </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-600">Ads</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setAdsEnabled(!adsEnabled)}
+                  className="h-6 p-1"
+                >
+                  {adsEnabled ? (
+                    <Eye size={12} className="text-emerald-600" />
+                  ) : (
+                    <EyeOff size={12} className="text-slate-400" />
+                  )}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -822,6 +877,13 @@ export default function Home() {
           </TabsContent>
         </Tabs>
 
+        {/* Google Ads Banner */}
+        {adsEnabled && (
+          <div className="mb-8">
+            <BannerAd isEnabled={adsEnabled} />
+          </div>
+        )}
+        
         {/* Transfer History */}
         <TransferHistory transfers={transfers} currentDeviceId={deviceId} onClear={() => setTransfers([])} />
       </main>

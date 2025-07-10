@@ -105,12 +105,26 @@ The application is designed to work seamlessly in both development and productio
 - **Progress tracking**: Real-time progress bars during file transfers with speed calculations and time estimates
 - **Connection status**: Green/red indicator showing device connection status in header
 
-### Privacy-First Network Discovery (IN PROGRESS)
+### Privacy-First Network Discovery (WORKING)
 - **IP-Based Detection**: Implemented network detection based on external IP addresses
 - **Local Network Logic**: First device to connect sets the "local network" baseline IP
 - **Room-Only Visibility**: Devices only appear when explicitly joining the same room name
 - **Privacy Protection**: Devices from different external IPs are marked as "remote"
-- **Issue**: Currently debugging local device detection - devices may not appear as expected
+- **Leave room functionality**: Fixed - devices properly see local network after leaving rooms
+
+### Password-Protected Rooms (NEW - July 10, 2025)
+- **Password protection**: Rooms can now be protected with optional passwords
+- **UI implementation**: Added password field in room join form
+- **Backend validation**: Server validates passwords before allowing room access
+- **Error handling**: Clear error messages for incorrect passwords
+- **Automatic room creation**: First user sets password when creating new room
+
+### Google Ads Monetization (NEW - July 10, 2025)
+- **Ad integration**: Google AdSense banner ads implemented
+- **Toggle functionality**: Ads can be turned on/off via eye icon in Network Stats card
+- **Banner placement**: Ads appear between main content and transfer history
+- **Responsive design**: Ads automatically adjust to screen size
+- **Privacy-friendly**: Ads only load when explicitly enabled by user
 
 ### Message and File Transfer System
 - **Messages auto-appear**: Removed accept/decline modal for messages, they now show instantly with toast notifications

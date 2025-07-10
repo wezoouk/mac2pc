@@ -18,6 +18,7 @@ interface SignalingMessage {
   data?: any;
   roomId?: string;
   deviceId?: string;
+  password?: string;
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -212,10 +213,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Create or get room
     let room = await storage.getRoomByName(data.roomId);
     if (!room) {
+      // Create new room with password if provided
       room = await storage.createRoom({
         id: nanoid(),
-        name: data.roomId
+        name: data.roomId,
+        password: data.password || null
       });
+    } else {
+      // Check password if room exists and has one
+      if (room.password && room.password !== data.password) {
+        ws.send(JSON.stringify({
+          type: 'room-error',
+          roomId: data.roomId,
+          deviceId: data.deviceId,
+          message: 'Incorrect room password'
+        }));
+        return;
+      }
     }
 
     // Create or update device
