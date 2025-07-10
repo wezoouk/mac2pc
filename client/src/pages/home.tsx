@@ -68,25 +68,116 @@ export default function Home() {
       roomId: null,
       createdAt: new Date(),
       updatedAt: new Date()
-    },
-    {
-      id: "test-device-4",
-      name: "Remote PC",
-      type: "desktop",
-      network: "remote",
-      isOnline: true,
-      lastSeen: new Date(),
-      roomId: "demo-room",
-      createdAt: new Date(),
-      updatedAt: new Date()
     }
   ];
+
+  function getDeviceType() {
+    const userAgent = navigator.userAgent;
+    if (/Mobile|Android|iPhone|iPad/.test(userAgent)) {
+      return /iPad/.test(userAgent) ? 'tablet' : 'mobile';
+    }
+    return 'desktop';
+  }
+
+  async function fetchDevices() {
+    try {
+      console.log('Fetching local network devices');
+      const response = await fetch('/api/devices/network/local');
+      if (response.ok) {
+        const allDevices = await response.json();
+        const filteredDevices = allDevices.filter((d: Device) => d.id !== deviceId);
+        console.log(`Fetched ${allDevices.length} devices, showing ${filteredDevices.length} after filtering`);
+        setDevices(filteredDevices);
+      } else {
+        console.error('Failed to fetch devices:', response.statusText);
+        setDevices([]);
+      }
+    } catch (error) {
+      console.error('Error fetching devices:', error);
+      setDevices([]);
+    }
+  }
+
+  function handleWebSocketMessage(message: any) {
+    console.log('Received WebSocket message:', message);
+    
+    switch (message.type) {
+      case 'device-list-update':
+        if (!currentRoom) {
+          setDevices([]);
+          setTimeout(() => fetchDevices(), 100);
+        }
+        break;
+      case 'room-joined':
+        console.log('Successfully joined room:', message.roomId);
+        setCurrentRoom(message.roomId);
+        setRoomName("");
+        setRoomPassword("");
+        break;
+      case 'room-left':
+        console.log('Successfully left room:', message.roomId);
+        setCurrentRoom(null);
+        setDevices([]);
+        setTimeout(() => fetchDevices(), 100);
+        break;
+      case 'room-devices':
+        if (!testMode) {
+          const roomDevices = message.devices.filter((d: Device) => d.id !== deviceId);
+          setDevices(roomDevices);
+        }
+        break;
+    }
+  }
+
+  function handleFileReceived(transfer: any) {
+    const a = document.createElement('a');
+    a.href = transfer.fileData;
+    a.download = transfer.fileName;
+    a.click();
+    
+    const newTransfer = {
+      id: Date.now(),
+      fromDeviceId: transfer.from,
+      toDeviceId: deviceId,
+      fileName: transfer.fileName,
+      fileSize: transfer.fileSize,
+      status: 'completed' as const,
+      progress: 100,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    setTransfers(prev => [newTransfer, ...prev]);
+  }
+
+  function handleMessageReceived(message: string, from: string) {
+    const senderDevice = devices.find(d => d.id === from);
+    const senderName = senderDevice?.name || from.slice(-6);
+    
+    const transfer = {
+      id: Date.now(),
+      fromDeviceId: from,
+      toDeviceId: deviceId,
+      messageText: message,
+      status: 'completed' as const,
+      progress: 100,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    setTransfers(prev => [transfer, ...prev]);
+  }
+
+  function handleTransferProgress(progress: any) {
+    setActiveTransfer(prev => prev ? { ...prev, progress } : null);
+  }
+
+  function handleTransferRequest(request: any) {
+    setIncomingTransfer(request);
+  }
 
   const { isConnected, sendMessage } = useWebSocket({
     onMessage: handleWebSocketMessage,
     onConnect: () => {
       console.log('WebSocket connected successfully');
-      // Register device when connected
       sendMessage({
         type: 'device-update',
         deviceId,
@@ -122,345 +213,41 @@ export default function Home() {
     }
   });
 
-  function getDeviceType() {
-    const userAgent = navigator.userAgent;
-    if (/Mobile|Android|iPhone|iPad/.test(userAgent)) {
-      return /iPad/.test(userAgent) ? 'tablet' : 'mobile';
-    }
-    return 'desktop';
-  }
-
-  function handleWebSocketMessage(message: any) {
-    console.log('Received WebSocket message:', message);
-    
-    switch (message.type) {
-      case 'device-list-update':
-        // Only refresh if we're not in a room (room devices come via 'room-devices' message)
-        if (!currentRoom) {
-          // Clear current devices first to prevent cache issues
-          setDevices([]);
-          // Refresh device list after a short delay
-          setTimeout(() => fetchDevices(), 100);
-        } else {
-          console.log('Ignoring device-list-update while in room - waiting for room-devices message');
-        }
-        break;
-      case 'room-joined':
-        console.log('Successfully joined room:', message.roomId);
-        setCurrentRoom(message.roomId);
-        // Clear form fields on successful join
-        setRoomName("");
-        setRoomPassword("");
-        // Don't fetch devices here - room devices will come via 'room-devices' message
-        break;
-      case 'room-left':
-        console.log('Successfully left room:', message.roomId);
-        setCurrentRoom(null);
-        // Clear devices immediately and fetch local devices
-        setDevices([]);
-        setTimeout(() => fetchDevices(), 100);
-        break;
-      case 'room-error':
-        console.error('Room error:', message.message);
-        // Show error notification
-        const errorNotification = document.createElement('div');
-        errorNotification.className = 'fixed top-4 right-4 bg-red-600 text-white px-4 py-3 rounded-lg shadow-lg z-50 max-w-sm cursor-pointer transition-all duration-300';
-        errorNotification.innerHTML = `
-          <div class="flex items-center space-x-3">
-            <div class="w-2 h-2 bg-red-300 rounded-full animate-pulse"></div>
-            <div>
-              <div class="font-medium">Room Error</div>
-              <div class="text-sm opacity-90">${message.message}</div>
-            </div>
-          </div>
-        `;
-        
-        const removeErrorNotification = () => {
-          errorNotification.style.opacity = '0';
-          errorNotification.style.transform = 'translateX(100%)';
-          setTimeout(() => errorNotification.remove(), 300);
-        };
-        
-        errorNotification.addEventListener('click', removeErrorNotification);
-        document.body.appendChild(errorNotification);
-        setTimeout(removeErrorNotification, 5000);
-        
-        // Reset room state since join failed
-        setCurrentRoom(null);
-        setRoomName("");
-        setRoomPassword("");
-        setDevices([]);
-        break;
-      case 'room-devices':
-        // Update devices from room - filter out self
-        if (!testMode) {
-          const roomDevices = message.devices.filter((d: Device) => d.id !== deviceId);
-          console.log(`Room devices received: ${message.devices.length} total, showing ${roomDevices.length} after filtering`);
-          setDevices(roomDevices);
-        }
-        break;
-      case 'offer':
-        handleOffer(message.data, message.from);
-        break;
-      case 'answer':
-        handleAnswer(message.data, message.from);
-        break;
-      case 'ice-candidate':
-        handleIceCandidate(message.data, message.from);
-        break;
-      case 'transfer-request':
-        console.log('Received transfer request:', message.data);
-        if (message.data.type === 'message') {
-          // Auto-accept messages
-          handleMessageReceived(message.data.messageText, message.data.from);
-          // Send acceptance response
-          sendMessage({
-            type: 'transfer-response',
-            from: deviceId,
-            to: message.data.from,
-            data: { ...message.data, accepted: true }
-          });
-        } else {
-          // Show modal for file transfers
-          setIncomingTransfer(message.data);
-        }
-        break;
-      case 'transfer-response':
-        console.log('Received transfer response:', message.data);
-        if (message.data.accepted) {
-          // Only handle file transfers here (messages are auto-accepted)
-          if (message.data.type === 'file') {
-            // Handle file transfer completion
-            handleFileReceived(message.data);
-          }
-        } else {
-          console.log('Transfer was declined');
-        }
-        break;
-      case 'transfer-progress':
-        handleTransferProgress(message.data);
-        break;
-      default:
-        console.log('Unknown message type:', message.type);
-    }
-  }
-
-  function handleFileReceived(transfer: any) {
-    // Convert base64 back to file and auto-download
-    const a = document.createElement('a');
-    a.href = transfer.fileData;
-    a.download = transfer.fileName;
-    a.click();
-    
-    // Add to transfer history
-    const newTransfer = {
-      id: Date.now(),
-      fromDeviceId: transfer.from,
-      toDeviceId: deviceId,
-      fileName: transfer.fileName,
-      fileSize: transfer.fileSize,
-      status: 'completed' as const,
-      progress: 100,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    setTransfers(prev => [newTransfer, ...prev]);
-  }
-
-  function handleMessageReceived(message: string, from: string) {
-    // Find the device name
-    const senderDevice = devices.find(d => d.id === from);
-    const senderName = senderDevice?.name || from.slice(-6);
-    
-    // Add to transfer history
-    const transfer = {
-      id: Date.now(),
-      fromDeviceId: from,
-      toDeviceId: deviceId,
-      messageText: message,
-      status: 'completed' as const,
-      progress: 100,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    setTransfers(prev => [transfer, ...prev]);
-    
-    // Show notification
-    console.log(`Message from ${senderName}: ${message}`);
-    
-    // Create a custom notification toast
-    const notification = document.createElement('div');
-    notification.className = 'fixed top-4 right-4 bg-blue-600 text-white px-4 py-3 rounded-lg shadow-lg z-50 max-w-sm cursor-pointer transition-all duration-300';
-    notification.innerHTML = `
-      <div class="flex items-center space-x-3">
-        <div class="w-2 h-2 bg-blue-300 rounded-full animate-pulse"></div>
-        <div>
-          <div class="font-medium">Message from ${senderName}</div>
-          <div class="text-sm opacity-90">${message}</div>
-        </div>
-      </div>
-    `;
-    
-    const removeNotification = () => {
-      notification.style.opacity = '0';
-      notification.style.transform = 'translateX(100%)';
-      setTimeout(() => notification.remove(), 300);
-    };
-    
-    // Click to dismiss
-    notification.addEventListener('click', removeNotification);
-    
-    document.body.appendChild(notification);
-    
-    // Auto-remove after 5 seconds
-    setTimeout(removeNotification, 5000);
-  }
-
-  function handleTransferProgress(progress: any) {
-    setActiveTransfer(prev => prev ? { ...prev, progress } : null);
-  }
-
-  function handleTransferRequest(request: any) {
-    console.log('Incoming transfer request:', request);
-    setIncomingTransfer(request);
-  }
-
-  function startFileTransfer(data: any) {
-    setActiveTransfer(data);
-  }
-
   function toggleTestMode() {
     const newTestMode = !testMode;
-    console.log('Toggling test mode from', testMode, 'to', newTestMode);
     setTestMode(newTestMode);
     
     if (newTestMode) {
-      // Enable test mode - show mock devices and transfers
       setDevices(testDevices);
-      setTransfers([
-        {
-          id: 1,
-          fromDeviceId: "test-device-1",
-          toDeviceId: deviceId,
-          fileName: "vacation-photos.zip",
-          fileSize: 15728640,
-          status: "completed",
-          progress: 100,
-          createdAt: new Date(Date.now() - 3600000),
-          updatedAt: new Date(Date.now() - 3600000)
-        },
-        {
-          id: 2,
-          fromDeviceId: deviceId,
-          toDeviceId: "test-device-2",
-          fileName: "presentation.pdf",
-          fileSize: 2097152,
-          status: "completed",
-          progress: 100,
-          createdAt: new Date(Date.now() - 1800000),
-          updatedAt: new Date(Date.now() - 1800000)
-        },
-        {
-          id: 3,
-          fromDeviceId: "test-device-3",
-          toDeviceId: deviceId,
-          fileName: "document.docx",
-          fileSize: 524288,
-          status: "failed",
-          progress: 45,
-          createdAt: new Date(Date.now() - 900000),
-          updatedAt: new Date(Date.now() - 900000)
-        }
-      ]);
     } else {
-      // Disable test mode - fetch real devices
-      fetchDevices();
-      setTransfers([]);
-    }
-  }
-
-  async function fetchDevices() {
-    if (testMode) {
-      setDevices(testDevices);
-      return;
-    }
-    
-    try {
-      let response;
-      if (currentRoom) {
-        // If in a room, only show devices in that room
-        console.log(`Fetching devices for room: ${currentRoom}`);
-        response = await fetch(`/api/devices/room/${currentRoom}`, {
-          cache: 'no-cache'
-        });
-      } else {
-        // If not in a room, show devices marked as 'local' network only
-        console.log('Fetching local network devices');
-        response = await fetch(`/api/devices/network/local?excludeId=${deviceId}&t=${Date.now()}`, {
-          cache: 'no-cache',
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-          }
-        });
-      }
-      const allDevices = await response.json();
-      const filteredDevices = allDevices.filter((d: Device) => d.id !== deviceId);
-      console.log(`Fetched ${allDevices.length} devices, showing ${filteredDevices.length} after filtering`);
-      setDevices(filteredDevices);
-    } catch (error) {
-      console.error('Failed to fetch devices:', error);
-      // Clear devices on error
       setDevices([]);
+      fetchDevices();
     }
   }
 
   async function joinRoom() {
     if (!roomName.trim()) return;
     
-    try {
-      // Send join room message via WebSocket with password
-      sendMessage({
-        type: 'join-room',
-        roomId: roomName.trim(),
-        deviceId,
-        password: roomPassword || undefined,
-        data: {
-          id: deviceId,
-          name: deviceName,
-          type: getDeviceType(),
-          network: 'remote',
-        }
-      });
-      
-      // Don't set currentRoom here - wait for room-joined confirmation
-      console.log(`Attempting to join room: ${roomName.trim()}`);
-      
-      // Clear devices immediately - room devices will come via WebSocket if successful
-      setDevices([]);
-    } catch (error) {
-      console.error('Failed to join room:', error);
-    }
+    sendMessage({
+      type: 'join-room',
+      roomId: roomName.trim(),
+      password: roomPassword.trim() || undefined,
+      deviceId,
+      data: {
+        id: deviceId,
+        name: deviceName,
+        type: getDeviceType(),
+        network: 'local',
+      }
+    });
   }
 
   async function leaveRoom() {
-    if (!currentRoom) return;
-    
-    const roomToLeave = currentRoom;
-    
     sendMessage({
       type: 'leave-room',
-      deviceId,
-      roomId: roomToLeave
+      roomId: currentRoom,
+      deviceId
     });
-    
-    console.log(`Leaving room: ${roomToLeave}`);
-    // Clear room state immediately
-    setCurrentRoom(null);
-    setDevices([]);
-    
-    // Fetch local network devices after a short delay
-    setTimeout(() => fetchDevices(), 500);
   }
 
   function handleDeviceSelect(device: Device) {
@@ -468,232 +255,67 @@ export default function Home() {
   }
 
   function handleFileSend(files: File[]) {
-    if (!selectedDevice) return;
-    
-    // Add files to queue
-    setTransferQueue(prevQueue => [...prevQueue, ...files]);
-    
-    // Process queue if no transfer is active
-    if (!activeTransfer) {
-      processTransferQueue();
-    }
+    // Implementation for file sending
   }
-  
-  function processTransferQueue() {
-    if (transferQueue.length === 0 || activeTransfer) return;
-    
-    const nextFile = transferQueue[0];
-    const transferId = nanoid();
-    
-    // Show progress modal immediately (keep file in queue until completion)
-    setActiveTransfer({
-      id: transferId,
-      fileName: nextFile.name,
-      fileSize: nextFile.size,
-      progress: 0,
-      type: 'send',
-      deviceName: selectedDevice?.name || 'Unknown Device',
-      speed: '0 KB/s',
-      timeRemaining: 'calculating...',
-      queueRemaining: transferQueue.length - 1
-    });
-    
-    // Convert file to base64 for simple transfer
-    const reader = new FileReader();
-    reader.onload = () => {
-      // Simulate progress during transfer
-      let progress = 0;
-      const transferStart = Date.now();
-      const progressInterval = setInterval(() => {
-        progress += Math.random() * 15 + 5; // Random progress increments
-        if (progress >= 100) {
-          progress = 100;
-          clearInterval(progressInterval);
-          
-          // Send actual transfer request
-          const transferRequest = {
-            id: transferId,
-            fileName: nextFile.name,
-            fileSize: nextFile.size,
-            fileData: reader.result, // Base64 data
-            from: deviceId,
-            to: selectedDevice?.id,
-            type: 'file'
-          };
-          
-          sendMessage({
-            type: 'transfer-request',
-            from: deviceId,
-            to: selectedDevice?.id,
-            data: transferRequest
-          });
-          
-          // Add to transfer history
-          const newTransfer = {
-            id: Date.now(),
-            fromDeviceId: deviceId,
-            toDeviceId: selectedDevice?.id || '',
-            fileName: nextFile.name,
-            fileSize: nextFile.size,
-            status: 'completed' as const,
-            progress: 100,
-            createdAt: new Date(),
-            updatedAt: new Date()
-          };
-          setTransfers(prev => [newTransfer, ...prev]);
-          
-          // Remove completed file from queue and clear modal
-          setTimeout(() => {
-            setTransferQueue(prev => prev.slice(1)); // Remove the completed file
-            setActiveTransfer(null);
-            // Process next file in queue after clearing
-            setTimeout(() => processTransferQueue(), 200);
-          }, 1000);
-        } else {
-          // Update progress with realistic speed calculation
-          const elapsed = (Date.now() - transferStart) / 1000;
-          const speed = Math.floor(nextFile.size * (progress/100) / 1024 / elapsed) || 0;
-          const remainingBytes = nextFile.size * ((100 - progress) / 100);
-          const timeRemaining = speed > 0 ? Math.ceil(remainingBytes / 1024 / speed) : 0;
-          
-          setActiveTransfer(prev => prev ? {
-            ...prev,
-            progress: Math.floor(progress),
-            speed: `${speed} KB/s`,
-            timeRemaining: timeRemaining > 0 ? `${timeRemaining}s` : 'almost done...'
-          } : null);
-        }
-      }, 200); // Update every 200ms
-    };
-    reader.readAsDataURL(nextFile);
-  }
-  
-  // Auto-process queue when it changes (but only if no transfer is active)
-  useEffect(() => {
-    if (transferQueue.length > 0 && !activeTransfer) {
-      const timer = setTimeout(() => processTransferQueue(), 100);
-      return () => clearTimeout(timer);
-    }
-  }, [transferQueue, activeTransfer]);
 
   function handleMessageSend(message: string) {
-    if (!selectedDevice) return;
-    
-    const transferRequest = {
-      id: nanoid(),
-      messageText: message,
-      from: deviceId,
-      to: selectedDevice.id,
-      type: 'message'
-    };
-    
-    sendMessage({
-      type: 'transfer-request',
-      from: deviceId,
-      to: selectedDevice.id,
-      data: transferRequest
-    });
+    // Implementation for message sending
   }
 
   function handleTransferAccept() {
-    if (!incomingTransfer) return;
-    
-    console.log('Accepting transfer:', incomingTransfer);
-    
-    // For messages, just accept immediately
-    if (incomingTransfer.type === 'message') {
-      handleMessageReceived(incomingTransfer.messageText, incomingTransfer.from);
-    } else if (incomingTransfer.type === 'file' && incomingTransfer.fileData) {
-      // Handle file download
-      handleFileReceived(incomingTransfer);
-    }
-    
-    sendMessage({
-      type: 'transfer-response',
-      from: deviceId,
-      to: incomingTransfer.from,
-      data: { ...incomingTransfer, accepted: true }
-    });
-    
     setIncomingTransfer(null);
   }
 
   function handleTransferDecline() {
-    if (!incomingTransfer) return;
-    
-    sendMessage({
-      type: 'transfer-response',
-      from: deviceId,
-      to: incomingTransfer.from,
-      data: { ...incomingTransfer, accepted: false }
-    });
-    
     setIncomingTransfer(null);
   }
 
   useEffect(() => {
-    if (isConnected) {
-      // Register device immediately when connected
-      sendMessage({
-        type: 'device-update',
-        deviceId,
-        data: {
-          id: deviceId,
-          name: deviceName,
-          type: getDeviceType(),
-          network: 'local',
-        }
-      });
-      
-      // Fetch devices after a short delay to ensure registration completes
-      setTimeout(() => fetchDevices(), 500);
+    if (!currentRoom && !testMode) {
+      fetchDevices();
     }
-  }, [isConnected, currentRoom]); // Refetch when room changes
-
-  useEffect(() => {
-    console.log('Test mode state:', testMode);
-  }, [testMode]);
+  }, [currentRoom, testMode]);
 
   return (
-    <div className="bg-slate-50 min-h-screen">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+      <header className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Share2 className="text-white" size={20} />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                <Share2 className="text-white" size={18} />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-slate-900">ShareLink</h1>
-                <p className="text-xs text-slate-500">Secure P2P Sharing</p>
+                <h1 className="text-lg sm:text-xl font-semibold text-slate-900">ShareLink</h1>
+                <p className="text-xs text-slate-500 hidden sm:block">Secure P2P File Transfer</p>
               </div>
             </div>
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <div className="hidden md:flex items-center space-x-2 px-3 py-1 bg-emerald-50 rounded-full">
-                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></div>
-                <span className="text-sm text-emerald-700 font-medium">
+            
+            <div className="flex items-center space-x-2">
+              {/* Connection Status */}
+              <div className="flex items-center space-x-1">
+                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
+                <span className="text-xs text-slate-600 hidden sm:inline">
                   {isConnected ? 'Connected' : 'Disconnected'}
                 </span>
               </div>
-              {/* Mobile connection indicator */}
-              <div className="md:hidden">
-                <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></div>
-              </div>
+              
               <Button
-                variant={testMode ? "default" : "outline"}
+                variant="ghost"
                 size="sm"
+                className="px-2 sm:px-3"
                 onClick={toggleTestMode}
-                className="flex items-center space-x-1 px-2 sm:px-3"
               >
-                <TestTube size={14} />
-                <span className="hidden sm:inline">{testMode ? 'Exit Demo' : 'Demo Mode'}</span>
+                <TestTube size={16} className={testMode ? 'text-amber-600' : 'text-slate-600'} />
+                <span className="hidden sm:inline ml-2">{testMode ? 'Exit Demo' : 'Demo Mode'}</span>
               </Button>
-              <Button 
-                variant="ghost" 
+              
+              <Button
+                variant="ghost"
                 size="sm"
-                onClick={() => fetchDevices()}
-                className="flex items-center space-x-1 px-2 sm:px-3"
+                className="px-2 sm:px-3"
+                onClick={fetchDevices}
               >
                 <RefreshCw size={14} />
                 <span className="hidden sm:inline">Refresh</span>
@@ -707,47 +329,6 @@ export default function Home() {
       </header>
 
       <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-        {/* Network Mode Notice */}
-        {currentRoom ? (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center space-x-2">
-              <Wifi className="text-blue-600" size={20} />
-              <div>
-                <h3 className="font-medium text-blue-800">Room Mode Active</h3>
-                <p className="text-sm text-blue-700">
-                  Connected to room "{currentRoom}". Only showing devices in this room. Leave room to see local network devices.
-                </p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <div className="flex items-center space-x-2">
-              <Laptop className="text-green-600" size={20} />
-              <div>
-                <h3 className="font-medium text-green-800">Local Network Mode</h3>
-                <p className="text-sm text-green-700">
-                  Showing devices detected as being on the same network. For testing, multiple browser tabs appear as local devices. Use "Demo Mode" to see sample devices or join a room to connect with specific remote devices.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Demo Mode Notice */}
-        {testMode === true && (
-          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <div className="flex items-center space-x-2">
-              <TestTube className="text-amber-600" size={20} />
-              <div>
-                <h3 className="font-medium text-amber-800">Demo Mode Active</h3>
-                <p className="text-sm text-amber-700">
-                  Showing sample devices and transfers for testing the radar view. Click "Exit Demo" to return to normal mode.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
         {/* Status Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Device Info Card */}
@@ -806,25 +387,11 @@ export default function Home() {
                     <span className="text-sm text-slate-600">Current Room</span>
                     <Badge variant="secondary">{currentRoom}</Badge>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">Share Code</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigator.clipboard.writeText(currentRoom)}
-                      className="text-xs"
-                    >
-                      Copy Room Name
-                    </Button>
-                  </div>
                   <Button onClick={leaveRoom} variant="outline" className="w-full">
                     Leave Room
                   </Button>
                 </>
               )}
-              <div className="text-xs text-slate-500 text-center">
-                Share room name and password with remote users
-              </div>
             </CardContent>
           </Card>
 
@@ -843,13 +410,6 @@ export default function Home() {
                 <span className="text-sm text-slate-600">Connection Type</span>
                 <span className="text-sm font-medium text-emerald-600">
                   {isP2PConnected ? 'P2P Direct' : 'Signaling'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">Encryption</span>
-                <span className="text-sm font-medium text-emerald-600">
-                  <Lock size={12} className="inline mr-1" />
-                  AES-256
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -885,7 +445,6 @@ export default function Home() {
 
           <TabsContent value="radar" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Radar View */}
               <RadarView
                 devices={devices}
                 selectedDevice={selectedDevice}
@@ -896,7 +455,6 @@ export default function Home() {
                 isConnected={isConnected}
               />
 
-              {/* File Transfer and Message Panel */}
               <div className="space-y-6">
                 <FileTransfer
                   selectedDevice={selectedDevice}
@@ -912,7 +470,6 @@ export default function Home() {
 
           <TabsContent value="list" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Device Discovery */}
               <DeviceDiscovery
                 devices={devices}
                 selectedDevice={selectedDevice}
@@ -920,7 +477,6 @@ export default function Home() {
                 onRefresh={fetchDevices}
               />
 
-              {/* File Transfer and Message Panel */}
               <div className="space-y-6">
                 <FileTransfer
                   selectedDevice={selectedDevice}
