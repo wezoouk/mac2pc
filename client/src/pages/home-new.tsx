@@ -4,6 +4,7 @@ import { useWebRTC } from "@/hooks/use-webrtc";
 import { useToast } from "@/hooks/use-toast";
 import { BannerAd } from "@/components/google-ads";
 import { TransferModal } from "@/components/transfer-modal";
+import { RadarView } from "@/components/radar-view";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -669,7 +670,20 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            {/* Available Devices with Enhanced Header */}
+            {/* Device Radar View */}
+            <div className="bg-white/80 backdrop-blur-xl border border-white/20 shadow-xl ring-1 ring-black/5 rounded-xl p-6">
+              <RadarView
+                devices={devices}
+                selectedDevice={selectedDevice}
+                onDeviceSelect={setSelectedDevice}
+                currentDeviceId={deviceId}
+                currentDeviceName={deviceName}
+                currentDeviceType={getDeviceType()}
+                isConnected={isConnected}
+              />
+            </div>
+
+            {/* Device List (Compact) */}
             <Card className="bg-white/80 backdrop-blur-xl border border-white/20 shadow-xl ring-1 ring-black/5">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -678,7 +692,7 @@ export default function Home() {
                       <Signal className="w-4 h-4 text-white" />
                     </div>
                     <div>
-                      <span className="text-lg">Available Devices</span>
+                      <span className="text-lg">Device List</span>
                       <p className="text-sm text-slate-500 font-normal">
                         {devices.length} device{devices.length !== 1 ? 's' : ''} nearby
                       </p>

@@ -73,19 +73,19 @@ export function RadarView({
   const centerY = radarSize / 2;
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardContent className="p-6">
-        <div className="text-center mb-4">
-          <h3 className="text-lg font-semibold text-slate-900">Device Radar</h3>
-          <p className="text-sm text-slate-600">
-            {devices.length} device{devices.length !== 1 ? 's' : ''} nearby
+    <div className="w-full">
+      <div className="p-6">
+        <div className="text-center mb-6">
+          <h3 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">Device Radar</h3>
+          <p className="text-slate-600 mt-1">
+            {devices.length} device{devices.length !== 1 ? 's' : ''} detected nearby
           </p>
         </div>
 
         <div className="relative flex items-center justify-center">
           {/* Radar Container */}
           <div 
-            className="relative bg-slate-50 rounded-full border-2 border-slate-200"
+            className="relative bg-gradient-to-br from-slate-50 to-slate-100 rounded-full border-4 border-slate-200 shadow-2xl"
             style={{ width: radarSize, height: radarSize }}
           >
             {/* Radar Rings */}
@@ -226,7 +226,7 @@ export function RadarView({
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
