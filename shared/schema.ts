@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -31,6 +31,31 @@ export const transfers = pgTable("transfers", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Admin settings table
+export const adminSettings = pgTable("admin_settings", {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 100 }).unique().notNull(),
+  value: text("value"),
+  description: text("description"),
+  category: varchar("category", { length: 50 }).default("general"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Ad placements table
+export const adPlacements = pgTable("ad_placements", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  position: varchar("position", { length: 50 }).notNull(), // 'header', 'sidebar', 'footer', 'between-content'
+  adClient: varchar("ad_client", { length: 100 }),
+  adSlot: varchar("ad_slot", { length: 100 }),
+  adFormat: varchar("ad_format", { length: 50 }).default("auto"),
+  isEnabled: boolean("is_enabled").default(true),
+  priority: integer("priority").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertDeviceSchema = createInsertSchema(devices).pick({
   id: true,
   name: true,
@@ -54,9 +79,30 @@ export const insertTransferSchema = createInsertSchema(transfers).pick({
   status: true,
 });
 
+export const insertAdPlacementSchema = createInsertSchema(adPlacements).pick({
+  name: true,
+  position: true,
+  adClient: true,
+  adSlot: true,
+  adFormat: true,
+  isEnabled: true,
+  priority: true,
+});
+
+export const insertAdminSettingSchema = createInsertSchema(adminSettings).pick({
+  key: true,
+  value: true,
+  description: true,
+  category: true,
+});
+
 export type InsertDevice = z.infer<typeof insertDeviceSchema>;
 export type Device = typeof devices.$inferSelect;
 export type InsertRoom = z.infer<typeof insertRoomSchema>;
 export type Room = typeof rooms.$inferSelect;
 export type InsertTransfer = z.infer<typeof insertTransferSchema>;
 export type Transfer = typeof transfers.$inferSelect;
+export type InsertAdPlacement = z.infer<typeof insertAdPlacementSchema>;
+export type AdPlacement = typeof adPlacements.$inferSelect;
+export type InsertAdminSetting = z.infer<typeof insertAdminSettingSchema>;
+export type AdminSetting = typeof adminSettings.$inferSelect;

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 interface GoogleAdsProps {
   adSlot?: string;
@@ -111,5 +112,34 @@ export function SquareAd({ isEnabled = true }: { isEnabled?: boolean }) {
       adFormat="rectangle"
       isEnabled={isEnabled}
     />
+  );
+}
+
+// Component to dynamically load ads from database
+export function DynamicAds({ position, isEnabled = true }: { position: string; isEnabled?: boolean }) {
+  const { data: adPlacements = [] } = useQuery({
+    queryKey: ["/api/ad-placements/enabled"],
+    enabled: isEnabled,
+  });
+
+  if (!isEnabled) return null;
+
+  const relevantAds = adPlacements.filter((ad: any) => ad.position === position && ad.isEnabled);
+
+  if (relevantAds.length === 0) return null;
+
+  return (
+    <div className="space-y-4">
+      {relevantAds.map((ad: any) => (
+        <GoogleAds
+          key={ad.id}
+          adClient={ad.adClient}
+          adSlot={ad.adSlot}
+          adFormat={ad.adFormat}
+          isEnabled={isEnabled}
+          className="w-full"
+        />
+      ))}
+    </div>
   );
 }

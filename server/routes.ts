@@ -150,6 +150,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(transfers);
   });
 
+  // Admin API routes
+  app.get("/api/admin/settings", async (req, res) => {
+    try {
+      const settings = await storage.getAllAdminSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching admin settings:", error);
+      res.status(500).json({ message: "Failed to fetch admin settings" });
+    }
+  });
+
+  app.post("/api/admin/settings", async (req, res) => {
+    try {
+      const setting = await storage.createAdminSetting(req.body);
+      res.json(setting);
+    } catch (error) {
+      console.error("Error creating admin setting:", error);
+      res.status(500).json({ message: "Failed to create admin setting" });
+    }
+  });
+
+  app.put("/api/admin/settings/:key", async (req, res) => {
+    try {
+      const { key } = req.params;
+      const { value } = req.body;
+      const setting = await storage.updateAdminSetting(key, value);
+      if (!setting) {
+        res.status(404).json({ message: "Setting not found" });
+        return;
+      }
+      res.json(setting);
+    } catch (error) {
+      console.error("Error updating admin setting:", error);
+      res.status(500).json({ message: "Failed to update admin setting" });
+    }
+  });
+
+  // Ad placement API routes
+  app.get("/api/admin/ad-placements", async (req, res) => {
+    try {
+      const placements = await storage.getAllAdPlacements();
+      res.json(placements);
+    } catch (error) {
+      console.error("Error fetching ad placements:", error);
+      res.status(500).json({ message: "Failed to fetch ad placements" });
+    }
+  });
+
+  app.get("/api/ad-placements/enabled", async (req, res) => {
+    try {
+      const placements = await storage.getEnabledAdPlacements();
+      res.json(placements);
+    } catch (error) {
+      console.error("Error fetching enabled ad placements:", error);
+      res.status(500).json({ message: "Failed to fetch enabled ad placements" });
+    }
+  });
+
+  app.post("/api/admin/ad-placements", async (req, res) => {
+    try {
+      const placement = await storage.createAdPlacement(req.body);
+      res.json(placement);
+    } catch (error) {
+      console.error("Error creating ad placement:", error);
+      res.status(500).json({ message: "Failed to create ad placement" });
+    }
+  });
+
+  app.put("/api/admin/ad-placements/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const placement = await storage.updateAdPlacement(id, req.body);
+      if (!placement) {
+        res.status(404).json({ message: "Ad placement not found" });
+        return;
+      }
+      res.json(placement);
+    } catch (error) {
+      console.error("Error updating ad placement:", error);
+      res.status(500).json({ message: "Failed to update ad placement" });
+    }
+  });
+
+  app.delete("/api/admin/ad-placements/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteAdPlacement(id);
+      res.json({ message: "Ad placement deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting ad placement:", error);
+      res.status(500).json({ message: "Failed to delete ad placement" });
+    }
+  });
+
   // WebSocket connection handling
   wss.on('connection', (ws: WebSocketClient, req) => {
     // Get client IP for network detection

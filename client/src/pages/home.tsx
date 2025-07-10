@@ -8,7 +8,7 @@ import { MessagePanel } from "@/components/message-panel";
 import { TransferHistory } from "@/components/transfer-history";
 import { TransferModal } from "@/components/transfer-modal";
 import { ProgressModal } from "@/components/progress-modal";
-import { BannerAd } from "@/components/google-ads";
+import { BannerAd, DynamicAds } from "@/components/google-ads";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -669,18 +669,22 @@ export default function Home() {
                 <p className="text-xs text-slate-500">Secure P2P Sharing</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="hidden sm:flex items-center space-x-2 px-3 py-1 bg-emerald-50 rounded-full">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <div className="hidden md:flex items-center space-x-2 px-3 py-1 bg-emerald-50 rounded-full">
                 <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></div>
                 <span className="text-sm text-emerald-700 font-medium">
                   {isConnected ? 'Connected' : 'Disconnected'}
                 </span>
               </div>
+              {/* Mobile connection indicator */}
+              <div className="md:hidden">
+                <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></div>
+              </div>
               <Button
                 variant={testMode ? "default" : "outline"}
                 size="sm"
                 onClick={toggleTestMode}
-                className="flex items-center space-x-1"
+                className="flex items-center space-x-1 px-2 sm:px-3"
               >
                 <TestTube size={14} />
                 <span className="hidden sm:inline">{testMode ? 'Exit Demo' : 'Demo Mode'}</span>
@@ -689,12 +693,12 @@ export default function Home() {
                 variant="ghost" 
                 size="sm"
                 onClick={() => fetchDevices()}
-                className="flex items-center space-x-1"
+                className="flex items-center space-x-1 px-2 sm:px-3"
               >
                 <RefreshCw size={14} />
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="px-2 sm:px-3" onClick={() => window.open('/admin', '_blank')}>
                 <Settings size={16} />
               </Button>
             </div>
@@ -702,7 +706,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Network Mode Notice */}
         {currentRoom ? (
           <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -745,7 +749,7 @@ export default function Home() {
           </div>
         )}
         {/* Status Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Device Info Card */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -934,7 +938,7 @@ export default function Home() {
         {/* Google Ads Banner */}
         {adsEnabled && (
           <div className="mb-8">
-            <BannerAd isEnabled={adsEnabled} />
+            <DynamicAds position="between-content" isEnabled={adsEnabled} />
           </div>
         )}
         

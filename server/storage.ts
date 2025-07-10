@@ -1,4 +1,20 @@
-import { devices, rooms, transfers, type Device, type Room, type Transfer, type InsertDevice, type InsertRoom, type InsertTransfer } from "@shared/schema";
+import {
+  devices,
+  rooms,
+  transfers,
+  adminSettings,
+  adPlacements,
+  type Device,
+  type Room,
+  type Transfer,
+  type AdminSetting,
+  type AdPlacement,
+  type InsertDevice,
+  type InsertRoom,
+  type InsertTransfer,
+  type InsertAdminSetting,
+  type InsertAdPlacement,
+} from "@shared/schema";
 
 export interface IStorage {
   // Device operations
@@ -20,19 +36,79 @@ export interface IStorage {
   getTransfer(id: number): Promise<Transfer | undefined>;
   updateTransfer(id: number, updates: Partial<Transfer>): Promise<Transfer | undefined>;
   getTransfersByDevice(deviceId: string): Promise<Transfer[]>;
+  
+  // Admin operations
+  createAdminSetting(setting: InsertAdminSetting): Promise<AdminSetting>;
+  getAdminSetting(key: string): Promise<AdminSetting | undefined>;
+  updateAdminSetting(key: string, value: string): Promise<AdminSetting | undefined>;
+  getAllAdminSettings(): Promise<AdminSetting[]>;
+  
+  // Ad placement operations
+  createAdPlacement(placement: InsertAdPlacement): Promise<AdPlacement>;
+  getAdPlacement(id: number): Promise<AdPlacement | undefined>;
+  updateAdPlacement(id: number, updates: Partial<AdPlacement>): Promise<AdPlacement | undefined>;
+  deleteAdPlacement(id: number): Promise<void>;
+  getAllAdPlacements(): Promise<AdPlacement[]>;
+  getEnabledAdPlacements(): Promise<AdPlacement[]>;
 }
 
 export class MemStorage implements IStorage {
   private devices: Map<string, Device>;
   private rooms: Map<string, Room>;
   private transfers: Map<number, Transfer>;
+  private adminSettings: Map<string, AdminSetting>;
+  private adPlacements: Map<number, AdPlacement>;
   private currentTransferId: number;
+  private currentAdPlacementId: number;
 
   constructor() {
     this.devices = new Map();
     this.rooms = new Map();
     this.transfers = new Map();
+    this.adminSettings = new Map();
+    this.adPlacements = new Map();
     this.currentTransferId = 1;
+    this.currentAdPlacementId = 1;
+    
+    // Initialize with default ad placements
+    this.initializeDefaultAdPlacements();
+  }
+  
+  private async initializeDefaultAdPlacements() {
+    // Create default ad placements
+    const defaultPlacements = [
+      {
+        name: "Banner Ad",
+        position: "between-content",
+        adClient: "ca-pub-0000000000000000",
+        adSlot: "0000000000",
+        adFormat: "auto",
+        isEnabled: true,
+        priority: 1,
+      },
+      {
+        name: "Sidebar Ad",
+        position: "sidebar",
+        adClient: "ca-pub-0000000000000000", 
+        adSlot: "1111111111",
+        adFormat: "rectangle",
+        isEnabled: false,
+        priority: 2,
+      },
+      {
+        name: "Footer Ad",
+        position: "footer",
+        adClient: "ca-pub-0000000000000000",
+        adSlot: "2222222222", 
+        adFormat: "banner",
+        isEnabled: false,
+        priority: 3,
+      }
+    ];
+    
+    for (const placement of defaultPlacements) {
+      await this.createAdPlacement(placement);
+    }
   }
 
   async createDevice(insertDevice: InsertDevice): Promise<Device> {
@@ -133,6 +209,83 @@ export class MemStorage implements IStorage {
     return Array.from(this.transfers.values()).filter(
       (transfer) => transfer.fromDeviceId === deviceId || transfer.toDeviceId === deviceId
     );
+  }
+  
+  // Admin settings operations
+  async createAdminSetting(insertSetting: InsertAdminSetting): Promise<AdminSetting> {
+    const setting: AdminSetting = {
+      id: Math.floor(Math.random() * 1000000),
+      ...insertSetting,
+      value: insertSetting.value || null,
+      description: insertSetting.description || null,
+      category: insertSetting.category || "general",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.adminSettings.set(setting.key, setting);
+    return setting;
+  }
+
+  async getAdminSetting(key: string): Promise<AdminSetting | undefined> {
+    return this.adminSettings.get(key);
+  }
+
+  async updateAdminSetting(key: string, value: string): Promise<AdminSetting | undefined> {
+    const setting = this.adminSettings.get(key);
+    if (!setting) return undefined;
+    
+    const updated = { ...setting, value, updatedAt: new Date() };
+    this.adminSettings.set(key, updated);
+    return updated;
+  }
+
+  async getAllAdminSettings(): Promise<AdminSetting[]> {
+    return Array.from(this.adminSettings.values());
+  }
+  
+  // Ad placement operations
+  async createAdPlacement(insertPlacement: InsertAdPlacement): Promise<AdPlacement> {
+    const id = this.currentAdPlacementId++;
+    const placement: AdPlacement = {
+      ...insertPlacement,
+      id,
+      adClient: insertPlacement.adClient || null,
+      adSlot: insertPlacement.adSlot || null,
+      adFormat: insertPlacement.adFormat || "auto",
+      isEnabled: insertPlacement.isEnabled ?? true,
+      priority: insertPlacement.priority || 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.adPlacements.set(id, placement);
+    return placement;
+  }
+
+  async getAdPlacement(id: number): Promise<AdPlacement | undefined> {
+    return this.adPlacements.get(id);
+  }
+
+  async updateAdPlacement(id: number, updates: Partial<AdPlacement>): Promise<AdPlacement | undefined> {
+    const placement = this.adPlacements.get(id);
+    if (!placement) return undefined;
+    
+    const updated = { ...placement, ...updates, updatedAt: new Date() };
+    this.adPlacements.set(id, updated);
+    return updated;
+  }
+
+  async deleteAdPlacement(id: number): Promise<void> {
+    this.adPlacements.delete(id);
+  }
+
+  async getAllAdPlacements(): Promise<AdPlacement[]> {
+    return Array.from(this.adPlacements.values()).sort((a, b) => a.priority - b.priority);
+  }
+
+  async getEnabledAdPlacements(): Promise<AdPlacement[]> {
+    return Array.from(this.adPlacements.values())
+      .filter(placement => placement.isEnabled)
+      .sort((a, b) => a.priority - b.priority);
   }
 }
 
