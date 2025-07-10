@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useWebRTC } from "@/hooks/use-webrtc";
 import { DeviceDiscovery } from "@/components/device-discovery";
+import { RadarView } from "@/components/radar-view";
 import { FileTransfer } from "@/components/file-transfer";
 import { MessagePanel } from "@/components/message-panel";
 import { TransferHistory } from "@/components/transfer-history";
@@ -11,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Settings, Share2, Laptop, Wifi, Signal, Lock } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Settings, Share2, Laptop, Wifi, Signal, Lock, Radar } from "lucide-react";
 import { nanoid } from "nanoid";
 import type { Device, Transfer } from "@shared/schema";
 
@@ -386,27 +388,69 @@ export default function Home() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Device Discovery */}
-          <DeviceDiscovery
-            devices={devices}
-            selectedDevice={selectedDevice}
-            onDeviceSelect={handleDeviceSelect}
-            onRefresh={fetchDevices}
-          />
+        <Tabs defaultValue="radar" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="radar" className="flex items-center space-x-2">
+              <Radar size={16} />
+              <span>Radar View</span>
+            </TabsTrigger>
+            <TabsTrigger value="list" className="flex items-center space-x-2">
+              <Signal size={16} />
+              <span>Device List</span>
+            </TabsTrigger>
+          </TabsList>
 
-          {/* File Transfer and Message Panel */}
-          <div className="space-y-6">
-            <FileTransfer
-              selectedDevice={selectedDevice}
-              onFileSend={handleFileSend}
-            />
-            <MessagePanel
-              selectedDevice={selectedDevice}
-              onMessageSend={handleMessageSend}
-            />
-          </div>
-        </div>
+          <TabsContent value="radar" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Radar View */}
+              <RadarView
+                devices={devices}
+                selectedDevice={selectedDevice}
+                onDeviceSelect={handleDeviceSelect}
+                currentDeviceId={deviceId}
+                currentDeviceName={deviceName}
+                currentDeviceType={getDeviceType()}
+                isConnected={isConnected}
+              />
+
+              {/* File Transfer and Message Panel */}
+              <div className="space-y-6">
+                <FileTransfer
+                  selectedDevice={selectedDevice}
+                  onFileSend={handleFileSend}
+                />
+                <MessagePanel
+                  selectedDevice={selectedDevice}
+                  onMessageSend={handleMessageSend}
+                />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="list" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Device Discovery */}
+              <DeviceDiscovery
+                devices={devices}
+                selectedDevice={selectedDevice}
+                onDeviceSelect={handleDeviceSelect}
+                onRefresh={fetchDevices}
+              />
+
+              {/* File Transfer and Message Panel */}
+              <div className="space-y-6">
+                <FileTransfer
+                  selectedDevice={selectedDevice}
+                  onFileSend={handleFileSend}
+                />
+                <MessagePanel
+                  selectedDevice={selectedDevice}
+                  onMessageSend={handleMessageSend}
+                />
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
 
         {/* Transfer History */}
         <TransferHistory transfers={transfers} />

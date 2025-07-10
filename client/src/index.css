@@ -207,6 +207,73 @@
   background: hsl(var(--primary));
 }
 
+/* Radar view animations */
+@keyframes radar-sweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes device-appear {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes center-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.radar-container {
+  position: relative;
+  animation: radar-sweep 20s linear infinite;
+}
+
+.device-icon {
+  animation: device-appear 0.5s ease-out forwards;
+}
+
+.center-device {
+  animation: center-pulse 2s infinite;
+}
+
+.radar-ring {
+  position: absolute;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 50%;
+  animation: radar-sweep 30s linear infinite reverse;
+}
+
+.connection-line {
+  stroke-dasharray: 5, 5;
+  animation: connection-flow 2s linear infinite;
+}
+
+@keyframes connection-flow {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 20;
+  }
+}
+
 /* Responsive design helpers */
 @media (max-width: 768px) {
   .mobile-stack {
