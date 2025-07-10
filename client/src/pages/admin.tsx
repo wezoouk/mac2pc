@@ -115,7 +115,14 @@ export default function Admin() {
   });
 
   const handleCreatePlacement = () => {
+    console.log("Form submission attempted with data:", newPlacement);
+    
     if (!newPlacement.name || !newPlacement.adClient || !newPlacement.adSlot) {
+      console.log("Validation failed:", {
+        name: newPlacement.name,
+        adClient: newPlacement.adClient,
+        adSlot: newPlacement.adSlot
+      });
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -123,6 +130,8 @@ export default function Admin() {
       });
       return;
     }
+    
+    console.log("Creating placement with data:", newPlacement);
     createPlacementMutation.mutate(newPlacement as InsertAdPlacement);
   };
 

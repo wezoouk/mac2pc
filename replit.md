@@ -125,8 +125,9 @@ The application is designed to work seamlessly in both development and productio
 - **Banner placement**: Ads appear between main content and transfer history
 - **Responsive design**: Ads automatically adjust to screen size
 - **Privacy-friendly**: Ads only load when explicitly enabled by user
+- **Admin settings**: Ad placement management working from admin panel
 
-### Message and File Transfer System
+### Message and File Transfer System (ENHANCED - July 10, 2025)
 - **Messages auto-appear**: Removed accept/decline modal for messages, they now show instantly with toast notifications
 - **File acceptance required**: Files now require receiver acceptance before download - shows modal with file details
 - **Multiple file transfers**: Fixed issue where only small files were sent - now all files use WebSocket fallback
@@ -135,6 +136,9 @@ The application is designed to work seamlessly in both development and productio
 - **Smart notifications**: Custom toast notifications that auto-fade after 5 seconds and can be clicked to dismiss
 - **Clear history functionality**: Transfer history can now be cleared with trash button
 - **WebSocket fallback**: Direct message/file routing when WebRTC unavailable
+- **Queue system**: Multiple files properly queued and processed sequentially
+- **Download All feature**: Added bulk download functionality for multiple files
+- **Queue indicators**: Shows file count and "Download All" button in transfer modal
 
 ### Device Naming System
 - **Random fun names**: Replaced generic "Windows PC-1234" with creative names like "wombat-mac", "sleepy-otter-laptop"
