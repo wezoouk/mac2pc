@@ -342,10 +342,8 @@ export default function Home() {
         // If in a room, only show devices in that room
         response = await fetch(`/api/devices/room/${currentRoom}`);
       } else {
-        // If not in a room, show no devices (real local network detection would go here)
-        // For now, we disable showing all global devices to prevent confusion
-        setDevices([]);
-        return;
+        // If not in a room, show devices marked as 'local' network only
+        response = await fetch('/api/devices/network/local');
       }
       const allDevices = await response.json();
       setDevices(allDevices.filter((d: Device) => d.id !== deviceId));
@@ -596,7 +594,7 @@ export default function Home() {
               <div>
                 <h3 className="font-medium text-green-800">Local Network Mode</h3>
                 <p className="text-sm text-green-700">
-                  Ready to discover devices on your WiFi network. Local network discovery requires additional setup. Join a room to connect with remote devices instantly.
+                  Showing devices detected as being on the same network. For testing, multiple browser tabs appear as local devices. Use "Demo Mode" to see sample devices or join a room to connect with specific remote devices.
                 </p>
               </div>
             </div>

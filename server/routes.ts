@@ -128,8 +128,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // WebSocket connection handling
-  wss.on('connection', (ws: WebSocketClient) => {
-    console.log('New WebSocket connection');
+  wss.on('connection', (ws: WebSocketClient, req) => {
+    // Get client IP for network detection
+    const clientIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress;
+    console.log('New WebSocket connection from:', clientIP);
 
     ws.on('message', async (message: Buffer) => {
       try {
@@ -282,7 +284,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.createDevice({
           ...data.data,
           id: data.deviceId,
-          network: 'local', // Default to local network
+          network: 'local', // Mark browser connections as local for testing
           isOnline: true,
           lastSeen: new Date()
         });
