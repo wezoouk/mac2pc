@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useWebRTC } from "@/hooks/use-webrtc";
+import { useToast } from "@/hooks/use-toast";
 import { DeviceDiscovery } from "@/components/device-discovery";
 import { RadarView } from "@/components/radar-view";
 import { FileTransfer } from "@/components/file-transfer";
@@ -33,6 +34,7 @@ export default function Home() {
   const [activeTransfer, setActiveTransfer] = useState<any>(null);
   const [transferQueue, setTransferQueue] = useState<File[]>([]);
   const [testMode, setTestMode] = useState(false);
+  const { toast } = useToast();
 
   // Test devices for demo purposes
   const testDevices: Device[] = [
@@ -124,6 +126,43 @@ export default function Home() {
         if (!testMode) {
           const roomDevices = message.devices.filter((d: Device) => d.id !== deviceId);
           setDevices(roomDevices);
+        }
+        break;
+      case 'direct-message':
+        // Handle received message
+        if (message.to === deviceId) {
+          handleMessageReceived(message.message, message.from);
+          
+          // Show toast notification
+          const senderDevice = devices.find(d => d.id === message.from);
+          const senderName = senderDevice?.name || message.fromName || message.from.slice(-6);
+          
+          toast({
+            title: "Message received",
+            description: `From ${senderName}: ${message.message}`,
+            duration: 5000,
+          });
+        }
+        break;
+      case 'direct-file':
+        // Handle received file
+        if (message.to === deviceId) {
+          handleFileReceived({
+            fileName: message.fileName,
+            fileSize: message.fileSize,
+            fileData: message.fileData,
+            from: message.from
+          });
+          
+          // Show toast notification
+          const senderDevice = devices.find(d => d.id === message.from);
+          const senderName = senderDevice?.name || message.fromName || message.from.slice(-6);
+          
+          toast({
+            title: "File received",
+            description: `${message.fileName} from ${senderName}`,
+            duration: 5000,
+          });
         }
         break;
     }
@@ -259,7 +298,29 @@ export default function Home() {
 
     files.forEach(async (file) => {
       try {
-        await sendFile(file, selectedDevice.id);
+        // For small files (< 1MB), send via WebSocket as base64
+        if (file.size < 1024 * 1024) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const fileData = {
+              type: 'direct-file',
+              to: selectedDevice.id,
+              from: deviceId,
+              fromName: deviceName,
+              fileName: file.name,
+              fileSize: file.size,
+              fileType: file.type,
+              fileData: reader.result as string,
+              timestamp: new Date().toISOString()
+            };
+            
+            sendMessage(fileData);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          // For larger files, try WebRTC
+          await sendFile(file, selectedDevice.id);
+        }
         
         // Add to transfer history
         const transfer = {
@@ -287,23 +348,25 @@ export default function Home() {
   function handleMessageSend(message: string, selfDestructTimer?: number) {
     if (!selectedDevice) return;
 
-    const messageData = {
-      type: 'message',
-      message,
-      from: deviceName,
-      fromDeviceId: deviceId,
-      timestamp: new Date().toISOString(),
-      selfDestructTimer
-    };
-
-    // Send via WebRTC
-    sendP2PMessage(message, selectedDevice.id);
-    
     // Calculate expiration time if self-destruct timer is set
     let expiresAt = null;
     if (selfDestructTimer && selfDestructTimer > 0) {
       expiresAt = new Date(Date.now() + selfDestructTimer * 1000);
     }
+
+    const messageData = {
+      type: 'direct-message',
+      to: selectedDevice.id,
+      from: deviceId,
+      fromName: deviceName,
+      message,
+      selfDestructTimer,
+      expiresAt: expiresAt?.toISOString(),
+      timestamp: new Date().toISOString()
+    };
+
+    // Send via WebSocket signaling (fallback when WebRTC not available)
+    sendMessage(messageData);
     
     // Add to transfer history
     const transfer = {

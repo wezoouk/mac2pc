@@ -316,6 +316,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           case 'transfer-progress':
             await handleTransferProgress(ws, data);
             break;
+          case 'direct-message':
+            await handleDirectMessage(ws, data);
+            break;
+          case 'direct-file':
+            await handleDirectFile(ws, data);
+            break;
         }
       } catch (error) {
         console.error('WebSocket message error:', error);
@@ -523,6 +529,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   async function handleTransferProgress(ws: WebSocketClient, data: SignalingMessage) {
+    if (!data.to || !data.from) return;
+
+    const targetWs = clients.get(data.to);
+    if (targetWs && targetWs.readyState === WebSocket.OPEN) {
+      targetWs.send(JSON.stringify(data));
+    }
+  }
+
+  async function handleDirectMessage(ws: WebSocketClient, data: any) {
+    if (!data.to || !data.from) return;
+
+    const targetWs = clients.get(data.to);
+    if (targetWs && targetWs.readyState === WebSocket.OPEN) {
+      targetWs.send(JSON.stringify(data));
+    }
+  }
+
+  async function handleDirectFile(ws: WebSocketClient, data: any) {
     if (!data.to || !data.from) return;
 
     const targetWs = clients.get(data.to);
