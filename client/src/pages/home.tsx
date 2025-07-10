@@ -438,72 +438,80 @@ export default function Home() {
           </Card>
         </div>
 
-        {/* Sidebar/Top Content Ad */}
-        {adsEnabled && (
-          <div className="mb-6">
-            <DynamicAds position="sidebar" isEnabled={adsEnabled} />
+        {/* Main content with sidebar layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Main Content Area (3/4 width) */}
+          <div className="lg:col-span-3">
+            <Tabs defaultValue="radar" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="radar" className="flex items-center space-x-2">
+                  <Radar size={16} />
+                  <span>Radar View</span>
+                </TabsTrigger>
+                <TabsTrigger value="list" className="flex items-center space-x-2">
+                  <Signal size={16} />
+                  <span>Device List</span>
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="radar" className="space-y-6">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                  <RadarView
+                    devices={devices}
+                    selectedDevice={selectedDevice}
+                    onDeviceSelect={handleDeviceSelect}
+                    currentDeviceId={deviceId}
+                    currentDeviceName={deviceName}
+                    currentDeviceType={getDeviceType()}
+                    isConnected={isConnected}
+                  />
+
+                  <div className="space-y-6">
+                    <FileTransfer
+                      selectedDevice={selectedDevice}
+                      onFileSend={handleFileSend}
+                    />
+                    <MessagePanel
+                      selectedDevice={selectedDevice}
+                      onMessageSend={handleMessageSend}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="list" className="space-y-6">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                  <DeviceDiscovery
+                    devices={devices}
+                    selectedDevice={selectedDevice}
+                    onDeviceSelect={handleDeviceSelect}
+                    onRefresh={fetchDevices}
+                  />
+
+                  <div className="space-y-6">
+                    <FileTransfer
+                      selectedDevice={selectedDevice}
+                      onFileSend={handleFileSend}
+                    />
+                    <MessagePanel
+                      selectedDevice={selectedDevice}
+                      onMessageSend={handleMessageSend}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
-        )}
 
-        <Tabs defaultValue="radar" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="radar" className="flex items-center space-x-2">
-              <Radar size={16} />
-              <span>Radar View</span>
-            </TabsTrigger>
-            <TabsTrigger value="list" className="flex items-center space-x-2">
-              <Signal size={16} />
-              <span>Device List</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="radar" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <RadarView
-                devices={devices}
-                selectedDevice={selectedDevice}
-                onDeviceSelect={handleDeviceSelect}
-                currentDeviceId={deviceId}
-                currentDeviceName={deviceName}
-                currentDeviceType={getDeviceType()}
-                isConnected={isConnected}
-              />
-
-              <div className="space-y-6">
-                <FileTransfer
-                  selectedDevice={selectedDevice}
-                  onFileSend={handleFileSend}
-                />
-                <MessagePanel
-                  selectedDevice={selectedDevice}
-                  onMessageSend={handleMessageSend}
-                />
+          {/* Sidebar (1/4 width) */}
+          <div className="lg:col-span-1">
+            {adsEnabled && (
+              <div className="sticky top-20">
+                <DynamicAds position="sidebar" isEnabled={adsEnabled} />
               </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="list" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <DeviceDiscovery
-                devices={devices}
-                selectedDevice={selectedDevice}
-                onDeviceSelect={handleDeviceSelect}
-                onRefresh={fetchDevices}
-              />
-
-              <div className="space-y-6">
-                <FileTransfer
-                  selectedDevice={selectedDevice}
-                  onFileSend={handleFileSend}
-                />
-                <MessagePanel
-                  selectedDevice={selectedDevice}
-                  onMessageSend={handleMessageSend}
-                />
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+            )}
+          </div>
+        </div>
 
         {/* Google Ads Banner */}
         {adsEnabled && (
