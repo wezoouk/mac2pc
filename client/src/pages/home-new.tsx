@@ -562,6 +562,55 @@ export default function Home() {
         </div>
       </header>
 
+      {/* Hero Section */}
+      <section className="relative overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
+          <div className="absolute top-20 right-0 w-72 h-72 bg-gradient-to-l from-blue-400/20 to-cyan-400/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-t from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-6">
+              Device Radar
+            </h2>
+            <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-8">
+              Discover and connect with devices on your network instantly. Share files and messages with beautiful, secure peer-to-peer connections.
+            </p>
+            <div className="flex items-center justify-center space-x-6 text-sm text-slate-500">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span>{devices.length} devices detected</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span>{isConnected ? 'Connected' : 'Connecting...'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Radar View - Hero Component */}
+          <div className="flex justify-center mb-20">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-full blur-2xl transform scale-110"></div>
+              <div className="relative bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl ring-1 ring-white/20 p-8 border border-white/30">
+                <RadarView
+                  devices={devices}
+                  selectedDevice={selectedDevice}
+                  onDeviceSelect={setSelectedDevice}
+                  currentDeviceId={deviceId}
+                  currentDeviceName={deviceName}
+                  currentDeviceType={getDeviceType()}
+                  isConnected={isConnected}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
@@ -670,17 +719,21 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            {/* Device Radar View */}
+            {/* Quick Stats & Info */}
             <div className="bg-white/80 backdrop-blur-xl border border-white/20 shadow-xl ring-1 ring-black/5 rounded-xl p-6">
-              <RadarView
-                devices={devices}
-                selectedDevice={selectedDevice}
-                onDeviceSelect={setSelectedDevice}
-                currentDeviceId={deviceId}
-                currentDeviceName={deviceName}
-                currentDeviceType={getDeviceType()}
-                isConnected={isConnected}
-              />
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Network Status</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg">
+                    <div className="text-2xl font-bold text-emerald-600">{devices.length}</div>
+                    <div className="text-sm text-slate-600">Devices Found</div>
+                  </div>
+                  <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">{transfers.length}</div>
+                    <div className="text-sm text-slate-600">Transfers</div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Device List (Compact) */}
