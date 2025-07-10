@@ -75,6 +75,11 @@ export function DeviceDiscovery({
                   <h4 className="font-medium text-slate-900 flex items-center gap-2">
                     <span className="text-xs opacity-75">{getDeviceIcon(device.name).description}</span>
                     {device.name}
+                    {device.network === 'remote' && (
+                      <Badge variant="outline" className="text-xs">
+                        Remote
+                      </Badge>
+                    )}
                   </h4>
                   <p className="text-sm text-slate-600">{getDeviceTypeLabel(device)}</p>
                 </div>

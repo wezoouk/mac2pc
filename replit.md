@@ -98,6 +98,20 @@ The application is designed to work seamlessly in both development and productio
 
 ## Recent Changes (July 10, 2025)
 
+### Device Type Recognition and Visual Indicators
+- **Device type icons**: Added automatic detection of Mac (🍎), PC (💻), iPhone (📱), iPad, Chromebook, Surface devices
+- **Visual device identification**: Icons appear in radar view, device list, and throughout the interface
+- **Transfer direction indicators**: Recent activity shows "Sent" (blue ↑) and "Received" (green ↓) badges
+- **Progress tracking**: Real-time progress bars during file transfers with speed calculations and time estimates
+- **Connection status**: Green/red indicator showing device connection status in header
+
+### Cross-Network Connectivity Discovery
+- **Global device discovery**: All devices connecting to the Replit server appear in everyone's device list automatically
+- **No room required**: Devices can see each other across different networks (home WiFi, mobile data, office) without joining rooms
+- **Internet-wide access**: Any device that can reach the Replit server URL will discover all other connected devices
+- **Real-time synchronization**: Device list updates instantly when devices connect/disconnect from anywhere
+- **Remote device badges**: Added "Remote" badges to distinguish between local and cross-network devices
+
 ### Message and File Transfer System
 - **Messages auto-appear**: Removed accept/decline modal for messages, they now show instantly with toast notifications
 - **File transfers working**: Base64 encoding through WebSocket for files up to 1.3MB+ successfully tested
@@ -114,4 +128,4 @@ The application is designed to work seamlessly in both development and productio
 - **Multi-tab simulation**: Each browser tab acts as a separate device with unique random name
 - **Real-time messaging**: Instant message delivery between tabs with visual notifications
 - **File transfer**: Drag-and-drop files between simulated devices
-- **Room-based connections**: Cross-network sharing using room names
+- **Room-based connections**: Cross-network sharing using room names (optional feature)
