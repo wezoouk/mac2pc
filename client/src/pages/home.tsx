@@ -144,7 +144,7 @@ export default function Home() {
       case 'room-joined':
         console.log('Successfully joined room:', message.roomId);
         setCurrentRoom(message.roomId);
-        fetchDevices();
+        // Don't fetch devices here - room devices will come via 'room-devices' message
         break;
       case 'room-left':
         console.log('Successfully left room:', message.roomId);
@@ -395,8 +395,8 @@ export default function Home() {
       setCurrentRoom(roomName.trim());
       console.log(`Joining room: ${roomName.trim()}`);
       
-      // Fetch devices in the room
-      setTimeout(() => fetchDevices(), 1000);
+      // Clear devices immediately - room devices will come via WebSocket
+      setDevices([]);
     } catch (error) {
       console.error('Failed to join room:', error);
     }
