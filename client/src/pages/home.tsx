@@ -149,7 +149,9 @@ export default function Home() {
       case 'room-left':
         console.log('Successfully left room:', message.roomId);
         setCurrentRoom(null);
-        fetchDevices();
+        // Clear devices immediately and fetch local devices
+        setDevices([]);
+        setTimeout(() => fetchDevices(), 100);
         break;
       case 'room-devices':
         // Update devices from room - filter out self
@@ -405,17 +407,21 @@ export default function Home() {
   async function leaveRoom() {
     if (!currentRoom) return;
     
+    const roomToLeave = currentRoom;
+    
     sendMessage({
       type: 'leave-room',
       deviceId,
-      roomId: currentRoom
+      roomId: roomToLeave
     });
     
-    console.log(`Leaving room: ${currentRoom}`);
+    console.log(`Leaving room: ${roomToLeave}`);
+    // Clear room state immediately
     setCurrentRoom(null);
+    setDevices([]);
     
-    // Fetch local network devices
-    setTimeout(() => fetchDevices(), 1000);
+    // Fetch local network devices after a short delay
+    setTimeout(() => fetchDevices(), 500);
   }
 
   function handleDeviceSelect(device: Device) {

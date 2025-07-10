@@ -15,6 +15,7 @@ export const devices = pgTable("devices", {
 export const rooms = pgTable("rooms", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
+  password: text("password"), // Optional password for room protection
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -41,6 +42,7 @@ export const insertDeviceSchema = createInsertSchema(devices).pick({
 export const insertRoomSchema = createInsertSchema(rooms).pick({
   id: true,
   name: true,
+  password: true,
 });
 
 export const insertTransferSchema = createInsertSchema(transfers).pick({
