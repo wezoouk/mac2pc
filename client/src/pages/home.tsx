@@ -15,13 +15,12 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, Share2, Laptop, Wifi, Signal, Lock, Radar, TestTube } from "lucide-react";
 import { nanoid } from "nanoid";
+import { generateRandomDeviceName } from '@/lib/utils';
 import type { Device, Transfer } from "@shared/schema";
 
 export default function Home() {
   const [deviceId] = useState(() => nanoid());
-  const [deviceName, setDeviceName] = useState(() => 
-    `${navigator.platform.includes('Mac') ? 'MacBook' : navigator.platform.includes('Win') ? 'Windows PC' : 'Device'}-${deviceId.slice(-4)}`
-  );
+  const [deviceName, setDeviceName] = useState(() => generateRandomDeviceName());
   const [roomName, setRoomName] = useState("");
   const [currentRoom, setCurrentRoom] = useState<string | null>(null);
   const [devices, setDevices] = useState<Device[]>([]);
@@ -35,7 +34,7 @@ export default function Home() {
   const testDevices: Device[] = [
     {
       id: "test-device-1",
-      name: "Sarah's iPhone",
+      name: "swift-otter-iphone",
       type: "mobile",
       network: "local",
       isOnline: true,
@@ -46,7 +45,7 @@ export default function Home() {
     },
     {
       id: "test-device-2", 
-      name: "John's MacBook",
+      name: "fuzzy-wombat-macbook",
       type: "desktop",
       network: "local",
       isOnline: true,
@@ -57,7 +56,7 @@ export default function Home() {
     },
     {
       id: "test-device-3",
-      name: "Office iPad",
+      name: "sleepy-pangolin-tablet",
       type: "tablet", 
       network: "local",
       isOnline: true,

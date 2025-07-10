@@ -7,6 +7,7 @@ This is a modern web application for peer-to-peer file transfer and messaging be
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Device naming: Fun random names with animals and adjectives (e.g., "wombat-mac", "sleepy-otter-laptop").
 
 ## System Architecture
 
@@ -94,3 +95,23 @@ Preferred communication style: Simple, everyday language.
 - **Static Serving**: Express serves frontend assets in production
 
 The application is designed to work seamlessly in both development and production environments, with the server automatically detecting the mode and configuring itself accordingly.
+
+## Recent Changes (July 10, 2025)
+
+### Message and File Transfer System
+- **Messages auto-appear**: Removed accept/decline modal for messages, they now show instantly with toast notifications
+- **File transfers working**: Base64 encoding through WebSocket for files up to 1.3MB+ successfully tested
+- **Smart notifications**: Custom toast notifications that auto-fade after 5 seconds and can be clicked to dismiss
+- **Clear history functionality**: Transfer history can now be cleared with trash button
+
+### Device Naming System
+- **Random fun names**: Replaced generic "Windows PC-1234" with creative names like "wombat-mac", "sleepy-otter-laptop"
+- **Name generator**: 32 adjectives + 30 animals + 16 device types creating diverse combinations
+- **Format variety**: Names can be "animal-device" or "adjective-animal-device" format
+- **Demo mode names**: Updated test devices to also use fun random names
+
+### Multi-Device Testing
+- **Multi-tab simulation**: Each browser tab acts as a separate device with unique random name
+- **Real-time messaging**: Instant message delivery between tabs with visual notifications
+- **File transfer**: Drag-and-drop files between simulated devices
+- **Room-based connections**: Cross-network sharing using room names

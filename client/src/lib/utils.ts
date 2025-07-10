@@ -36,3 +36,35 @@ export function getDeviceType(): 'desktop' | 'mobile' | 'tablet' {
   }
   return 'desktop';
 }
+
+export function generateRandomDeviceName(): string {
+  const adjectives = [
+    'swift', 'bright', 'clever', 'mighty', 'gentle', 'brave', 'cosmic', 'wild',
+    'fuzzy', 'sleepy', 'happy', 'bouncy', 'sneaky', 'shiny', 'cozy', 'zippy',
+    'dapper', 'quirky', 'fluffy', 'peppy', 'jolly', 'witty', 'noble', 'eager',
+    'zesty', 'merry', 'nimble', 'dashing', 'spunky', 'crafty', 'bubbly', 'perky'
+  ];
+  
+  const animals = [
+    'wombat', 'pangolin', 'quokka', 'axolotl', 'narwhal', 'platypus', 'otter',
+    'hedgehog', 'fennec', 'chinchilla', 'capybara', 'meerkat', 'lemur', 'sloth',
+    'puffin', 'penguin', 'dolphin', 'turtle', 'koala', 'raccoon', 'squirrel',
+    'hamster', 'ferret', 'rabbit', 'fox', 'wolf', 'bear', 'lion', 'tiger', 'cat'
+  ];
+  
+  const devices = [
+    'mac', 'pc', 'laptop', 'desktop', 'tablet', 'phone', 'workstation', 'chromebook',
+    'surface', 'macbook', 'imac', 'thinkpad', 'dell', 'hp', 'asus', 'lenovo'
+  ];
+  
+  const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+  const animal = animals[Math.floor(Math.random() * animals.length)];
+  const device = devices[Math.floor(Math.random() * devices.length)];
+  
+  // Sometimes use adjective-animal-device, sometimes just animal-device
+  if (Math.random() > 0.5) {
+    return `${adjective}-${animal}-${device}`;
+  } else {
+    return `${animal}-${device}`;
+  }
+}
