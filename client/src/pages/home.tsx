@@ -214,8 +214,11 @@ export default function Home() {
   }
 
   function toggleTestMode() {
-    setTestMode(!testMode);
-    if (!testMode) {
+    const newTestMode = !testMode;
+    console.log('Toggling test mode from', testMode, 'to', newTestMode);
+    setTestMode(newTestMode);
+    
+    if (newTestMode) {
       // Enable test mode - show mock devices and transfers
       setDevices(testDevices);
       setTransfers([
@@ -387,6 +390,10 @@ export default function Home() {
     }
   }, [isConnected]);
 
+  useEffect(() => {
+    console.log('Test mode state:', testMode);
+  }, [testMode]);
+
   return (
     <div className="bg-slate-50 min-h-screen">
       {/* Header */}
@@ -428,7 +435,7 @@ export default function Home() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Demo Mode Notice */}
-        {testMode && (
+        {testMode === true && (
           <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
             <div className="flex items-center space-x-2">
               <TestTube className="text-amber-600" size={20} />
