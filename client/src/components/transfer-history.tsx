@@ -6,9 +6,10 @@ import type { Transfer } from "@shared/schema";
 
 interface TransferHistoryProps {
   transfers: Transfer[];
+  onClear?: () => void;
 }
 
-export function TransferHistory({ transfers }: TransferHistoryProps) {
+export function TransferHistory({ transfers, onClear }: TransferHistoryProps) {
   function getTransferIcon(transfer: Transfer) {
     switch (transfer.status) {
       case 'completed':
@@ -68,7 +69,12 @@ export function TransferHistory({ transfers }: TransferHistoryProps) {
           <CardTitle className="text-xl font-semibold">Recent Activity</CardTitle>
           <p className="text-sm text-slate-600">Transfer history (not stored on server)</p>
         </div>
-        <Button variant="ghost" size="sm" className="text-slate-600 hover:text-red-600">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-slate-600 hover:text-red-600"
+          onClick={onClear}
+        >
           <Trash2 size={16} />
         </Button>
       </CardHeader>

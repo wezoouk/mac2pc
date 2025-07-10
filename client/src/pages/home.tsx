@@ -170,9 +170,9 @@ export default function Home() {
           // For messages, process immediately
           if (message.data.type === 'message') {
             handleMessageReceived(message.data.messageText, message.data.from);
-          } else {
-            // Start file transfer
-            startFileTransfer(message.data);
+          } else if (message.data.type === 'file') {
+            // Handle file transfer completion
+            handleFileReceived(message.data);
           }
         } else {
           console.log('Transfer was declined');
@@ -186,14 +186,26 @@ export default function Home() {
     }
   }
 
-  function handleFileReceived(file: File, from: string) {
-    // Auto-download received file
-    const url = URL.createObjectURL(file);
+  function handleFileReceived(transfer: any) {
+    // Convert base64 back to file and auto-download
     const a = document.createElement('a');
-    a.href = url;
-    a.download = file.name;
+    a.href = transfer.fileData;
+    a.download = transfer.fileName;
     a.click();
-    URL.revokeObjectURL(url);
+    
+    // Add to transfer history
+    const newTransfer = {
+      id: Date.now(),
+      fromDeviceId: transfer.from,
+      toDeviceId: deviceId,
+      fileName: transfer.fileName,
+      fileSize: transfer.fileSize,
+      status: 'completed' as const,
+      progress: 100,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    setTransfers(prev => [newTransfer, ...prev]);
   }
 
   function handleMessageReceived(message: string, from: string) {
@@ -339,22 +351,28 @@ export default function Home() {
   function handleFileSend(files: File[]) {
     if (!selectedDevice) return;
     
-    files.forEach(file => {
-      const transferRequest = {
-        id: nanoid(),
-        fileName: file.name,
-        fileSize: file.size,
-        from: deviceId,
-        to: selectedDevice.id,
-        type: 'file'
+    files.forEach(async file => {
+      // Convert file to base64 for simple transfer
+      const reader = new FileReader();
+      reader.onload = () => {
+        const transferRequest = {
+          id: nanoid(),
+          fileName: file.name,
+          fileSize: file.size,
+          fileData: reader.result, // Base64 data
+          from: deviceId,
+          to: selectedDevice.id,
+          type: 'file'
+        };
+        
+        sendMessage({
+          type: 'transfer-request',
+          from: deviceId,
+          to: selectedDevice.id,
+          data: transferRequest
+        });
       };
-      
-      sendMessage({
-        type: 'transfer-request',
-        from: deviceId,
-        to: selectedDevice.id,
-        data: transferRequest
-      });
+      reader.readAsDataURL(file);
     });
   }
 
@@ -385,6 +403,9 @@ export default function Home() {
     // For messages, just accept immediately
     if (incomingTransfer.type === 'message') {
       handleMessageReceived(incomingTransfer.messageText, incomingTransfer.from);
+    } else if (incomingTransfer.type === 'file' && incomingTransfer.fileData) {
+      // Handle file download
+      handleFileReceived(incomingTransfer);
     }
     
     sendMessage({
@@ -640,7 +661,7 @@ export default function Home() {
         </Tabs>
 
         {/* Transfer History */}
-        <TransferHistory transfers={transfers} />
+        <TransferHistory transfers={transfers} onClear={() => setTransfers([])} />
       </main>
 
       {/* Modals */}
