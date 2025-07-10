@@ -145,21 +145,23 @@ export default function Home() {
         }
         break;
       case 'direct-file':
-        // Handle received file
+        // Handle received file - show acceptance modal instead of auto-downloading
         if (message.to === deviceId) {
-          handleFileReceived({
-            fileName: message.fileName,
-            fileSize: message.fileSize,
-            fileData: message.fileData,
-            from: message.from
-          });
-          
-          // Show toast notification
           const senderDevice = devices.find(d => d.id === message.from);
           const senderName = senderDevice?.name || message.fromName || message.from.slice(-6);
           
+          setIncomingTransfer({
+            type: 'file',
+            fileName: message.fileName,
+            fileSize: message.fileSize,
+            fileData: message.fileData,
+            from: message.from,
+            fromName: senderName
+          });
+          
+          // Show toast notification about incoming file
           toast({
-            title: "File received",
+            title: "File transfer request",
             description: `${message.fileName} from ${senderName}`,
             duration: 5000,
           });
@@ -388,10 +390,26 @@ export default function Home() {
   }
 
   function handleTransferAccept() {
+    if (incomingTransfer && incomingTransfer.type === 'file') {
+      // Download the accepted file
+      handleFileReceived({
+        fileName: incomingTransfer.fileName,
+        fileSize: incomingTransfer.fileSize,
+        fileData: incomingTransfer.fileData,
+        from: incomingTransfer.from
+      });
+    }
     setIncomingTransfer(null);
   }
 
   function handleTransferDecline() {
+    if (incomingTransfer && incomingTransfer.type === 'file') {
+      toast({
+        title: "File declined",
+        description: `Declined ${incomingTransfer.fileName}`,
+        duration: 3000,
+      });
+    }
     setIncomingTransfer(null);
   }
 

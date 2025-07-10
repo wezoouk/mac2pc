@@ -24,7 +24,7 @@ export function TransferModal({ transfer, onAccept, onDecline }: TransferModalPr
                 <h3 className="text-lg font-semibold text-slate-900">
                   {transfer.type === 'file' ? 'Incoming File' : 'Incoming Message'}
                 </h3>
-                <p className="text-sm text-slate-600">From: {transfer.from}</p>
+                <p className="text-sm text-slate-600">From: {transfer.fromName || transfer.from}</p>
               </div>
             </div>
             <Button variant="ghost" size="sm" onClick={onDecline}>
@@ -38,7 +38,9 @@ export function TransferModal({ transfer, onAccept, onDecline }: TransferModalPr
                 <div>
                   <h4 className="font-medium text-slate-900">{transfer.fileName}</h4>
                   <p className="text-sm text-slate-600">
-                    Size: {Math.round(transfer.fileSize / 1024)} KB
+                    Size: {transfer.fileSize < 1024 ? `${transfer.fileSize} B` : 
+                           transfer.fileSize < 1024 * 1024 ? `${Math.round(transfer.fileSize / 1024)} KB` :
+                           `${(transfer.fileSize / (1024 * 1024)).toFixed(2)} MB`}
                   </p>
                 </div>
                 <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -65,7 +67,7 @@ export function TransferModal({ transfer, onAccept, onDecline }: TransferModalPr
               onClick={onAccept}
               className="flex-1 bg-blue-600 hover:bg-blue-700"
             >
-              Accept
+              {transfer.type === 'file' ? 'Download' : 'Accept'}
             </Button>
           </div>
         </CardContent>
