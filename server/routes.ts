@@ -192,7 +192,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (ws.deviceId) {
         await storage.updateDevice(ws.deviceId, { isOnline: false });
         clients.delete(ws.deviceId);
-        broadcastDeviceUpdate(ws.deviceId, ws.roomId);
+        await broadcastDeviceUpdate(ws.deviceId, ws.roomId);
       }
     });
   });
@@ -255,7 +255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }));
 
     // Broadcast to other devices in the room
-    broadcastDeviceUpdate(data.deviceId, data.roomId);
+    await broadcastDeviceUpdate(data.deviceId, data.roomId);
     
     console.log(`Device ${data.deviceId} joined room ${data.roomId}`);
   }
@@ -271,7 +271,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
     
     // Notify others in the old room
-    broadcastDeviceUpdate(ws.deviceId, oldRoomId);
+    await broadcastDeviceUpdate(ws.deviceId, oldRoomId);
     
     // Send leave confirmation
     ws.send(JSON.stringify({
@@ -340,7 +340,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
 
-    broadcastDeviceUpdate(data.deviceId, ws.roomId);
+    await broadcastDeviceUpdate(data.deviceId, ws.roomId);
   }
 
   async function handleSignaling(ws: WebSocketClient, data: SignalingMessage) {
@@ -379,19 +379,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
-  function broadcastDeviceUpdate(deviceId: string, roomId?: string) {
+  async function broadcastDeviceUpdate(deviceId: string, roomId?: string) {
     const message = JSON.stringify({
       type: 'device-list-update',
       deviceId,
       roomId
     });
 
-    clients.forEach((client, clientId) => {
-      if (client.readyState === WebSocket.OPEN && 
-          (client.roomId === roomId || (!roomId && !client.roomId))) {
-        client.send(message);
-      }
-    });
+    // Send updated room devices to all clients in the same room
+    if (roomId) {
+      const roomDevices = await storage.getDevicesByRoom(roomId);
+      const roomMessage = JSON.stringify({
+        type: 'room-devices',
+        roomId,
+        devices: roomDevices
+      });
+      
+      clients.forEach((client, clientId) => {
+        if (client.readyState === WebSocket.OPEN && client.roomId === roomId) {
+          client.send(roomMessage);
+        }
+      });
+    } else {
+      // For non-room updates, send the regular device-list-update
+      clients.forEach((client, clientId) => {
+        if (client.readyState === WebSocket.OPEN && !client.roomId) {
+          client.send(message);
+        }
+      });
+    }
   }
 
   return httpServer;

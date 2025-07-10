@@ -131,10 +131,15 @@ export default function Home() {
     
     switch (message.type) {
       case 'device-list-update':
-        // Clear current devices first to prevent cache issues
-        setDevices([]);
-        // Refresh device list after a short delay
-        setTimeout(() => fetchDevices(), 100);
+        // Only refresh if we're not in a room (room devices come via 'room-devices' message)
+        if (!currentRoom) {
+          // Clear current devices first to prevent cache issues
+          setDevices([]);
+          // Refresh device list after a short delay
+          setTimeout(() => fetchDevices(), 100);
+        } else {
+          console.log('Ignoring device-list-update while in room - waiting for room-devices message');
+        }
         break;
       case 'room-joined':
         console.log('Successfully joined room:', message.roomId);
@@ -147,9 +152,11 @@ export default function Home() {
         fetchDevices();
         break;
       case 'room-devices':
-        // Update devices from room
+        // Update devices from room - filter out self
         if (!testMode) {
-          setDevices(message.devices);
+          const roomDevices = message.devices.filter((d: Device) => d.id !== deviceId);
+          console.log(`Room devices received: ${message.devices.length} total, showing ${roomDevices.length} after filtering`);
+          setDevices(roomDevices);
         }
         break;
       case 'offer':
