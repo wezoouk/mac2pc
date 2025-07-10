@@ -1,4 +1,4 @@
-import { Check, Download, Clock, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import { Check, Download, Clock, Trash2, ArrowUp, ArrowDown, Flame, AlertTriangle, MessageSquare, File } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -71,6 +71,24 @@ export function TransferHistory({ transfers, currentDeviceId, onClear }: Transfe
     return `${Math.floor(diffInSeconds / 86400)} day ago`;
   }
 
+  function getTimeRemaining(expiresAt: Date | null) {
+    if (!expiresAt) return null;
+    
+    const now = new Date();
+    const remaining = Math.floor((expiresAt.getTime() - now.getTime()) / 1000);
+    
+    if (remaining <= 0) return 'Expired';
+    if (remaining < 60) return `${remaining}s left`;
+    if (remaining < 3600) return `${Math.floor(remaining / 60)}m left`;
+    if (remaining < 86400) return `${Math.floor(remaining / 3600)}h left`;
+    return `${Math.floor(remaining / 86400)}d left`;
+  }
+
+  function isExpired(transfer: Transfer) {
+    if (!transfer.expiresAt) return false;
+    return new Date() >= new Date(transfer.expiresAt);
+  }
+
   if (transfers.length === 0) {
     return (
       <Card className="mt-8">
@@ -120,11 +138,23 @@ export function TransferHistory({ transfers, currentDeviceId, onClear }: Transfe
                       {transfer.fromDeviceId === currentDeviceId ? "Sent" : "Received"}
                     </Badge>
                     {transfer.fileName ? `File: ${transfer.fileName}` : 'Message'}
+                    {transfer.selfDestructTimer && (
+                      <div className="flex items-center text-red-600">
+                        <Flame size={12} className="mr-1" />
+                        <span className="text-xs">Self-destruct</span>
+                      </div>
+                    )}
                   </h4>
                   <p className="text-sm text-slate-600">
                     {transfer.messageText || 
                      `${transfer.fileName} • ${transfer.fileSize ? Math.round(transfer.fileSize / 1024) : 0} KB`}
                   </p>
+                  {transfer.expiresAt && (
+                    <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+                      <Clock size={10} />
+                      {isExpired(transfer) ? 'Expired' : getTimeRemaining(transfer.expiresAt)}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="text-right">

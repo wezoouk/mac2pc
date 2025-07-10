@@ -150,6 +150,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(transfers);
   });
 
+  // Self-destruct cleanup endpoint
+  app.post('/api/transfers/cleanup', async (req, res) => {
+    try {
+      const cleanedCount = await storage.cleanupExpiredTransfers();
+      res.json({ message: `Cleaned up ${cleanedCount} expired transfers`, count: cleanedCount });
+    } catch (error) {
+      console.error('Error cleaning up transfers:', error);
+      res.status(500).json({ error: 'Failed to cleanup transfers' });
+    }
+  });
+
+  // Get active transfers endpoint
+  app.get('/api/transfers/active', async (req, res) => {
+    try {
+      const transfers = await storage.getActiveTransfers();
+      res.json(transfers);
+    } catch (error) {
+      console.error('Error fetching active transfers:', error);
+      res.status(500).json({ error: 'Failed to fetch active transfers' });
+    }
+  });
+
   // Admin API routes
   app.get("/api/admin/settings", async (req, res) => {
     try {
@@ -539,6 +561,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   }
+
+  // Start automatic cleanup scheduler for expired transfers
+  setInterval(async () => {
+    try {
+      const cleanedCount = await storage.cleanupExpiredTransfers();
+      if (cleanedCount > 0) {
+        console.log(`Auto-cleanup: Removed ${cleanedCount} expired transfers`);
+      }
+    } catch (error) {
+      console.error('Auto-cleanup error:', error);
+    }
+  }, 60000); // Run every minute
 
   return httpServer;
 }

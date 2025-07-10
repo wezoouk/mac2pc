@@ -255,11 +255,73 @@ export default function Home() {
   }
 
   function handleFileSend(files: File[]) {
-    // Implementation for file sending
+    if (!selectedDevice || files.length === 0) return;
+
+    files.forEach(async (file) => {
+      try {
+        await sendFile(file, selectedDevice.id);
+        
+        // Add to transfer history
+        const transfer = {
+          id: Date.now(),
+          fromDeviceId: deviceId,
+          toDeviceId: selectedDevice.id,
+          fileName: file.name,
+          fileSize: file.size,
+          messageText: null,
+          status: 'completed' as const,
+          progress: 100,
+          expiresAt: null,
+          isExpired: false,
+          selfDestructTimer: null,
+          createdAt: new Date(),
+        };
+        
+        setTransfers(prev => [transfer, ...prev]);
+      } catch (error) {
+        console.error('File send error:', error);
+      }
+    });
   }
 
-  function handleMessageSend(message: string) {
-    // Implementation for message sending
+  function handleMessageSend(message: string, selfDestructTimer?: number) {
+    if (!selectedDevice) return;
+
+    const messageData = {
+      type: 'message',
+      message,
+      from: deviceName,
+      fromDeviceId: deviceId,
+      timestamp: new Date().toISOString(),
+      selfDestructTimer
+    };
+
+    // Send via WebRTC
+    sendP2PMessage(message, selectedDevice.id);
+    
+    // Calculate expiration time if self-destruct timer is set
+    let expiresAt = null;
+    if (selfDestructTimer && selfDestructTimer > 0) {
+      expiresAt = new Date(Date.now() + selfDestructTimer * 1000);
+    }
+    
+    // Add to transfer history
+    const transfer = {
+      id: Date.now(),
+      fromDeviceId: deviceId,
+      toDeviceId: selectedDevice.id,
+      messageText: message,
+      fileName: null,
+      fileSize: null,
+      status: 'completed' as const,
+      progress: 100,
+      expiresAt,
+      isExpired: false,
+      selfDestructTimer,
+      createdAt: new Date(),
+    };
+    
+    setTransfers(prev => [transfer, ...prev]);
   }
 
   function handleTransferAccept() {
@@ -269,6 +331,19 @@ export default function Home() {
   function handleTransferDecline() {
     setIncomingTransfer(null);
   }
+
+  // Cleanup expired transfers every 30 seconds
+  useEffect(() => {
+    const cleanupExpiredTransfers = () => {
+      setTransfers(prev => prev.filter(transfer => {
+        if (!transfer.expiresAt) return true;
+        return new Date() < new Date(transfer.expiresAt);
+      }));
+    };
+
+    const interval = setInterval(cleanupExpiredTransfers, 30000); // Clean up every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (!currentRoom && !testMode) {

@@ -28,6 +28,9 @@ export const transfers = pgTable("transfers", {
   messageText: text("message_text"),
   status: text("status").notNull(), // 'pending', 'accepted', 'declined', 'completed', 'failed'
   progress: integer("progress").default(0),
+  expiresAt: timestamp("expires_at"), // When the message should self-destruct
+  isExpired: boolean("is_expired").default(false),
+  selfDestructTimer: integer("self_destruct_timer"), // Timer in seconds (e.g., 30, 300, 3600)
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -77,6 +80,7 @@ export const insertTransferSchema = createInsertSchema(transfers).pick({
   fileSize: true,
   messageText: true,
   status: true,
+  selfDestructTimer: true,
 });
 
 export const insertAdPlacementSchema = createInsertSchema(adPlacements).pick({

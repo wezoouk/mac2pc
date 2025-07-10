@@ -37,6 +37,10 @@ export interface IStorage {
   updateTransfer(id: number, updates: Partial<Transfer>): Promise<Transfer | undefined>;
   getTransfersByDevice(deviceId: string): Promise<Transfer[]>;
   
+  // Self-destruct operations
+  cleanupExpiredTransfers(): Promise<number>;
+  getActiveTransfers(): Promise<Transfer[]>;
+  
   // Admin operations
   createAdminSetting(setting: InsertAdminSetting): Promise<AdminSetting>;
   getAdminSetting(key: string): Promise<AdminSetting | undefined>;
@@ -188,6 +192,13 @@ export class MemStorage implements IStorage {
 
   async createTransfer(insertTransfer: InsertTransfer): Promise<Transfer> {
     const id = this.currentTransferId++;
+    
+    // Calculate expiration time if self-destruct timer is set
+    let expiresAt = null;
+    if (insertTransfer.selfDestructTimer && insertTransfer.selfDestructTimer > 0) {
+      expiresAt = new Date(Date.now() + insertTransfer.selfDestructTimer * 1000);
+    }
+    
     const transfer: Transfer = {
       ...insertTransfer,
       id,
@@ -195,6 +206,9 @@ export class MemStorage implements IStorage {
       fileSize: insertTransfer.fileSize || null,
       messageText: insertTransfer.messageText || null,
       progress: 0,
+      expiresAt,
+      isExpired: false,
+      selfDestructTimer: insertTransfer.selfDestructTimer || null,
       createdAt: new Date(),
     };
     this.transfers.set(id, transfer);
@@ -217,6 +231,31 @@ export class MemStorage implements IStorage {
   async getTransfersByDevice(deviceId: string): Promise<Transfer[]> {
     return Array.from(this.transfers.values()).filter(
       (transfer) => transfer.fromDeviceId === deviceId || transfer.toDeviceId === deviceId
+    );
+  }
+
+  // Self-destruct operations
+  async cleanupExpiredTransfers(): Promise<number> {
+    const now = new Date();
+    let cleanedCount = 0;
+    
+    for (const [id, transfer] of this.transfers.entries()) {
+      if (transfer.expiresAt && now >= transfer.expiresAt && !transfer.isExpired) {
+        // Mark as expired
+        await this.updateTransfer(id, { isExpired: true });
+        // Remove from storage after marking as expired
+        this.transfers.delete(id);
+        cleanedCount++;
+      }
+    }
+    
+    return cleanedCount;
+  }
+
+  async getActiveTransfers(): Promise<Transfer[]> {
+    const now = new Date();
+    return Array.from(this.transfers.values()).filter(
+      (transfer) => !transfer.isExpired && (!transfer.expiresAt || now < transfer.expiresAt)
     );
   }
   
