@@ -105,12 +105,12 @@ The application is designed to work seamlessly in both development and productio
 - **Progress tracking**: Real-time progress bars during file transfers with speed calculations and time estimates
 - **Connection status**: Green/red indicator showing device connection status in header
 
-### Privacy-First Network Discovery (FIXED)
-- **Local Network Mode**: Shows empty device list by default (true local network detection requires additional protocols)
+### Privacy-First Network Discovery (IN PROGRESS)
+- **IP-Based Detection**: Implemented network detection based on external IP addresses
+- **Local Network Logic**: First device to connect sets the "local network" baseline IP
 - **Room-Only Visibility**: Devices only appear when explicitly joining the same room name
-- **No Global Discovery**: Fixed issue where all devices globally were visible to everyone
-- **Privacy Protection**: Devices no longer appear to random users without explicit room sharing
-- **Real-time room synchronization**: Device list updates instantly when devices join/leave the same room
+- **Privacy Protection**: Devices from different external IPs are marked as "remote"
+- **Issue**: Currently debugging local device detection - devices may not appear as expected
 
 ### Message and File Transfer System
 - **Messages auto-appear**: Removed accept/decline modal for messages, they now show instantly with toast notifications

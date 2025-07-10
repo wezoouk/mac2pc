@@ -271,24 +271,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   function determineNetworkType(clientIP: string): 'local' | 'remote' {
-    // In a real deployment, devices would only be 'local' if they're on the same private network
-    // For now, since we're running on a cloud server, we'll use a simplified approach:
-    // - Only allow devices that connect through specific testing IPs to be 'local'
-    // - This prevents random mobile devices from appearing as local
-    
-    // Track the first IP that connects - consider it the "local network base"
-    if (!firstLocalIP) {
-      firstLocalIP = clientIP;
-      console.log(`Setting base local IP: ${firstLocalIP}`);
-    }
-    
-    // Consider devices from the same external IP as local (same home/office network)
+    // Extract the main external IP (first IP in the chain)
     const ipArray = Array.isArray(clientIP) ? clientIP[0] : clientIP;
     const cleanIP = typeof ipArray === 'string' ? ipArray.split(',')[0].trim() : String(ipArray);
     
-    console.log(`Checking network type for IP: ${cleanIP} vs base: ${firstLocalIP}`);
+    // Track the first IP that connects - consider it the "local network base"
+    if (!firstLocalIP) {
+      const baseIP = cleanIP.split(',')[0].trim();
+      firstLocalIP = baseIP;
+      console.log(`Setting base local IP: ${firstLocalIP}`);
+    }
     
-    if (cleanIP === firstLocalIP) {
+    const currentIP = cleanIP.split(',')[0].trim();
+    console.log(`Checking network type for IP: ${currentIP} vs base: ${firstLocalIP}`);
+    
+    // Consider devices from the same external IP as local (same home/office network)
+    if (currentIP === firstLocalIP) {
       return 'local';
     }
     
