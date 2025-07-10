@@ -105,12 +105,12 @@ The application is designed to work seamlessly in both development and productio
 - **Progress tracking**: Real-time progress bars during file transfers with speed calculations and time estimates
 - **Connection status**: Green/red indicator showing device connection status in header
 
-### Cross-Network Connectivity Discovery
-- **Global device discovery**: All devices connecting to the Replit server appear in everyone's device list automatically
-- **No room required**: Devices can see each other across different networks (home WiFi, mobile data, office) without joining rooms
-- **Internet-wide access**: Any device that can reach the Replit server URL will discover all other connected devices
-- **Real-time synchronization**: Device list updates instantly when devices connect/disconnect from anywhere
-- **Remote device badges**: Added "Remote" badges to distinguish between local and cross-network devices
+### Privacy-First Network Discovery (FIXED)
+- **Local Network Mode**: Shows empty device list by default (true local network detection requires additional protocols)
+- **Room-Only Visibility**: Devices only appear when explicitly joining the same room name
+- **No Global Discovery**: Fixed issue where all devices globally were visible to everyone
+- **Privacy Protection**: Devices no longer appear to random users without explicit room sharing
+- **Real-time room synchronization**: Device list updates instantly when devices join/leave the same room
 
 ### Message and File Transfer System
 - **Messages auto-appear**: Removed accept/decline modal for messages, they now show instantly with toast notifications
