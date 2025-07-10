@@ -33,6 +33,7 @@ export default function Home() {
   const [incomingTransfer, setIncomingTransfer] = useState<any>(null);
   const [activeTransfer, setActiveTransfer] = useState<any>(null);
   const [transferQueue, setTransferQueue] = useState<File[]>([]);
+  const [fileQueue, setFileQueue] = useState<any[]>([]);
   const [testMode, setTestMode] = useState(false);
   const { toast } = useToast();
 
@@ -155,18 +156,21 @@ export default function Home() {
         });
         
         if (message.to === deviceId) {
-          console.log('File is for this device, showing acceptance modal');
+          console.log('File is for this device, adding to queue');
           const senderDevice = devices.find(d => d.id === message.from);
           const senderName = senderDevice?.name || message.fromName || message.from.slice(-6);
           
-          setIncomingTransfer({
+          const fileTransfer = {
             type: 'file',
             fileName: message.fileName,
             fileSize: message.fileSize,
             fileData: message.fileData,
             from: message.from,
             fromName: senderName
-          });
+          };
+          
+          // Add to queue
+          setFileQueue(prev => [...prev, fileTransfer]);
           
           // Show toast notification about incoming file
           toast({
@@ -438,6 +442,16 @@ export default function Home() {
     }
     setIncomingTransfer(null);
   }
+
+  // Process file queue - show next file when no modal is active
+  useEffect(() => {
+    if (!incomingTransfer && fileQueue.length > 0) {
+      console.log(`Processing file queue: ${fileQueue.length} files remaining`);
+      const nextFile = fileQueue[0];
+      setIncomingTransfer(nextFile);
+      setFileQueue(prev => prev.slice(1)); // Remove processed file from queue
+    }
+  }, [incomingTransfer, fileQueue]);
 
   // Cleanup expired transfers every 30 seconds
   useEffect(() => {
