@@ -67,7 +67,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get('/api/devices/network/:network', async (req, res) => {
-    const devices = await storage.getDevicesByNetwork(req.params.network);
+    const requestedNetwork = req.params.network;
+    
+    // If requesting local network devices, verify the requesting IP is actually local
+    if (requestedNetwork === 'local') {
+      const clientIP = (req.headers['x-forwarded-for'] || req.socket.remoteAddress) as string;
+      const requestingDeviceNetworkType = determineNetworkType(clientIP);
+      
+      console.log(`API request for local devices from IP: ${clientIP}, determined as: ${requestingDeviceNetworkType}`);
+      
+      // Only return local devices if the requesting device is also local
+      if (requestingDeviceNetworkType !== 'local') {
+        console.log('Remote device requested local devices - returning empty array');
+        return res.json([]);
+      }
+    }
+    
+    const devices = await storage.getDevicesByNetwork(requestedNetwork);
     res.json(devices);
   });
 
