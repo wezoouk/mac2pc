@@ -432,6 +432,32 @@ export default function Home() {
     setIncomingTransfer(null);
   }
 
+  function handleTransferAcceptAll() {
+    // Download current file and all files in queue
+    const allFiles = [incomingTransfer, ...fileQueue];
+    
+    allFiles.forEach(file => {
+      if (file && file.type === 'file') {
+        handleFileReceived({
+          fileName: file.fileName,
+          fileSize: file.fileSize,
+          fileData: file.fileData,
+          from: file.from
+        });
+      }
+    });
+    
+    // Clear both current transfer and queue
+    setIncomingTransfer(null);
+    setFileQueue([]);
+    
+    toast({
+      title: "All files downloaded",
+      description: `Downloaded ${allFiles.length} files successfully`,
+      duration: 3000,
+    });
+  }
+
   function handleTransferDecline() {
     if (incomingTransfer && incomingTransfer.type === 'file') {
       toast({
@@ -732,6 +758,8 @@ export default function Home() {
         transfer={incomingTransfer}
         onAccept={handleTransferAccept}
         onDecline={handleTransferDecline}
+        onAcceptAll={handleTransferAcceptAll}
+        queueCount={fileQueue.length}
       />
       
       <ProgressModal

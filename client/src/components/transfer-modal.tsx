@@ -6,9 +6,11 @@ interface TransferModalProps {
   transfer: any;
   onAccept: () => void;
   onDecline: () => void;
+  onAcceptAll?: () => void;
+  queueCount?: number;
 }
 
-export function TransferModal({ transfer, onAccept, onDecline }: TransferModalProps) {
+export function TransferModal({ transfer, onAccept, onDecline, onAcceptAll, queueCount = 0 }: TransferModalProps) {
   if (!transfer) return null;
 
   return (
@@ -25,6 +27,11 @@ export function TransferModal({ transfer, onAccept, onDecline }: TransferModalPr
                   {transfer.type === 'file' ? 'Incoming File' : 'Incoming Message'}
                 </h3>
                 <p className="text-sm text-slate-600">From: {transfer.fromName || transfer.from}</p>
+                {queueCount > 0 && (
+                  <p className="text-xs text-amber-600 font-medium">
+                    {queueCount + 1} files in queue
+                  </p>
+                )}
               </div>
             </div>
             <Button variant="ghost" size="sm" onClick={onDecline}>
@@ -70,6 +77,17 @@ export function TransferModal({ transfer, onAccept, onDecline }: TransferModalPr
               {transfer.type === 'file' ? 'Download' : 'Accept'}
             </Button>
           </div>
+          
+          {queueCount > 0 && onAcceptAll && transfer.type === 'file' && (
+            <div className="mt-3 pt-3 border-t border-slate-200">
+              <Button 
+                onClick={onAcceptAll}
+                className="w-full bg-emerald-600 hover:bg-emerald-700"
+              >
+                Download All ({queueCount + 1} files)
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
