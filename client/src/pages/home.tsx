@@ -31,6 +31,7 @@ export default function Home() {
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [incomingTransfer, setIncomingTransfer] = useState<any>(null);
   const [activeTransfer, setActiveTransfer] = useState<any>(null);
+  const [transferQueue, setTransferQueue] = useState<File[]>([]);
   const [testMode, setTestMode] = useState(false);
 
   // Test devices for demo purposes
@@ -147,6 +148,9 @@ export default function Home() {
       case 'room-joined':
         console.log('Successfully joined room:', message.roomId);
         setCurrentRoom(message.roomId);
+        // Clear form fields on successful join
+        setRoomName("");
+        setRoomPassword("");
         // Don't fetch devices here - room devices will come via 'room-devices' message
         break;
       case 'room-left':
@@ -180,6 +184,12 @@ export default function Home() {
         errorNotification.addEventListener('click', removeErrorNotification);
         document.body.appendChild(errorNotification);
         setTimeout(removeErrorNotification, 5000);
+        
+        // Reset room state since join failed
+        setCurrentRoom(null);
+        setRoomName("");
+        setRoomPassword("");
+        setDevices([]);
         break;
       case 'room-devices':
         // Update devices from room - filter out self
@@ -423,14 +433,10 @@ export default function Home() {
         }
       });
       
-      setCurrentRoom(roomName.trim());
-      console.log(`Joining room: ${roomName.trim()}`);
+      // Don't set currentRoom here - wait for room-joined confirmation
+      console.log(`Attempting to join room: ${roomName.trim()}`);
       
-      // Clear form fields
-      setRoomName("");
-      setRoomPassword("");
-      
-      // Clear devices immediately - room devices will come via WebSocket
+      // Clear devices immediately - room devices will come via WebSocket if successful
       setDevices([]);
     } catch (error) {
       console.error('Failed to join room:', error);
@@ -464,72 +470,112 @@ export default function Home() {
   function handleFileSend(files: File[]) {
     if (!selectedDevice) return;
     
-    files.forEach(async file => {
-      const transferId = nanoid();
-      
-      // Show progress modal immediately
-      setActiveTransfer({
-        id: transferId,
-        fileName: file.name,
-        fileSize: file.size,
-        progress: 0,
-        type: 'send',
-        deviceName: selectedDevice.name,
-        speed: '0 KB/s',
-        timeRemaining: 'calculating...'
-      });
-      
-      // Convert file to base64 for simple transfer
-      const reader = new FileReader();
-      reader.onload = () => {
-        // Simulate progress during transfer
-        let progress = 0;
-        const progressInterval = setInterval(() => {
-          progress += Math.random() * 15 + 5; // Random progress increments
-          if (progress >= 100) {
-            progress = 100;
-            clearInterval(progressInterval);
-            
-            // Send actual transfer request
-            const transferRequest = {
-              id: transferId,
-              fileName: file.name,
-              fileSize: file.size,
-              fileData: reader.result, // Base64 data
-              from: deviceId,
-              to: selectedDevice.id,
-              type: 'file'
-            };
-            
-            sendMessage({
-              type: 'transfer-request',
-              from: deviceId,
-              to: selectedDevice.id,
-              data: transferRequest
-            });
-            
-            // Clear progress modal after a short delay
-            setTimeout(() => setActiveTransfer(null), 1000);
-          } else {
-            // Update progress with realistic speed calculation
-            const speed = Math.floor(file.size * (progress/100) / 1024 / ((Date.now() - transferStart) / 1000));
-            const remainingBytes = file.size * ((100 - progress) / 100);
-            const timeRemaining = speed > 0 ? Math.ceil(remainingBytes / 1024 / speed) : 0;
-            
-            setActiveTransfer(prev => prev ? {
-              ...prev,
-              progress: Math.floor(progress),
-              speed: `${speed} KB/s`,
-              timeRemaining: timeRemaining > 0 ? `${timeRemaining}s` : 'almost done...'
-            } : null);
-          }
-        }, 200); // Update every 200ms
-        
-        const transferStart = Date.now();
-      };
-      reader.readAsDataURL(file);
-    });
+    // Add files to queue
+    setTransferQueue(prevQueue => [...prevQueue, ...files]);
+    
+    // Process queue if no transfer is active
+    if (!activeTransfer) {
+      processTransferQueue();
+    }
   }
+  
+  function processTransferQueue() {
+    if (transferQueue.length === 0 || activeTransfer) return;
+    
+    const nextFile = transferQueue[0];
+    const transferId = nanoid();
+    
+    // Remove file from queue
+    setTransferQueue(prev => prev.slice(1));
+    
+    // Show progress modal immediately
+    setActiveTransfer({
+      id: transferId,
+      fileName: nextFile.name,
+      fileSize: nextFile.size,
+      progress: 0,
+      type: 'send',
+      deviceName: selectedDevice?.name || 'Unknown Device',
+      speed: '0 KB/s',
+      timeRemaining: 'calculating...',
+      queueRemaining: transferQueue.length - 1
+    });
+    
+    // Convert file to base64 for simple transfer
+    const reader = new FileReader();
+    reader.onload = () => {
+      // Simulate progress during transfer
+      let progress = 0;
+      const transferStart = Date.now();
+      const progressInterval = setInterval(() => {
+        progress += Math.random() * 15 + 5; // Random progress increments
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(progressInterval);
+          
+          // Send actual transfer request
+          const transferRequest = {
+            id: transferId,
+            fileName: nextFile.name,
+            fileSize: nextFile.size,
+            fileData: reader.result, // Base64 data
+            from: deviceId,
+            to: selectedDevice?.id,
+            type: 'file'
+          };
+          
+          sendMessage({
+            type: 'transfer-request',
+            from: deviceId,
+            to: selectedDevice?.id,
+            data: transferRequest
+          });
+          
+          // Add to transfer history
+          const newTransfer = {
+            id: Date.now(),
+            fromDeviceId: deviceId,
+            toDeviceId: selectedDevice?.id || '',
+            fileName: nextFile.name,
+            fileSize: nextFile.size,
+            status: 'completed' as const,
+            progress: 100,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          };
+          setTransfers(prev => [newTransfer, ...prev]);
+          
+          // Clear progress modal and process next file
+          setTimeout(() => {
+            setActiveTransfer(null);
+            // Process next file in queue
+            setTimeout(() => processTransferQueue(), 200);
+          }, 1000);
+        } else {
+          // Update progress with realistic speed calculation
+          const elapsed = (Date.now() - transferStart) / 1000;
+          const speed = Math.floor(nextFile.size * (progress/100) / 1024 / elapsed) || 0;
+          const remainingBytes = nextFile.size * ((100 - progress) / 100);
+          const timeRemaining = speed > 0 ? Math.ceil(remainingBytes / 1024 / speed) : 0;
+          
+          setActiveTransfer(prev => prev ? {
+            ...prev,
+            progress: Math.floor(progress),
+            speed: `${speed} KB/s`,
+            timeRemaining: timeRemaining > 0 ? `${timeRemaining}s` : 'almost done...'
+          } : null);
+        }
+      }, 200); // Update every 200ms
+    };
+    reader.readAsDataURL(nextFile);
+  }
+  
+  // Auto-process queue when it changes
+  useEffect(() => {
+    if (transferQueue.length > 0 && !activeTransfer) {
+      processTransferQueue();
+    }
+  }, [transferQueue, activeTransfer]);
 
   function handleMessageSend(message: string) {
     if (!selectedDevice) return;

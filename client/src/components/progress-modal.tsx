@@ -44,6 +44,12 @@ export function ProgressModal({ transfer, onCancel }: ProgressModalProps) {
             <div className="text-xs text-slate-500 text-center">
               Estimated time remaining: {transfer.timeRemaining || 'calculating...'}
             </div>
+            
+            {transfer.queueRemaining > 0 && (
+              <div className="text-xs text-blue-600 text-center mt-2">
+                {transfer.queueRemaining} files in queue
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
