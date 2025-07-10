@@ -131,8 +131,10 @@ export default function Home() {
     
     switch (message.type) {
       case 'device-list-update':
-        // Refresh device list
-        fetchDevices();
+        // Clear current devices first to prevent cache issues
+        setDevices([]);
+        // Refresh device list after a short delay
+        setTimeout(() => fetchDevices(), 100);
         break;
       case 'room-joined':
         console.log('Successfully joined room:', message.roomId);
@@ -340,15 +342,29 @@ export default function Home() {
       let response;
       if (currentRoom) {
         // If in a room, only show devices in that room
-        response = await fetch(`/api/devices/room/${currentRoom}`);
+        console.log(`Fetching devices for room: ${currentRoom}`);
+        response = await fetch(`/api/devices/room/${currentRoom}`, {
+          cache: 'no-cache'
+        });
       } else {
         // If not in a room, show devices marked as 'local' network only
-        response = await fetch('/api/devices/network/local');
+        console.log('Fetching local network devices');
+        response = await fetch(`/api/devices/network/local?t=${Date.now()}`, {
+          cache: 'no-cache',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        });
       }
       const allDevices = await response.json();
-      setDevices(allDevices.filter((d: Device) => d.id !== deviceId));
+      const filteredDevices = allDevices.filter((d: Device) => d.id !== deviceId);
+      console.log(`Fetched ${allDevices.length} devices, showing ${filteredDevices.length} after filtering`);
+      setDevices(filteredDevices);
     } catch (error) {
       console.error('Failed to fetch devices:', error);
+      // Clear devices on error
+      setDevices([]);
     }
   }
 
