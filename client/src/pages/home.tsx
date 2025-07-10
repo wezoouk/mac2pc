@@ -485,10 +485,7 @@ export default function Home() {
     const nextFile = transferQueue[0];
     const transferId = nanoid();
     
-    // Remove file from queue
-    setTransferQueue(prev => prev.slice(1));
-    
-    // Show progress modal immediately
+    // Show progress modal immediately (keep file in queue until completion)
     setActiveTransfer({
       id: transferId,
       fileName: nextFile.name,
@@ -545,10 +542,11 @@ export default function Home() {
           };
           setTransfers(prev => [newTransfer, ...prev]);
           
-          // Clear progress modal and process next file
+          // Remove completed file from queue and clear modal
           setTimeout(() => {
+            setTransferQueue(prev => prev.slice(1)); // Remove the completed file
             setActiveTransfer(null);
-            // Process next file in queue
+            // Process next file in queue after clearing
             setTimeout(() => processTransferQueue(), 200);
           }, 1000);
         } else {
@@ -570,10 +568,11 @@ export default function Home() {
     reader.readAsDataURL(nextFile);
   }
   
-  // Auto-process queue when it changes
+  // Auto-process queue when it changes (but only if no transfer is active)
   useEffect(() => {
     if (transferQueue.length > 0 && !activeTransfer) {
-      processTransferQueue();
+      const timer = setTimeout(() => processTransferQueue(), 100);
+      return () => clearTimeout(timer);
     }
   }, [transferQueue, activeTransfer]);
 
