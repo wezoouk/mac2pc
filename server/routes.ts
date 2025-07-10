@@ -177,27 +177,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
   async function handleJoinRoom(ws: WebSocketClient, data: SignalingMessage) {
     if (!data.deviceId || !data.roomId) return;
 
+    // Leave current room if any
+    if (ws.roomId && ws.roomId !== data.roomId) {
+      await handleLeaveRoom(ws, { ...data, roomId: ws.roomId });
+    }
+
     ws.deviceId = data.deviceId;
     ws.roomId = data.roomId;
     clients.set(data.deviceId, ws);
 
-    // Update device with room info
-    await storage.updateDevice(data.deviceId, { 
-      roomId: data.roomId, 
-      isOnline: true 
-    });
+    // Create or get room
+    let room = await storage.getRoomByName(data.roomId);
+    if (!room) {
+      room = await storage.createRoom({
+        id: nanoid(),
+        name: data.roomId
+      });
+    }
+
+    // Create or update device
+    let device = await storage.getDevice(data.deviceId);
+    if (device) {
+      await storage.updateDevice(data.deviceId, { 
+        roomId: data.roomId, 
+        isOnline: true,
+        lastSeen: new Date()
+      });
+    } else if (data.data) {
+      await storage.createDevice({
+        ...data.data,
+        id: data.deviceId,
+        roomId: data.roomId,
+        isOnline: true,
+        lastSeen: new Date()
+      });
+    }
+
+    // Send current room devices to the new joiner
+    const roomDevices = await storage.getDevicesByRoom(data.roomId);
+    ws.send(JSON.stringify({
+      type: 'room-devices',
+      roomId: data.roomId,
+      devices: roomDevices.filter(d => d.id !== data.deviceId)
+    }));
+
+    // Send welcome message
+    ws.send(JSON.stringify({
+      type: 'room-joined',
+      roomId: data.roomId,
+      deviceId: data.deviceId,
+      message: `Joined room "${data.roomId}" successfully`
+    }));
 
     // Broadcast to other devices in the room
     broadcastDeviceUpdate(data.deviceId, data.roomId);
+    
+    console.log(`Device ${data.deviceId} joined room ${data.roomId}`);
   }
 
   async function handleLeaveRoom(ws: WebSocketClient, data: SignalingMessage) {
     if (!ws.deviceId) return;
 
+    const oldRoomId = ws.roomId;
+    
     await storage.updateDevice(ws.deviceId, { roomId: null });
-    broadcastDeviceUpdate(ws.deviceId, ws.roomId);
+    
+    // Notify others in the old room
+    broadcastDeviceUpdate(ws.deviceId, oldRoomId);
+    
+    // Send leave confirmation
+    ws.send(JSON.stringify({
+      type: 'room-left',
+      roomId: oldRoomId,
+      deviceId: ws.deviceId,
+      message: `Left room "${oldRoomId}" successfully`
+    }));
     
     ws.roomId = undefined;
+    
+    console.log(`Device ${ws.deviceId} left room ${oldRoomId}`);
   }
 
   async function handleDeviceUpdate(ws: WebSocketClient, data: SignalingMessage) {
@@ -206,9 +264,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ws.deviceId = data.deviceId;
     clients.set(data.deviceId, ws);
 
-    // Update device info
+    // Create or update device
     if (data.data) {
-      await storage.updateDevice(data.deviceId, data.data);
+      let device = await storage.getDevice(data.deviceId);
+      if (device) {
+        await storage.updateDevice(data.deviceId, {
+          ...data.data,
+          isOnline: true,
+          lastSeen: new Date()
+        });
+      } else {
+        await storage.createDevice({
+          ...data.data,
+          id: data.deviceId,
+          isOnline: true,
+          lastSeen: new Date()
+        });
+      }
     }
 
     broadcastDeviceUpdate(data.deviceId, ws.roomId);

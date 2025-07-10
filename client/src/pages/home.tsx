@@ -128,10 +128,28 @@ export default function Home() {
   }
 
   function handleWebSocketMessage(message: any) {
+    console.log('Received WebSocket message:', message);
+    
     switch (message.type) {
       case 'device-list-update':
         // Refresh device list
         fetchDevices();
+        break;
+      case 'room-joined':
+        console.log('Successfully joined room:', message.roomId);
+        setCurrentRoom(message.roomId);
+        fetchDevices();
+        break;
+      case 'room-left':
+        console.log('Successfully left room:', message.roomId);
+        setCurrentRoom(null);
+        fetchDevices();
+        break;
+      case 'room-devices':
+        // Update devices from room
+        if (!testMode) {
+          setDevices(message.devices);
+        }
         break;
       case 'offer':
         handleOffer(message.data, message.from);
@@ -154,6 +172,8 @@ export default function Home() {
       case 'transfer-progress':
         handleTransferProgress(message.data);
         break;
+      default:
+        console.log('Unknown message type:', message.type);
     }
   }
 
@@ -259,21 +279,20 @@ export default function Home() {
     if (!roomName.trim()) return;
     
     try {
-      // Create or join room
-      const response = await fetch('/api/rooms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: nanoid(), name: roomName })
-      });
-      
-      setCurrentRoom(roomName);
+      // Send join room message via WebSocket
       sendMessage({
         type: 'join-room',
+        roomId: roomName.trim(),
         deviceId,
-        roomId: roomName
+        data: {
+          id: deviceId,
+          name: deviceName,
+          type: getDeviceType(),
+          network: 'remote',
+        }
       });
       
-      fetchDevices();
+      console.log(`Attempting to join room: ${roomName.trim()}`);
     } catch (error) {
       console.error('Failed to join room:', error);
     }
@@ -284,11 +303,11 @@ export default function Home() {
     
     sendMessage({
       type: 'leave-room',
-      deviceId
+      deviceId,
+      roomId: currentRoom
     });
     
-    setCurrentRoom(null);
-    fetchDevices();
+    console.log(`Leaving room: ${currentRoom}`);
   }
 
   function handleDeviceSelect(device: Device) {
@@ -472,6 +491,17 @@ export default function Home() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-slate-600">Current Room</span>
                     <Badge variant="secondary">{currentRoom}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-600">Share Code</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigator.clipboard.writeText(currentRoom)}
+                      className="text-xs"
+                    >
+                      Copy Room Name
+                    </Button>
                   </div>
                   <Button onClick={leaveRoom} variant="outline" className="w-full">
                     Leave Room
