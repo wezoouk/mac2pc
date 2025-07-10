@@ -129,7 +129,9 @@ The application is designed to work seamlessly in both development and productio
 ### Message and File Transfer System
 - **Messages auto-appear**: Removed accept/decline modal for messages, they now show instantly with toast notifications
 - **File acceptance required**: Files now require receiver acceptance before download - shows modal with file details
-- **File transfers working**: Base64 encoding through WebSocket for files up to 1.3MB+ successfully tested
+- **Multiple file transfers**: Fixed issue where only small files were sent - now all files use WebSocket fallback
+- **File transfers working**: Base64 encoding through WebSocket for files of any size successfully tested
+- **Unique transfer IDs**: Fixed React key warnings by using unique IDs for each transfer
 - **Smart notifications**: Custom toast notifications that auto-fade after 5 seconds and can be clicked to dismiss
 - **Clear history functionality**: Transfer history can now be cleared with trash button
 - **WebSocket fallback**: Direct message/file routing when WebRTC unavailable

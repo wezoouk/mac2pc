@@ -188,7 +188,7 @@ export default function Home() {
     a.click();
     
     const newTransfer = {
-      id: Date.now(),
+      id: Date.now() + Math.random(), // Make ID unique
       fromDeviceId: transfer.from,
       toDeviceId: deviceId,
       fileName: transfer.fileName,
@@ -206,7 +206,7 @@ export default function Home() {
     const senderName = senderDevice?.name || from.slice(-6);
     
     const transfer = {
-      id: Date.now(),
+      id: Date.now() + Math.random(), // Make ID unique
       fromDeviceId: from,
       toDeviceId: deviceId,
       messageText: message,
@@ -318,47 +318,41 @@ export default function Home() {
       try {
         console.log(`Processing file: ${file.name}, size: ${file.size} bytes`);
         
-        // For small files (< 1MB), send via WebSocket as base64
-        if (file.size < 1024 * 1024) {
-          console.log('Sending file via WebSocket (small file)');
-          const reader = new FileReader();
-          
-          reader.onload = () => {
-            console.log('File read successfully, sending via WebSocket');
-            const fileData = {
-              type: 'direct-file',
-              to: selectedDevice.id,
-              from: deviceId,
-              fromName: deviceName,
-              fileName: file.name,
-              fileSize: file.size,
-              fileType: file.type,
-              fileData: reader.result as string,
-              timestamp: new Date().toISOString()
-            };
-            
-            console.log('Sending file data:', { 
-              fileName: fileData.fileName, 
-              fileSize: fileData.fileSize, 
-              to: fileData.to 
-            });
-            sendMessage(fileData);
-          };
-          
-          reader.onerror = () => {
-            console.error('FileReader error:', reader.error);
-          };
-          
-          reader.readAsDataURL(file);
-        } else {
-          // For larger files, try WebRTC
-          console.log('Sending file via WebRTC (large file)');
-          await sendFile(file, selectedDevice.id);
-        }
+        // Send all files via WebSocket as base64 (fallback for now since WebRTC isn't ready)
+        console.log('Sending file via WebSocket');
+        const reader = new FileReader();
         
-        // Add to transfer history
+        reader.onload = () => {
+          console.log('File read successfully, sending via WebSocket');
+          const fileData = {
+            type: 'direct-file',
+            to: selectedDevice.id,
+            from: deviceId,
+            fromName: deviceName,
+            fileName: file.name,
+            fileSize: file.size,
+            fileType: file.type,
+            fileData: reader.result as string,
+            timestamp: new Date().toISOString()
+          };
+          
+          console.log('Sending file data:', { 
+            fileName: fileData.fileName, 
+            fileSize: fileData.fileSize, 
+            to: fileData.to 
+          });
+          sendMessage(fileData);
+        };
+        
+        reader.onerror = () => {
+          console.error('FileReader error:', reader.error);
+        };
+        
+        reader.readAsDataURL(file);
+        
+        // Add to transfer history with unique ID
         const transfer = {
-          id: Date.now(),
+          id: Date.now() + Math.random(), // Make ID unique for multiple files
           fromDeviceId: deviceId,
           toDeviceId: selectedDevice.id,
           fileName: file.name,
@@ -404,7 +398,7 @@ export default function Home() {
     
     // Add to transfer history
     const transfer = {
-      id: Date.now(),
+      id: Date.now() + Math.random(), // Make ID unique
       fromDeviceId: deviceId,
       toDeviceId: selectedDevice.id,
       messageText: message,
