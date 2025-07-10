@@ -52,7 +52,7 @@ export default function Home() {
   const [messageText, setMessageText] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [testMode, setTestMode] = useState(false);
+  const [testMode, setTestMode] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -86,6 +86,14 @@ export default function Home() {
     onMessage: handleWebSocketMessage,
     onConnect: () => {
       console.log("WebSocket connected successfully");
+      // Register this device when connected
+      sendMessage({
+        type: 'device-update',
+        deviceId,
+        deviceName,
+        deviceType: getDeviceType(),
+        timestamp: new Date().toISOString()
+      });
     },
     onDisconnect: () => {
       console.log("WebSocket disconnected");
@@ -460,7 +468,9 @@ export default function Home() {
   }
 
   useEffect(() => {
-    if (!currentRoom && !testMode) {
+    if (testMode) {
+      setDevices(testDevices);
+    } else if (!currentRoom) {
       fetchDevices();
     }
   }, [currentRoom, testMode]);
