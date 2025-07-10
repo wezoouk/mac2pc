@@ -199,7 +199,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     let device = await storage.getDevice(data.deviceId);
     if (device) {
       await storage.updateDevice(data.deviceId, { 
-        roomId: data.roomId, 
+        roomId: data.roomId,
+        network: 'remote', // Mark as remote when joining a room
         isOnline: true,
         lastSeen: new Date()
       });
@@ -208,6 +209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...data.data,
         id: data.deviceId,
         roomId: data.roomId,
+        network: 'remote', // Always remote when in a room
         isOnline: true,
         lastSeen: new Date()
       });
@@ -240,7 +242,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     const oldRoomId = ws.roomId;
     
-    await storage.updateDevice(ws.deviceId, { roomId: null });
+    await storage.updateDevice(ws.deviceId, { 
+      roomId: null,
+      network: 'local' // Return to local network when leaving room
+    });
     
     // Notify others in the old room
     broadcastDeviceUpdate(ws.deviceId, oldRoomId);
@@ -277,6 +282,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.createDevice({
           ...data.data,
           id: data.deviceId,
+          network: 'local', // Default to local network
           isOnline: true,
           lastSeen: new Date()
         });

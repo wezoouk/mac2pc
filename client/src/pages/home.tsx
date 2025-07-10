@@ -337,7 +337,14 @@ export default function Home() {
     }
     
     try {
-      const response = await fetch('/api/devices');
+      let response;
+      if (currentRoom) {
+        // If in a room, only show devices in that room
+        response = await fetch(`/api/devices/room/${currentRoom}`);
+      } else {
+        // If not in a room, show devices on the same local network
+        response = await fetch('/api/devices/network/local');
+      }
       const allDevices = await response.json();
       setDevices(allDevices.filter((d: Device) => d.id !== deviceId));
     } catch (error) {
@@ -362,7 +369,11 @@ export default function Home() {
         }
       });
       
-      console.log(`Attempting to join room: ${roomName.trim()}`);
+      setCurrentRoom(roomName.trim());
+      console.log(`Joining room: ${roomName.trim()}`);
+      
+      // Fetch devices in the room
+      setTimeout(() => fetchDevices(), 1000);
     } catch (error) {
       console.error('Failed to join room:', error);
     }
@@ -378,6 +389,10 @@ export default function Home() {
     });
     
     console.log(`Leaving room: ${currentRoom}`);
+    setCurrentRoom(null);
+    
+    // Fetch local network devices
+    setTimeout(() => fetchDevices(), 1000);
   }
 
   function handleDeviceSelect(device: Device) {
@@ -513,7 +528,7 @@ export default function Home() {
     if (isConnected) {
       fetchDevices();
     }
-  }, [isConnected]);
+  }, [isConnected, currentRoom]); // Refetch when room changes
 
   useEffect(() => {
     console.log('Test mode state:', testMode);
@@ -559,6 +574,33 @@ export default function Home() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Network Mode Notice */}
+        {currentRoom ? (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <Wifi className="text-blue-600" size={20} />
+              <div>
+                <h3 className="font-medium text-blue-800">Room Mode Active</h3>
+                <p className="text-sm text-blue-700">
+                  Connected to room "{currentRoom}". Only showing devices in this room. Leave room to see local network devices.
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <Laptop className="text-green-600" size={20} />
+              <div>
+                <h3 className="font-medium text-green-800">Local Network Mode</h3>
+                <p className="text-sm text-green-700">
+                  Showing devices on your local network. Join a room to connect with remote devices.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Demo Mode Notice */}
         {testMode === true && (
           <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
