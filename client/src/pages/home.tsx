@@ -18,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, Share2, Laptop, Wifi, Signal, Lock, Radar, TestTube, DollarSign, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { nanoid } from "nanoid";
 import { generateRandomDeviceName } from '@/lib/utils';
+import { NotificationManager } from '@/lib/notifications';
 import type { Device, Transfer } from "@shared/schema";
 
 export default function Home() {
@@ -36,6 +37,11 @@ export default function Home() {
   const [fileQueue, setFileQueue] = useState<any[]>([]);
   const [testMode, setTestMode] = useState(false);
   const { toast } = useToast();
+
+  // Initialize notification system
+  useEffect(() => {
+    NotificationManager.initialize();
+  }, []);
 
   // Test devices for demo purposes
   const testDevices: Device[] = [
@@ -132,11 +138,14 @@ export default function Home() {
       case 'direct-message':
         // Handle received message
         if (message.to === deviceId) {
-          handleMessageReceived(message.message, message.from);
+          handleMessageReceived(message.message, message.from, message.selfDestructTimer, message.expiresAt);
           
-          // Show toast notification
+          // Show toast notification with sound
           const senderDevice = devices.find(d => d.id === message.from);
           const senderName = senderDevice?.name || message.fromName || message.from.slice(-6);
+          
+          // Play sound notification
+          NotificationManager.notifyMessage(senderName, message.message, message.selfDestructTimer);
           
           toast({
             title: "Message received",
@@ -172,6 +181,9 @@ export default function Home() {
           // Add to queue
           setFileQueue(prev => [...prev, fileTransfer]);
           
+          // Play sound notification for file
+          NotificationManager.notifyFile(senderName, message.fileName, message.fileSize);
+          
           // Show toast notification about incoming file
           toast({
             title: "File transfer request",
@@ -205,17 +217,25 @@ export default function Home() {
     setTransfers(prev => [newTransfer, ...prev]);
   }
 
-  function handleMessageReceived(message: string, from: string) {
+  function handleMessageReceived(message: string, from: string, selfDestructTimer?: number, expiresAt?: string) {
     const senderDevice = devices.find(d => d.id === from);
     const senderName = senderDevice?.name || from.slice(-6);
+    
+    // Parse expiration date if provided
+    const expiration = expiresAt ? new Date(expiresAt) : null;
     
     const transfer = {
       id: Date.now() + Math.random(), // Make ID unique
       fromDeviceId: from,
       toDeviceId: deviceId,
       messageText: message,
+      fileName: null,
+      fileSize: null,
       status: 'completed' as const,
       progress: 100,
+      expiresAt: expiration,
+      isExpired: false,
+      selfDestructTimer: selfDestructTimer || null,
       createdAt: new Date(),
       updatedAt: new Date()
     };
