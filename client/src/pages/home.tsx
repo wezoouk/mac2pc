@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Share2, Laptop, Wifi, Signal, Lock, Radar } from "lucide-react";
+import { Settings, Share2, Laptop, Wifi, Signal, Lock, Radar, TestTube } from "lucide-react";
 import { nanoid } from "nanoid";
 import type { Device, Transfer } from "@shared/schema";
 
@@ -29,6 +29,55 @@ export default function Home() {
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [incomingTransfer, setIncomingTransfer] = useState<any>(null);
   const [activeTransfer, setActiveTransfer] = useState<any>(null);
+  const [testMode, setTestMode] = useState(false);
+
+  // Test devices for demo purposes
+  const testDevices: Device[] = [
+    {
+      id: "test-device-1",
+      name: "Sarah's iPhone",
+      type: "mobile",
+      network: "local",
+      isOnline: true,
+      lastSeen: new Date(),
+      roomId: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: "test-device-2", 
+      name: "John's MacBook",
+      type: "desktop",
+      network: "local",
+      isOnline: true,
+      lastSeen: new Date(),
+      roomId: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: "test-device-3",
+      name: "Office iPad",
+      type: "tablet", 
+      network: "local",
+      isOnline: true,
+      lastSeen: new Date(),
+      roomId: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: "test-device-4",
+      name: "Remote PC",
+      type: "desktop",
+      network: "remote",
+      isOnline: true,
+      lastSeen: new Date(),
+      roomId: "demo-room",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  ];
 
   const { isConnected, sendMessage } = useWebSocket({
     onMessage: handleWebSocketMessage,
@@ -144,7 +193,59 @@ export default function Home() {
     setActiveTransfer(data);
   }
 
+  function toggleTestMode() {
+    setTestMode(!testMode);
+    if (!testMode) {
+      // Enable test mode - show mock devices and transfers
+      setDevices(testDevices);
+      setTransfers([
+        {
+          id: 1,
+          fromDeviceId: "test-device-1",
+          toDeviceId: deviceId,
+          fileName: "vacation-photos.zip",
+          fileSize: 15728640,
+          status: "completed",
+          progress: 100,
+          createdAt: new Date(Date.now() - 3600000),
+          updatedAt: new Date(Date.now() - 3600000)
+        },
+        {
+          id: 2,
+          fromDeviceId: deviceId,
+          toDeviceId: "test-device-2",
+          fileName: "presentation.pdf",
+          fileSize: 2097152,
+          status: "completed",
+          progress: 100,
+          createdAt: new Date(Date.now() - 1800000),
+          updatedAt: new Date(Date.now() - 1800000)
+        },
+        {
+          id: 3,
+          fromDeviceId: "test-device-3",
+          toDeviceId: deviceId,
+          fileName: "document.docx",
+          fileSize: 524288,
+          status: "failed",
+          progress: 45,
+          createdAt: new Date(Date.now() - 900000),
+          updatedAt: new Date(Date.now() - 900000)
+        }
+      ]);
+    } else {
+      // Disable test mode - fetch real devices
+      fetchDevices();
+      setTransfers([]);
+    }
+  }
+
   async function fetchDevices() {
+    if (testMode) {
+      setDevices(testDevices);
+      return;
+    }
+    
     try {
       const response = await fetch('/api/devices');
       const allDevices = await response.json();
@@ -289,6 +390,15 @@ export default function Home() {
                   {isConnected ? 'Connected' : 'Disconnected'}
                 </span>
               </div>
+              <Button
+                variant={testMode ? "default" : "outline"}
+                size="sm"
+                onClick={toggleTestMode}
+                className="flex items-center space-x-1"
+              >
+                <TestTube size={14} />
+                <span className="hidden sm:inline">{testMode ? 'Exit Demo' : 'Demo Mode'}</span>
+              </Button>
               <Button variant="ghost" size="sm">
                 <Settings size={16} />
               </Button>
@@ -298,6 +408,20 @@ export default function Home() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Demo Mode Notice */}
+        {testMode && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <TestTube className="text-amber-600" size={20} />
+              <div>
+                <h3 className="font-medium text-amber-800">Demo Mode Active</h3>
+                <p className="text-sm text-amber-700">
+                  Showing sample devices and transfers for testing the radar view. Click "Exit Demo" to return to normal mode.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Status Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Device Info Card */}
