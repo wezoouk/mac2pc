@@ -78,11 +78,11 @@ export class MemStorage implements IStorage {
     // Create default ad placements
     const defaultPlacements = [
       {
-        name: "Banner Ad",
-        position: "between-content",
+        name: "Top Banner",
+        position: "top-banner",
         adClient: "ca-pub-0000000000000000",
-        adSlot: "0000000000",
-        adFormat: "auto",
+        adSlot: "1111111111",
+        adFormat: "banner",
         isEnabled: true,
         priority: 1,
       },
@@ -90,19 +90,28 @@ export class MemStorage implements IStorage {
         name: "Sidebar Ad",
         position: "sidebar",
         adClient: "ca-pub-0000000000000000", 
-        adSlot: "1111111111",
+        adSlot: "2222222222",
         adFormat: "rectangle",
-        isEnabled: false,
+        isEnabled: true,
         priority: 2,
+      },
+      {
+        name: "Main Banner",
+        position: "between-content",
+        adClient: "ca-pub-0000000000000000",
+        adSlot: "3333333333",
+        adFormat: "auto",
+        isEnabled: true,
+        priority: 3,
       },
       {
         name: "Footer Ad",
         position: "footer",
         adClient: "ca-pub-0000000000000000",
-        adSlot: "2222222222", 
+        adSlot: "4444444444", 
         adFormat: "banner",
-        isEnabled: false,
-        priority: 3,
+        isEnabled: true,
+        priority: 4,
       }
     ];
     
