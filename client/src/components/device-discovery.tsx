@@ -1,4 +1,5 @@
 import { RefreshCw, Smartphone, Monitor, Tablet } from "lucide-react";
+import { getDeviceIcon } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +18,7 @@ export function DeviceDiscovery({
   onDeviceSelect,
   onRefresh
 }: DeviceDiscoveryProps) {
-  function getDeviceIcon(type: string) {
+  function getDeviceIconComponent(type: string) {
     switch (type) {
       case 'mobile':
         return <Smartphone className="text-blue-600" size={20} />;
@@ -68,10 +69,13 @@ export function DeviceDiscovery({
             >
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  {getDeviceIcon(device.type)}
+                  <div className="text-lg">{getDeviceIcon(device.name).icon}</div>
                 </div>
                 <div>
-                  <h4 className="font-medium text-slate-900">{device.name}</h4>
+                  <h4 className="font-medium text-slate-900 flex items-center gap-2">
+                    <span className="text-xs opacity-75">{getDeviceIcon(device.name).description}</span>
+                    {device.name}
+                  </h4>
                   <p className="text-sm text-slate-600">{getDeviceTypeLabel(device)}</p>
                 </div>
               </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Smartphone, Monitor, Tablet, Wifi, Signal } from "lucide-react";
+import { getDeviceIcon } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,7 +35,7 @@ export function RadarView({
     return () => clearTimeout(timer);
   }, [devices]);
 
-  function getDeviceIcon(type: string, isCenter = false) {
+  function getDeviceIconComponent(type: string, isCenter = false) {
     const size = isCenter ? 32 : 24;
     const iconProps = { size, className: "text-white" };
     
@@ -101,7 +102,7 @@ export function RadarView({
                 <div className={`w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg border-4 border-white center-device ${
                   isConnected ? 'ring-4 ring-emerald-200' : ''
                 }`}>
-                  {getDeviceIcon(currentDeviceType, true)}
+                  <div className="text-2xl">{getDeviceIcon(currentDeviceName).icon}</div>
                 </div>
                 <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-center">
                   <div className="text-xs font-semibold text-slate-900 whitespace-nowrap">You</div>
@@ -132,7 +133,7 @@ export function RadarView({
                     <div className={`w-12 h-12 rounded-full ${getDeviceColor(device)} flex items-center justify-center shadow-lg border-2 border-white transition-all duration-200 ${
                       isSelected ? 'ring-4 ring-blue-200 shadow-xl' : 'hover:shadow-xl'
                     }`}>
-                      {getDeviceIcon(device.type)}
+                      <div className="text-xl">{getDeviceIcon(device.name).icon}</div>
                     </div>
                     
                     {/* Device Status Indicator */}
@@ -142,7 +143,8 @@ export function RadarView({
                     
                     {/* Device Info */}
                     <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 text-center">
-                      <div className="text-xs font-medium text-slate-900 whitespace-nowrap max-w-20 truncate">
+                      <div className="text-xs font-medium text-slate-900 whitespace-nowrap max-w-20 truncate flex items-center justify-center gap-1">
+                        <span className="text-xs">{getDeviceIcon(device.name).icon}</span>
                         {device.name}
                       </div>
                       <Badge 

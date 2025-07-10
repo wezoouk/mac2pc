@@ -1,4 +1,4 @@
-import { Check, Download, Clock, Trash2 } from "lucide-react";
+import { Check, Download, Clock, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,18 +6,45 @@ import type { Transfer } from "@shared/schema";
 
 interface TransferHistoryProps {
   transfers: Transfer[];
+  currentDeviceId: string;
   onClear?: () => void;
 }
 
-export function TransferHistory({ transfers, onClear }: TransferHistoryProps) {
+export function TransferHistory({ transfers, currentDeviceId, onClear }: TransferHistoryProps) {
   function getTransferIcon(transfer: Transfer) {
+    const isSent = transfer.fromDeviceId === currentDeviceId;
+    
     switch (transfer.status) {
       case 'completed':
-        return <Check className="text-emerald-600" size={20} />;
+        return (
+          <div className="flex items-center gap-1">
+            {isSent ? 
+              <ArrowUp className="text-blue-600" size={16} /> : 
+              <ArrowDown className="text-green-600" size={16} />
+            }
+            <Check className="text-emerald-600" size={20} />
+          </div>
+        );
       case 'pending':
-        return <Clock className="text-amber-600" size={20} />;
+        return (
+          <div className="flex items-center gap-1">
+            {isSent ? 
+              <ArrowUp className="text-blue-600" size={16} /> : 
+              <ArrowDown className="text-green-600" size={16} />
+            }
+            <Clock className="text-amber-600" size={20} />
+          </div>
+        );
       default:
-        return <Download className="text-blue-600" size={20} />;
+        return (
+          <div className="flex items-center gap-1">
+            {isSent ? 
+              <ArrowUp className="text-blue-600" size={16} /> : 
+              <ArrowDown className="text-green-600" size={16} />
+            }
+            <Download className="text-blue-600" size={20} />
+          </div>
+        );
     }
   }
 
@@ -88,7 +115,10 @@ export function TransferHistory({ transfers, onClear }: TransferHistoryProps) {
                   {getTransferIcon(transfer)}
                 </div>
                 <div>
-                  <h4 className="font-medium text-slate-900">
+                  <h4 className="font-medium text-slate-900 flex items-center gap-2">
+                    <Badge variant={transfer.fromDeviceId === currentDeviceId ? "default" : "secondary"} className="text-xs">
+                      {transfer.fromDeviceId === currentDeviceId ? "Sent" : "Received"}
+                    </Badge>
                     {transfer.fileName ? `File: ${transfer.fileName}` : 'Message'}
                   </h4>
                   <p className="text-sm text-slate-600">

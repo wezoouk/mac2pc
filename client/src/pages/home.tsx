@@ -388,25 +388,67 @@ export default function Home() {
     if (!selectedDevice) return;
     
     files.forEach(async file => {
+      const transferId = nanoid();
+      
+      // Show progress modal immediately
+      setActiveTransfer({
+        id: transferId,
+        fileName: file.name,
+        fileSize: file.size,
+        progress: 0,
+        type: 'send',
+        deviceName: selectedDevice.name,
+        speed: '0 KB/s',
+        timeRemaining: 'calculating...'
+      });
+      
       // Convert file to base64 for simple transfer
       const reader = new FileReader();
       reader.onload = () => {
-        const transferRequest = {
-          id: nanoid(),
-          fileName: file.name,
-          fileSize: file.size,
-          fileData: reader.result, // Base64 data
-          from: deviceId,
-          to: selectedDevice.id,
-          type: 'file'
-        };
+        // Simulate progress during transfer
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+          progress += Math.random() * 15 + 5; // Random progress increments
+          if (progress >= 100) {
+            progress = 100;
+            clearInterval(progressInterval);
+            
+            // Send actual transfer request
+            const transferRequest = {
+              id: transferId,
+              fileName: file.name,
+              fileSize: file.size,
+              fileData: reader.result, // Base64 data
+              from: deviceId,
+              to: selectedDevice.id,
+              type: 'file'
+            };
+            
+            sendMessage({
+              type: 'transfer-request',
+              from: deviceId,
+              to: selectedDevice.id,
+              data: transferRequest
+            });
+            
+            // Clear progress modal after a short delay
+            setTimeout(() => setActiveTransfer(null), 1000);
+          } else {
+            // Update progress with realistic speed calculation
+            const speed = Math.floor(file.size * (progress/100) / 1024 / ((Date.now() - transferStart) / 1000));
+            const remainingBytes = file.size * ((100 - progress) / 100);
+            const timeRemaining = speed > 0 ? Math.ceil(remainingBytes / 1024 / speed) : 0;
+            
+            setActiveTransfer(prev => prev ? {
+              ...prev,
+              progress: Math.floor(progress),
+              speed: `${speed} KB/s`,
+              timeRemaining: timeRemaining > 0 ? `${timeRemaining}s` : 'almost done...'
+            } : null);
+          }
+        }, 200); // Update every 200ms
         
-        sendMessage({
-          type: 'transfer-request',
-          from: deviceId,
-          to: selectedDevice.id,
-          data: transferRequest
-        });
+        const transferStart = Date.now();
       };
       reader.readAsDataURL(file);
     });
@@ -697,7 +739,7 @@ export default function Home() {
         </Tabs>
 
         {/* Transfer History */}
-        <TransferHistory transfers={transfers} onClear={() => setTransfers([])} />
+        <TransferHistory transfers={transfers} currentDeviceId={deviceId} onClear={() => setTransfers([])} />
       </main>
 
       {/* Modals */}

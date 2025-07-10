@@ -68,3 +68,66 @@ export function generateRandomDeviceName(): string {
     return `${animal}-${device}`;
   }
 }
+
+export function getDeviceIcon(deviceName: string): {
+  icon: string;
+  color: string;
+  description: string;
+} {
+  const name = deviceName.toLowerCase();
+  
+  // Apple devices
+  if (name.includes('mac') || name.includes('imac') || name.includes('macbook')) {
+    return { icon: '🍎', color: 'text-slate-600', description: 'Apple Mac' };
+  }
+  
+  // iPhone/iOS
+  if (name.includes('iphone') || name.includes('ios')) {
+    return { icon: '📱', color: 'text-blue-600', description: 'iPhone' };
+  }
+  
+  // iPad
+  if (name.includes('ipad') || name.includes('tablet')) {
+    return { icon: '📱', color: 'text-purple-600', description: 'Tablet' };
+  }
+  
+  // Windows devices
+  if (name.includes('pc') || name.includes('windows') || name.includes('dell') || 
+      name.includes('hp') || name.includes('asus') || name.includes('lenovo') ||
+      name.includes('thinkpad')) {
+    return { icon: '💻', color: 'text-blue-500', description: 'Windows PC' };
+  }
+  
+  // Surface
+  if (name.includes('surface')) {
+    return { icon: '💻', color: 'text-blue-400', description: 'Microsoft Surface' };
+  }
+  
+  // Chromebook
+  if (name.includes('chromebook') || name.includes('chrome')) {
+    return { icon: '💻', color: 'text-green-500', description: 'Chromebook' };
+  }
+  
+  // Workstation
+  if (name.includes('workstation')) {
+    return { icon: '🖥️', color: 'text-gray-700', description: 'Workstation' };
+  }
+  
+  // Desktop
+  if (name.includes('desktop')) {
+    return { icon: '🖥️', color: 'text-gray-600', description: 'Desktop' };
+  }
+  
+  // Laptop (generic)
+  if (name.includes('laptop')) {
+    return { icon: '💻', color: 'text-gray-500', description: 'Laptop' };
+  }
+  
+  // Phone (generic)
+  if (name.includes('phone')) {
+    return { icon: '📱', color: 'text-green-600', description: 'Phone' };
+  }
+  
+  // Default for unknown types
+  return { icon: '💻', color: 'text-gray-500', description: 'Device' };
+}
