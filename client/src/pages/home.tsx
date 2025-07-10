@@ -162,15 +162,26 @@ export default function Home() {
         break;
       case 'transfer-request':
         console.log('Received transfer request:', message.data);
-        setIncomingTransfer(message.data);
+        if (message.data.type === 'message') {
+          // Auto-accept messages
+          handleMessageReceived(message.data.messageText, message.data.from);
+          // Send acceptance response
+          sendMessage({
+            type: 'transfer-response',
+            from: deviceId,
+            to: message.data.from,
+            data: { ...message.data, accepted: true }
+          });
+        } else {
+          // Show modal for file transfers
+          setIncomingTransfer(message.data);
+        }
         break;
       case 'transfer-response':
         console.log('Received transfer response:', message.data);
         if (message.data.accepted) {
-          // For messages, process immediately
-          if (message.data.type === 'message') {
-            handleMessageReceived(message.data.messageText, message.data.from);
-          } else if (message.data.type === 'file') {
+          // Only handle file transfers here (messages are auto-accepted)
+          if (message.data.type === 'file') {
             // Handle file transfer completion
             handleFileReceived(message.data);
           }
@@ -228,7 +239,33 @@ export default function Home() {
     
     // Show notification
     console.log(`Message from ${senderName}: ${message}`);
-    alert(`Message from ${senderName}: ${message}`);
+    
+    // Create a custom notification toast
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-blue-600 text-white px-4 py-3 rounded-lg shadow-lg z-50 max-w-sm cursor-pointer transition-all duration-300';
+    notification.innerHTML = `
+      <div class="flex items-center space-x-3">
+        <div class="w-2 h-2 bg-blue-300 rounded-full animate-pulse"></div>
+        <div>
+          <div class="font-medium">Message from ${senderName}</div>
+          <div class="text-sm opacity-90">${message}</div>
+        </div>
+      </div>
+    `;
+    
+    const removeNotification = () => {
+      notification.style.opacity = '0';
+      notification.style.transform = 'translateX(100%)';
+      setTimeout(() => notification.remove(), 300);
+    };
+    
+    // Click to dismiss
+    notification.addEventListener('click', removeNotification);
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(removeNotification, 5000);
   }
 
   function handleTransferProgress(progress: any) {
