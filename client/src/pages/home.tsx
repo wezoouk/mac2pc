@@ -526,7 +526,20 @@ export default function Home() {
 
   useEffect(() => {
     if (isConnected) {
-      fetchDevices();
+      // Register device immediately when connected
+      sendMessage({
+        type: 'device-update',
+        deviceId,
+        data: {
+          id: deviceId,
+          name: deviceName,
+          type: getDeviceType(),
+          network: 'local',
+        }
+      });
+      
+      // Fetch devices after a short delay to ensure registration completes
+      setTimeout(() => fetchDevices(), 500);
     }
   }, [isConnected, currentRoom]); // Refetch when room changes
 

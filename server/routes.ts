@@ -275,12 +275,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (data.data) {
       let device = await storage.getDevice(data.deviceId);
       if (device) {
+        console.log(`Updating existing device ${data.deviceId} with network: ${data.data.network}`);
         await storage.updateDevice(data.deviceId, {
           ...data.data,
           isOnline: true,
           lastSeen: new Date()
         });
       } else {
+        console.log(`Creating new device ${data.deviceId} with network: local`);
         await storage.createDevice({
           ...data.data,
           id: data.deviceId,
