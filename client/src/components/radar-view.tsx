@@ -68,38 +68,30 @@ export function RadarView({
     return 'bg-blue-500'; // Local devices
   }
 
-  const radarSize = 400; // Larger radar size for hero
+  const radarSize = 320; // Fixed radar size
   const centerX = radarSize / 2;
   const centerY = radarSize / 2;
 
   return (
-    <div className="w-full">
-      <div className="p-6">
-        <div className="text-center mb-8">
-          <p className="text-slate-600 text-lg">
-            {devices.length === 0 ? 'Scanning for devices...' : 
-             devices.length === 1 ? '1 device in range' : 
-             `${devices.length} devices in range`}
+    <Card className="w-full max-w-md mx-auto">
+      <CardContent className="p-6">
+        <div className="text-center mb-4">
+          <h3 className="text-lg font-semibold text-slate-900">Device Radar</h3>
+          <p className="text-sm text-slate-600">
+            {devices.length} device{devices.length !== 1 ? 's' : ''} nearby
           </p>
-          {selectedDevice && (
-            <div className="mt-2 inline-flex items-center space-x-2 px-4 py-2 bg-blue-50 rounded-full border border-blue-200">
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium text-blue-700">Connected to {selectedDevice.name}</span>
-            </div>
-          )}
         </div>
 
         <div className="relative flex items-center justify-center">
           {/* Radar Container */}
           <div 
-            className="relative bg-gradient-to-br from-slate-50/80 to-slate-100/80 rounded-full border-4 border-white/40 shadow-2xl backdrop-blur-sm"
+            className="relative bg-slate-50 rounded-full border-2 border-slate-200"
             style={{ width: radarSize, height: radarSize }}
           >
             {/* Radar Rings */}
-            <div className="radar-ring absolute inset-4 rounded-full border-2 border-gradient-to-r from-purple-300/50 to-blue-300/50 opacity-60" />
-            <div className="radar-ring absolute inset-8 rounded-full border-2 border-gradient-to-r from-blue-300/40 to-indigo-300/40 opacity-40" />
-            <div className="radar-ring absolute inset-12 rounded-full border-2 border-gradient-to-r from-indigo-300/30 to-purple-300/30 opacity-30" />
-            <div className="radar-ring absolute inset-16 rounded-full border border-slate-200/20 opacity-20" />
+            <div className="radar-ring absolute inset-4 rounded-full border border-slate-200 opacity-50" />
+            <div className="radar-ring absolute inset-8 rounded-full border border-slate-200 opacity-30" />
+            <div className="radar-ring absolute inset-12 rounded-full border border-slate-200 opacity-20" />
             
             {/* Center Device (Current User) */}
             <div 
@@ -107,10 +99,10 @@ export function RadarView({
               style={{ left: centerX, top: centerY }}
             >
               <div className="relative">
-                <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-xl border-4 border-white center-device ${
+                <div className={`w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg border-4 border-white center-device ${
                   isConnected ? 'ring-4 ring-emerald-200' : ''
                 }`}>
-                  <div className="text-3xl">{getDeviceIcon(currentDeviceName).icon}</div>
+                  <div className="text-2xl">{getDeviceIcon(currentDeviceName).icon}</div>
                 </div>
                 <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-center">
                   <div className="text-xs font-semibold text-slate-900 whitespace-nowrap">You</div>
@@ -138,8 +130,8 @@ export function RadarView({
                   onClick={() => onDeviceSelect(device)}
                 >
                   <div className="relative">
-                    <div className={`w-14 h-14 rounded-full ${getDeviceColor(device)} flex items-center justify-center shadow-xl border-3 border-white transition-all duration-200 ${
-                      isSelected ? 'ring-4 ring-blue-200 shadow-2xl scale-110' : 'hover:shadow-2xl hover:scale-105'
+                    <div className={`w-12 h-12 rounded-full ${getDeviceColor(device)} flex items-center justify-center shadow-lg border-2 border-white transition-all duration-200 ${
+                      isSelected ? 'ring-4 ring-blue-200 shadow-xl' : 'hover:shadow-xl'
                     }`}>
                       <div className="text-xl">{getDeviceIcon(device.name).icon}</div>
                     </div>
@@ -234,7 +226,7 @@ export function RadarView({
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

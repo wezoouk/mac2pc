@@ -61,10 +61,9 @@ export function TransferHistory({ transfers, currentDeviceId, onClear }: Transfe
     }
   }
 
-  function formatTimeAgo(date: Date | string) {
+  function formatTimeAgo(date: Date) {
     const now = new Date();
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    const diffInSeconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
     
     if (diffInSeconds < 60) return 'Just now';
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} min ago`;
@@ -72,12 +71,11 @@ export function TransferHistory({ transfers, currentDeviceId, onClear }: Transfe
     return `${Math.floor(diffInSeconds / 86400)} day ago`;
   }
 
-  function getTimeRemaining(expiresAt: Date | string | null) {
+  function getTimeRemaining(expiresAt: Date | null) {
     if (!expiresAt) return null;
     
     const now = new Date();
-    const expiresAtObj = typeof expiresAt === 'string' ? new Date(expiresAt) : expiresAt;
-    const remaining = Math.floor((expiresAtObj.getTime() - now.getTime()) / 1000);
+    const remaining = Math.floor((expiresAt.getTime() - now.getTime()) / 1000);
     
     if (remaining <= 0) return 'Expired';
     if (remaining < 60) return `${remaining}s left`;
