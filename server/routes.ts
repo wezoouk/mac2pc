@@ -8,6 +8,7 @@ import { nanoid } from "nanoid";
 interface WebSocketClient extends WebSocket {
   deviceId?: string;
   roomId?: string;
+  clientIP?: string;
 }
 
 interface SignalingMessage {
@@ -25,6 +26,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // WebSocket server for signaling
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
   const clients = new Map<string, WebSocketClient>();
+  
+  // Track the first IP that connects to establish the "local network" baseline
+  let firstLocalIP: string | null = null;
 
   // Device management API
   app.post('/api/devices', async (req, res) => {
@@ -131,6 +135,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   wss.on('connection', (ws: WebSocketClient, req) => {
     // Get client IP for network detection
     const clientIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress;
+    ws.clientIP = clientIP;
     console.log('New WebSocket connection from:', clientIP);
 
     ws.on('message', async (message: Buffer) => {
@@ -265,6 +270,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log(`Device ${ws.deviceId} left room ${oldRoomId}`);
   }
 
+  function determineNetworkType(clientIP: string): 'local' | 'remote' {
+    // In a real deployment, devices would only be 'local' if they're on the same private network
+    // For now, since we're running on a cloud server, we'll use a simplified approach:
+    // - Only allow devices that connect through specific testing IPs to be 'local'
+    // - This prevents random mobile devices from appearing as local
+    
+    // Track the first IP that connects - consider it the "local network base"
+    if (!firstLocalIP) {
+      firstLocalIP = clientIP;
+      console.log(`Setting base local IP: ${firstLocalIP}`);
+    }
+    
+    // Consider devices from the same external IP as local (same home/office network)
+    const ipArray = Array.isArray(clientIP) ? clientIP[0] : clientIP;
+    const cleanIP = typeof ipArray === 'string' ? ipArray.split(',')[0].trim() : String(ipArray);
+    
+    console.log(`Checking network type for IP: ${cleanIP} vs base: ${firstLocalIP}`);
+    
+    if (cleanIP === firstLocalIP) {
+      return 'local';
+    }
+    
+    return 'remote';
+  }
+
   async function handleDeviceUpdate(ws: WebSocketClient, data: SignalingMessage) {
     if (!data.deviceId) return;
 
@@ -273,20 +303,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     // Create or update device
     if (data.data) {
+      const networkType = determineNetworkType(ws.clientIP || '');
+      
       let device = await storage.getDevice(data.deviceId);
       if (device) {
-        console.log(`Updating existing device ${data.deviceId} with network: ${data.data.network}`);
+        console.log(`Updating existing device ${data.deviceId} with network: ${networkType}`);
         await storage.updateDevice(data.deviceId, {
           ...data.data,
+          network: networkType,
           isOnline: true,
           lastSeen: new Date()
         });
       } else {
-        console.log(`Creating new device ${data.deviceId} with network: local`);
+        console.log(`Creating new device ${data.deviceId} with network: ${networkType} (IP: ${ws.clientIP})`);
         await storage.createDevice({
           ...data.data,
           id: data.deviceId,
-          network: 'local', // Mark browser connections as local for testing
+          network: networkType,
           isOnline: true,
           lastSeen: new Date()
         });
