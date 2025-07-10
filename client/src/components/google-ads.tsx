@@ -57,9 +57,21 @@ export function GoogleAds({
 
   return (
     <div className={`google-ads-container ${className}`}>
+      {/* Demo placeholder for Google Ads - replace with real ads in production */}
+      <div className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 text-center">
+        <div className="text-blue-600 font-semibold mb-2">📢 Advertisement</div>
+        <div className="text-sm text-blue-700 mb-3">
+          ShareLink Pro - Upgrade for unlimited transfers, custom branding, and priority support
+        </div>
+        <div className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+          Learn More
+        </div>
+      </div>
+      
+      {/* Hidden real AdSense code for production */}
       <ins
-        className="adsbygoogle"
-        style={{ display: 'block' }}
+        className="adsbygoogle hidden"
+        style={{ display: 'none' }}
         data-ad-client={adClient}
         data-ad-slot={adSlot}
         data-ad-format={adFormat}
