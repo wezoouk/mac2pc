@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Share2, Laptop, Wifi, Signal, Lock, Radar, TestTube, DollarSign, Eye, EyeOff } from "lucide-react";
+import { Settings, Share2, Laptop, Wifi, Signal, Lock, Radar, TestTube, DollarSign, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { nanoid } from "nanoid";
 import { generateRandomDeviceName } from '@/lib/utils';
 import type { Device, Transfer } from "@shared/schema";
@@ -685,6 +685,15 @@ export default function Home() {
               >
                 <TestTube size={14} />
                 <span className="hidden sm:inline">{testMode ? 'Exit Demo' : 'Demo Mode'}</span>
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => fetchDevices()}
+                className="flex items-center space-x-1"
+              >
+                <RefreshCw size={14} />
+                <span className="hidden sm:inline">Refresh</span>
               </Button>
               <Button variant="ghost" size="sm">
                 <Settings size={16} />
