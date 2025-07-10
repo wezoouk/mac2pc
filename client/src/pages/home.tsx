@@ -146,7 +146,16 @@ export default function Home() {
         break;
       case 'direct-file':
         // Handle received file - show acceptance modal instead of auto-downloading
+        console.log('Client received direct-file message:', {
+          fileName: message.fileName,
+          fileSize: message.fileSize,
+          from: message.from,
+          to: message.to,
+          targetDeviceId: deviceId
+        });
+        
         if (message.to === deviceId) {
+          console.log('File is for this device, showing acceptance modal');
           const senderDevice = devices.find(d => d.id === message.from);
           const senderName = senderDevice?.name || message.fromName || message.from.slice(-6);
           
@@ -165,6 +174,8 @@ export default function Home() {
             description: `${message.fileName} from ${senderName}`,
             duration: 5000,
           });
+        } else {
+          console.log('File not for this device, ignoring');
         }
         break;
     }
@@ -296,14 +307,24 @@ export default function Home() {
   }
 
   function handleFileSend(files: File[]) {
-    if (!selectedDevice || files.length === 0) return;
+    if (!selectedDevice || files.length === 0) {
+      console.error('No device selected or no files provided');
+      return;
+    }
+
+    console.log(`Sending ${files.length} files to device:`, selectedDevice.name);
 
     files.forEach(async (file) => {
       try {
+        console.log(`Processing file: ${file.name}, size: ${file.size} bytes`);
+        
         // For small files (< 1MB), send via WebSocket as base64
         if (file.size < 1024 * 1024) {
+          console.log('Sending file via WebSocket (small file)');
           const reader = new FileReader();
+          
           reader.onload = () => {
+            console.log('File read successfully, sending via WebSocket');
             const fileData = {
               type: 'direct-file',
               to: selectedDevice.id,
@@ -316,11 +337,22 @@ export default function Home() {
               timestamp: new Date().toISOString()
             };
             
+            console.log('Sending file data:', { 
+              fileName: fileData.fileName, 
+              fileSize: fileData.fileSize, 
+              to: fileData.to 
+            });
             sendMessage(fileData);
           };
+          
+          reader.onerror = () => {
+            console.error('FileReader error:', reader.error);
+          };
+          
           reader.readAsDataURL(file);
         } else {
           // For larger files, try WebRTC
+          console.log('Sending file via WebRTC (large file)');
           await sendFile(file, selectedDevice.id);
         }
         

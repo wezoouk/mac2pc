@@ -547,11 +547,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   async function handleDirectFile(ws: WebSocketClient, data: any) {
-    if (!data.to || !data.from) return;
+    console.log('Server received file transfer:', {
+      fileName: data.fileName,
+      fileSize: data.fileSize,
+      from: data.from,
+      to: data.to,
+      fromName: data.fromName
+    });
+
+    if (!data.to || !data.from) {
+      console.log('Missing to or from in file transfer');
+      return;
+    }
 
     const targetWs = clients.get(data.to);
     if (targetWs && targetWs.readyState === WebSocket.OPEN) {
+      console.log('Forwarding file to target device:', data.to);
       targetWs.send(JSON.stringify(data));
+    } else {
+      console.log('Target device not found or disconnected:', data.to);
     }
   }
 
