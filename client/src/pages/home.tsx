@@ -396,7 +396,7 @@ export default function Home() {
       } else {
         // If not in a room, show devices marked as 'local' network only
         console.log('Fetching local network devices');
-        response = await fetch(`/api/devices/network/local?t=${Date.now()}`, {
+        response = await fetch(`/api/devices/network/local?excludeId=${deviceId}&t=${Date.now()}`, {
           cache: 'no-cache',
           headers: {
             'Cache-Control': 'no-cache',

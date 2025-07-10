@@ -85,7 +85,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     const devices = await storage.getDevicesByNetwork(requestedNetwork);
-    res.json(devices);
+    // Filter out the requesting device itself (remove self from list)
+    const filteredDevices = devices.filter(device => device.id !== req.query.excludeId);
+    res.json(filteredDevices);
   });
 
   app.get('/api/devices', async (req, res) => {
@@ -304,6 +306,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Extract the main external IP (first IP in the chain)
     const ipArray = Array.isArray(clientIP) ? clientIP[0] : clientIP;
     const cleanIP = typeof ipArray === 'string' ? ipArray.split(',')[0].trim() : String(ipArray);
+    
+    // Always treat localhost/127.0.0.1 as local for development
+    if (cleanIP === '127.0.0.1' || cleanIP === '::1' || cleanIP === 'localhost') {
+      return 'local';
+    }
     
     // Track the first IP that connects - consider it the "local network base"
     if (!firstLocalIP) {
