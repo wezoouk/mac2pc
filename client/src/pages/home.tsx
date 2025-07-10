@@ -161,12 +161,21 @@ export default function Home() {
         handleIceCandidate(message.data, message.from);
         break;
       case 'transfer-request':
+        console.log('Received transfer request:', message.data);
         setIncomingTransfer(message.data);
         break;
       case 'transfer-response':
+        console.log('Received transfer response:', message.data);
         if (message.data.accepted) {
-          // Start file transfer
-          startFileTransfer(message.data);
+          // For messages, process immediately
+          if (message.data.type === 'message') {
+            handleMessageReceived(message.data.messageText, message.data.from);
+          } else {
+            // Start file transfer
+            startFileTransfer(message.data);
+          }
+        } else {
+          console.log('Transfer was declined');
         }
         break;
       case 'transfer-progress':
@@ -188,17 +197,26 @@ export default function Home() {
   }
 
   function handleMessageReceived(message: string, from: string) {
+    // Find the device name
+    const senderDevice = devices.find(d => d.id === from);
+    const senderName = senderDevice?.name || from.slice(-6);
+    
     // Add to transfer history
     const transfer = {
       id: Date.now(),
       fromDeviceId: from,
       toDeviceId: deviceId,
       messageText: message,
-      status: 'completed',
+      status: 'completed' as const,
       progress: 100,
       createdAt: new Date(),
+      updatedAt: new Date()
     };
     setTransfers(prev => [transfer, ...prev]);
+    
+    // Show notification
+    console.log(`Message from ${senderName}: ${message}`);
+    alert(`Message from ${senderName}: ${message}`);
   }
 
   function handleTransferProgress(progress: any) {
@@ -206,6 +224,7 @@ export default function Home() {
   }
 
   function handleTransferRequest(request: any) {
+    console.log('Incoming transfer request:', request);
     setIncomingTransfer(request);
   }
 
@@ -360,6 +379,13 @@ export default function Home() {
 
   function handleTransferAccept() {
     if (!incomingTransfer) return;
+    
+    console.log('Accepting transfer:', incomingTransfer);
+    
+    // For messages, just accept immediately
+    if (incomingTransfer.type === 'message') {
+      handleMessageReceived(incomingTransfer.messageText, incomingTransfer.from);
+    }
     
     sendMessage({
       type: 'transfer-response',
