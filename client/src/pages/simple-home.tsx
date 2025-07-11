@@ -352,56 +352,101 @@ export default function SimpleHome() {
                 </p>
               </div>
 
-              {/* Drop zone */}
-              <div
-                className={`border-2 border-dashed rounded-lg p-12 transition-colors ${
-                  isDragging
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-300 hover:border-gray-400'
-                }`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              >
-                <div className="text-center space-y-4">
-                  <Upload className="w-12 h-12 text-gray-400 mx-auto" />
-                  <div>
-                    <p className="text-lg font-medium text-gray-900">
-                      Drop files here to send
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Files will be sent to the first available device
-                    </p>
+              {/* Radar View */}
+              <div className="relative">
+                <div
+                  className={`relative w-80 h-80 mx-auto rounded-full border-4 transition-all duration-300 ${
+                    isDragging
+                      ? 'border-blue-500 bg-blue-50 shadow-lg scale-105'
+                      : 'border-gray-200 bg-white shadow-sm'
+                  }`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                >
+                  {/* Radar circles with subtle animation */}
+                  <div className="absolute inset-4 rounded-full border border-gray-100 animate-pulse"></div>
+                  <div className="absolute inset-8 rounded-full border border-gray-100 animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                  <div className="absolute inset-12 rounded-full border border-gray-100 animate-pulse" style={{animationDelay: '1s'}}></div>
+                  
+                  {/* Center device (current device) */}
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                    <div className="text-white">
+                      {getDeviceIcon(getDeviceType())}
+                    </div>
                   </div>
+                  
+                  {/* Center device label */}
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 translate-y-8 text-center">
+                    <p className="text-sm font-medium text-gray-900">You</p>
+                    <p className="text-xs text-gray-500">{deviceName}</p>
+                  </div>
+                  
+                  {/* Other devices positioned around the circle */}
+                  {devices.map((device, index) => {
+                    const angle = (index * 360) / devices.length;
+                    const radius = 120; // Distance from center
+                    const x = Math.cos((angle - 90) * Math.PI / 180) * radius;
+                    const y = Math.sin((angle - 90) * Math.PI / 180) * radius;
+                    
+                    return (
+                      <div
+                        key={device.id}
+                        className="absolute group"
+                        style={{
+                          left: `calc(50% + ${x}px - 24px)`,
+                          top: `calc(50% + ${y}px - 24px)`,
+                        }}
+                      >
+                        <div
+                          className="w-12 h-12 bg-white rounded-full border-2 border-green-500 flex items-center justify-center shadow-md cursor-pointer hover:scale-110 transition-transform"
+                          onClick={() => {
+                            toast({
+                              title: "Device selected",
+                              description: `Selected ${device.name}`,
+                              duration: 2000,
+                            });
+                          }}
+                        >
+                          <div className="text-green-600 scale-75">
+                            {getDeviceIcon(device.type)}
+                          </div>
+                        </div>
+                        
+                        {/* Device name tooltip */}
+                        <div className="absolute left-1/2 transform -translate-x-1/2 -top-12 bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                          {device.name}
+                          <div className="absolute left-1/2 transform -translate-x-1/2 top-full w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-black"></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {/* Drop zone overlay */}
+                  <div className="absolute inset-0 rounded-full flex items-center justify-center pointer-events-none">
+                    {isDragging && (
+                      <div className="text-center">
+                        <Upload className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+                        <p className="text-sm font-medium text-blue-700">
+                          Drop to send
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Radar instructions */}
+                <div className="text-center mt-6 space-y-2">
+                  <p className="text-sm text-gray-600">
+                    Drop files on the radar to send to all devices
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Click on a device to select it specifically
+                  </p>
                 </div>
               </div>
 
-              {/* Available devices */}
-              <div className="space-y-3">
-                <h3 className="text-lg font-medium text-gray-900">Available devices</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {devices.map((device) => (
-                    <Card key={device.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                      <CardContent className="p-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="text-blue-500">
-                            {getDeviceIcon(device.type)}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-900 truncate">
-                              {device.name}
-                            </p>
-                            <p className="text-sm text-gray-500 capitalize">
-                              {device.type}
-                            </p>
-                          </div>
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
+
             </div>
           )}
 
