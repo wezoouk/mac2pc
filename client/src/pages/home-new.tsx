@@ -973,19 +973,24 @@ export default function Home() {
           <Collapsible open={deviceSettingsOpen} onOpenChange={setDeviceSettingsOpen}>
             <CollapsibleTrigger 
               className="w-full"
-              onClick={() => {
-                console.log('Device Settings clicked, current state:', deviceSettingsOpen);
-                setDeviceSettingsOpen(!deviceSettingsOpen);
-              }}
+              asChild
             >
-              <Card className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center justify-between text-sm text-slate-700 dark:text-slate-300">
-                    <span>🔧 Device Settings</span>
-                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${deviceSettingsOpen ? 'rotate-180' : ''}`} />
-                  </CardTitle>
-                </CardHeader>
-              </Card>
+              <div 
+                className="cursor-pointer"
+                onClick={() => {
+                  console.log('Device Settings clicked, current state:', deviceSettingsOpen);
+                  setDeviceSettingsOpen(!deviceSettingsOpen);
+                }}
+              >
+                <Card className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center justify-between text-sm text-slate-700 dark:text-slate-300">
+                      <span>🔧 Device Settings</span>
+                      <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${deviceSettingsOpen ? 'rotate-180' : ''}`} />
+                    </CardTitle>
+                  </CardHeader>
+                </Card>
+              </div>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-2">
               <div className="space-y-4">

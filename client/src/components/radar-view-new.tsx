@@ -256,9 +256,9 @@ export function RadarView({
                     animationDuration: '2s'
                   }}
                 />
-                {/* Animated dots along the line */}
-                {Array.from({ length: 8 }, (_, i) => {
-                  const t = (i + 1) / 9;
+                {/* Static dots along the line */}
+                {Array.from({ length: 6 }, (_, i) => {
+                  const t = (i + 1) / 7;
                   const dotX = centerX + (deviceX - centerX) * t;
                   const dotY = centerY + (deviceY - centerY) * t;
                   return (
@@ -266,14 +266,9 @@ export function RadarView({
                       key={i}
                       cx={dotX}
                       cy={dotY}
-                      r="3"
+                      r="2"
                       fill="rgb(34, 197, 94)"
-                      className="animate-ping"
-                      style={{
-                        animationDelay: `${i * 200}ms`,
-                        animationDuration: '1.5s',
-                        filter: 'drop-shadow(0 0 6px rgba(34, 197, 94, 0.8))'
-                      }}
+                      opacity="0.8"
                     />
                   );
                 })}
