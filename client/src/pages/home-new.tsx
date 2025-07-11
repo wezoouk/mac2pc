@@ -409,10 +409,15 @@ export default function Home() {
         console.log('Trust device response:', responseData);
         
         toast({
-          title: "Device trusted",
-          description: `${device.name} has been added to your trusted devices`,
-          duration: 3000,
+          title: "Device trusted successfully!",
+          description: `${device.name} can now automatically accept your transfers`,
+          duration: 5000,
         });
+        
+        // Play success sound
+        if (soundEnabled) {
+          soundManager.playDeviceConnected();
+        }
       } else {
         const error = await response.text();
         console.error('Server error:', error);
@@ -800,10 +805,10 @@ export default function Home() {
                     console.error('Trust device failed:', error);
                   }
                 }}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-full shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl animate-glow"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-full shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl animate-glow hover:animate-pulse"
                 size="sm"
               >
-                Trust {selectedDevice.name}
+                🤝 Trust {selectedDevice.name}
               </Button>
             </div>
           )}

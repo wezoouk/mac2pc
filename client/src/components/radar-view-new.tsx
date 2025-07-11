@@ -212,50 +212,58 @@ export function RadarView({
           const centerIconRadius = radarSize >= 800 ? 40 : radarSize >= 600 ? 32 : 24;
           const deviceIconRadius = radarSize >= 800 ? 32 : radarSize >= 600 ? 24 : 18;
           
-          // Calculate the distance and angle
-          const distance = Math.sqrt(position.x * position.x + position.y * position.y);
+          // Calculate the angle from center to device
           const angle = Math.atan2(position.y, position.x);
           
-          // Calculate start and end points accounting for icon sizes
+          // Calculate start and end points at the edge of the circles
           const startX = centerX + Math.cos(angle) * centerIconRadius;
           const startY = centerY + Math.sin(angle) * centerIconRadius;
           const endX = centerX + position.x - Math.cos(angle) * deviceIconRadius;
           const endY = centerY + position.y - Math.sin(angle) * deviceIconRadius;
           
-          // Calculate line properties
-          const lineLength = Math.sqrt((endX - startX) * (endX - startX) + (endY - startY) * (endY - startY));
-          const lineAngle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
-          
           return (
-            <>
+            <svg
+              className="absolute inset-0 pointer-events-none z-5"
+              style={{ width: '100%', height: '100%' }}
+            >
               {/* Main connection line */}
-              <div
-                className="absolute z-5 bg-gradient-to-r from-emerald-400 to-blue-400 opacity-70 animate-pulse"
+              <line
+                x1={startX}
+                y1={startY}
+                x2={endX}
+                y2={endY}
+                stroke="url(#connectionGradient)"
+                strokeWidth="3"
+                strokeLinecap="round"
+                opacity="0.8"
+                className="animate-pulse"
                 style={{
-                  left: startX,
-                  top: startY - 1.5,
-                  width: lineLength,
-                  height: '3px',
-                  transform: `rotate(${lineAngle}deg)`,
-                  transformOrigin: '0 50%',
-                  borderRadius: '1px',
-                  boxShadow: '0 0 8px rgba(59, 130, 246, 0.5)'
+                  filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.5))'
                 }}
               />
-              {/* Animated connection pulse */}
-              <div
-                className="absolute z-5 bg-white opacity-90 animate-ping"
+              {/* Animated pulse line */}
+              <line
+                x1={startX}
+                y1={startY}
+                x2={endX}
+                y2={endY}
+                stroke="white"
+                strokeWidth="1"
+                strokeLinecap="round"
+                opacity="0.9"
+                className="animate-ping"
                 style={{
-                  left: startX,
-                  top: startY - 0.5,
-                  width: lineLength,
-                  height: '1px',
-                  transform: `rotate(${lineAngle}deg)`,
-                  transformOrigin: '0 50%',
                   animationDuration: '2s'
                 }}
               />
-            </>
+              {/* Gradient definition */}
+              <defs>
+                <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="rgb(52, 211, 153)" />
+                  <stop offset="100%" stopColor="rgb(59, 130, 246)" />
+                </linearGradient>
+              </defs>
+            </svg>
           );
         })()}
 
