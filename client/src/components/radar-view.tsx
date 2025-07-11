@@ -53,7 +53,9 @@ export function RadarView({
     if (total === 0) return { x: 0, y: 0 };
     
     const angle = (2 * Math.PI * index) / total;
-    const radius = Math.min(180, 120 + total * 12); // Larger radius for prominent display
+    // Adjust radius based on radar size - keep devices well within bounds
+    const maxRadius = (radarSize / 2) - 50; // 50px margin from edge for device icon + text
+    const radius = Math.min(maxRadius, 60 + total * 6); // Even smaller radius for mobile
     
     return {
       x: Math.cos(angle) * radius,
@@ -144,8 +146,7 @@ export function RadarView({
                     
                     {/* Device Info */}
                     <div className="absolute -bottom-8 sm:-bottom-10 left-1/2 transform -translate-x-1/2 text-center">
-                      <div className="text-xs font-medium text-slate-900 whitespace-nowrap max-w-16 sm:max-w-20 truncate flex items-center justify-center gap-1">
-                        <span className="text-xs">{getDeviceIcon(device.name).icon}</span>
+                      <div className="text-xs font-medium text-slate-900 whitespace-nowrap max-w-16 sm:max-w-20 truncate text-center">
                         {device.name}
                       </div>
                       <Badge 
