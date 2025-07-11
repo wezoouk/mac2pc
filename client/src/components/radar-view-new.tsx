@@ -251,13 +251,14 @@ export function RadarView({
           return (
             <div
               key={device.id}
-              className={`absolute z-10 transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-out cursor-pointer hover:scale-110 animate-fadeInUp ${
+              className={`absolute z-10 transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-out cursor-pointer hover:scale-110 ${
                 isSelected ? 'scale-110 z-30' : ''
               }`}
               style={{
                 left: centerX + position.x,
                 top: centerY + position.y,
-                animationDelay: `${index * 100}ms`
+                opacity: 0,
+                animation: `fadeInPlace 0.6s ease-out ${index * 100}ms forwards`
               }}
               onClick={() => onDeviceSelect(device)}
             >

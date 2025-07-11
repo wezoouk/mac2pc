@@ -44,9 +44,11 @@ export default function Home() {
 
   function handlePairWithCode(code: string) {
     // Join a special pairing room using the code
+    const pairRoom = `pair-${code}`;
+    
     sendMessage({
       type: 'join-room',
-      roomId: `pair-${code}`,
+      roomId: pairRoom,
       deviceId,
       data: {
         id: deviceId,
@@ -56,9 +58,13 @@ export default function Home() {
       }
     });
     
+    setCurrentRoom(pairRoom);
+    setRoomName(pairRoom);
+    setShowPairing(false);
+    
     toast({
-      title: "Pairing initiated",
-      description: `Connecting with code: ${code}`,
+      title: "Device paired!",
+      description: `Connected to pairing room: ${code}`,
       duration: 3000,
     });
   }
@@ -75,8 +81,11 @@ export default function Home() {
     
     // Check for pairing code in URL
     const urlParams = new URLSearchParams(window.location.search);
-    const pairCode = urlParams.get('pair');
-    if (pairCode) {
+    const pairDeviceId = urlParams.get('pair');
+    const pairCode = urlParams.get('code');
+    
+    if (pairDeviceId && pairCode) {
+      console.log('Pairing detected:', pairDeviceId, pairCode);
       handlePairWithCode(pairCode);
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -372,22 +381,33 @@ export default function Home() {
 
   async function addToTrustedDevices(device: Device) {
     try {
+      console.log('Adding device to trusted devices:', device.name, device.id);
+      
+      const requestData = {
+        deviceId: deviceId,
+        trustedDeviceId: device.id,
+        deviceName: deviceName,
+        trustedDeviceName: device.name,
+        autoAcceptFiles: true,
+        autoAcceptMessages: true,
+      };
+      
+      console.log('Request data:', requestData);
+      
       const response = await fetch('/api/trusted-devices', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          deviceId: deviceId,
-          trustedDeviceId: device.id,
-          deviceName: deviceName,
-          trustedDeviceName: device.name,
-          autoAcceptFiles: true,
-          autoAcceptMessages: true,
-        }),
+        body: JSON.stringify(requestData),
       });
 
+      console.log('Response status:', response.status);
+      
       if (response.ok) {
+        const responseData = await response.json();
+        console.log('Trust device response:', responseData);
+        
         toast({
           title: "Device trusted",
           description: `${device.name} has been added to your trusted devices`,
@@ -395,6 +415,7 @@ export default function Home() {
         });
       } else {
         const error = await response.text();
+        console.error('Server error:', error);
         throw new Error(error);
       }
     } catch (error) {
@@ -770,7 +791,10 @@ export default function Home() {
           {selectedDevice && (
             <div className="mt-4 animate-scaleIn">
               <Button
-                onClick={() => addToTrustedDevices(selectedDevice)}
+                onClick={() => {
+                  console.log('Trust button clicked for:', selectedDevice.name);
+                  addToTrustedDevices(selectedDevice);
+                }}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-full shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl animate-glow"
                 size="sm"
               >
