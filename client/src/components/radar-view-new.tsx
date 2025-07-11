@@ -203,7 +203,7 @@ export function RadarView({
           </div>
         </div>
 
-        {/* Connection Line to Selected Device */}
+        {/* Connection Dots to Selected Device */}
         {selectedDevice && animatedDevices.find(d => d.id === selectedDevice.id) && (() => {
           const selectedIndex = animatedDevices.findIndex(d => d.id === selectedDevice.id);
           const position = getDevicePosition(selectedIndex, animatedDevices.length);
@@ -221,49 +221,35 @@ export function RadarView({
           const endX = centerX + position.x - Math.cos(angle) * deviceIconRadius;
           const endY = centerY + position.y - Math.sin(angle) * deviceIconRadius;
           
+          // Calculate number of dots based on distance
+          const distance = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+          const numDots = Math.floor(distance / 12); // Dot every 12 pixels
+          
+          // Create dots array
+          const dots = [];
+          for (let i = 1; i < numDots; i++) {
+            const t = i / numDots;
+            const dotX = startX + (endX - startX) * t;
+            const dotY = startY + (endY - startY) * t;
+            dots.push({ x: dotX, y: dotY, delay: i * 50 });
+          }
+          
           return (
-            <svg
-              className="absolute inset-0 pointer-events-none z-5"
-              style={{ width: '100%', height: '100%' }}
-            >
-              {/* Main connection line */}
-              <line
-                x1={startX}
-                y1={startY}
-                x2={endX}
-                y2={endY}
-                stroke="url(#connectionGradient)"
-                strokeWidth="3"
-                strokeLinecap="round"
-                opacity="0.8"
-                className="animate-pulse"
-                style={{
-                  filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.5))'
-                }}
-              />
-              {/* Animated pulse line */}
-              <line
-                x1={startX}
-                y1={startY}
-                x2={endX}
-                y2={endY}
-                stroke="white"
-                strokeWidth="1"
-                strokeLinecap="round"
-                opacity="0.9"
-                className="animate-ping"
-                style={{
-                  animationDuration: '2s'
-                }}
-              />
-              {/* Gradient definition */}
-              <defs>
-                <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="rgb(52, 211, 153)" />
-                  <stop offset="100%" stopColor="rgb(59, 130, 246)" />
-                </linearGradient>
-              </defs>
-            </svg>
+            <div className="absolute inset-0 pointer-events-none z-5">
+              {dots.map((dot, index) => (
+                <div
+                  key={index}
+                  className="absolute w-2 h-2 bg-gradient-to-r from-emerald-400 to-blue-400 rounded-full animate-pulse opacity-70"
+                  style={{
+                    left: dot.x - 4,
+                    top: dot.y - 4,
+                    animationDelay: `${dot.delay}ms`,
+                    animationDuration: '2s',
+                    boxShadow: '0 0 6px rgba(59, 130, 246, 0.6)'
+                  }}
+                />
+              ))}
+            </div>
           );
         })()}
 
