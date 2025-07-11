@@ -203,6 +203,46 @@ export function RadarView({
           </div>
         </div>
 
+        {/* Connection Line to Selected Device */}
+        {selectedDevice && animatedDevices.find(d => d.id === selectedDevice.id) && (() => {
+          const selectedIndex = animatedDevices.findIndex(d => d.id === selectedDevice.id);
+          const position = getDevicePosition(selectedIndex, animatedDevices.length);
+          const lineLength = Math.sqrt(position.x * position.x + position.y * position.y);
+          const angle = Math.atan2(position.y, position.x) * 180 / Math.PI;
+          
+          return (
+            <>
+              {/* Main connection line */}
+              <div
+                className="absolute z-5 bg-gradient-to-r from-emerald-400 to-blue-400 opacity-70 animate-pulse"
+                style={{
+                  left: centerX,
+                  top: centerY - 1,
+                  width: lineLength,
+                  height: '3px',
+                  transform: `rotate(${angle}deg)`,
+                  transformOrigin: '0 50%',
+                  borderRadius: '1px',
+                  boxShadow: '0 0 8px rgba(59, 130, 246, 0.5)'
+                }}
+              />
+              {/* Animated connection pulse */}
+              <div
+                className="absolute z-5 bg-white opacity-90 animate-ping"
+                style={{
+                  left: centerX,
+                  top: centerY - 0.5,
+                  width: lineLength,
+                  height: '1px',
+                  transform: `rotate(${angle}deg)`,
+                  transformOrigin: '0 50%',
+                  animationDuration: '2s'
+                }}
+              />
+            </>
+          );
+        })()}
+
         {/* Other Devices */}
         {animatedDevices.map((device, index) => {
           const position = getDevicePosition(index, animatedDevices.length);

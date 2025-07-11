@@ -757,6 +757,19 @@ export default function Home() {
               Device ID: {deviceId.slice(-8)} • Device Name: {deviceName}
             </div>
           </div>
+          
+          {/* Trust Device Button for Selected Device */}
+          {selectedDevice && (
+            <div className="mt-4">
+              <Button
+                onClick={() => addToTrustedDevices(selectedDevice)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-full shadow-lg transition-all duration-200 hover:scale-105"
+                size="sm"
+              >
+                Trust {selectedDevice.name}
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Compact Controls */}
