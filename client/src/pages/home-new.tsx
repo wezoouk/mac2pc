@@ -41,6 +41,11 @@ export default function Home() {
   const [showPairing, setShowPairing] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(soundManager.isEnabled());
   const [deviceSettingsOpen, setDeviceSettingsOpen] = useState(false);
+  
+  // Debug: Log state changes
+  useEffect(() => {
+    console.log('deviceSettingsOpen state changed to:', deviceSettingsOpen);
+  }, [deviceSettingsOpen]);
   const { toast } = useToast();
 
   function handlePairWithCode(code: string) {
@@ -971,15 +976,11 @@ export default function Home() {
         {/* Trusted Devices Manager */}
         <div className="w-full max-w-2xl mb-8 animate-slideInRight" style={{ animationDelay: '1.4s' }}>
           <div className="w-full">
-            <div 
-              className="cursor-pointer"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('Device Settings clicked, current state:', deviceSettingsOpen);
-                const newState = !deviceSettingsOpen;
-                setDeviceSettingsOpen(newState);
-                console.log('Setting deviceSettingsOpen to:', newState);
+            <button 
+              className="cursor-pointer w-full text-left"
+              onClick={() => {
+                console.log('Device Settings button clicked, current state:', deviceSettingsOpen);
+                setDeviceSettingsOpen(!deviceSettingsOpen);
               }}
             >
               <Card className="w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg">
@@ -990,7 +991,7 @@ export default function Home() {
                   </CardTitle>
                 </CardHeader>
               </Card>
-            </div>
+            </button>
             
             {/* Debug: Always show if state is true */}
             {deviceSettingsOpen && (
