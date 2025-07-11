@@ -96,6 +96,18 @@ Device naming: Fun random names with animals and adjectives (e.g., "wombat-mac",
 
 The application is designed to work seamlessly in both development and production environments, with the server automatically detecting the mode and configuring itself accordingly.
 
+## Recent Changes (July 11, 2025)
+
+### Simplified Interface Design (NEW - July 11, 2025)
+- **Clean minimal interface**: Redesigned to match PairDrop's simple, focused design
+- **Center-focused layout**: Large drop zone for easy file sharing with visual feedback
+- **Device discovery simplified**: Clean device cards with icons and status indicators
+- **Reduced complexity**: Removed complex tabs, settings, and advanced features from main interface
+- **Sound notifications**: Added audio alerts for incoming messages and file transfers
+- **Self-destruct messages**: Fixed expiration functionality with proper cleanup every 30 seconds
+- **Drag-and-drop priority**: Main interaction is dropping files to send to first available device
+- **Recent transfers**: Simple list showing last 5 transfers with file/message icons
+
 ## Recent Changes (July 10, 2025)
 
 ### Device Type Recognition and Visual Indicators
