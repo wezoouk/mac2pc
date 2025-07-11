@@ -37,6 +37,27 @@ export function getDeviceType(): 'desktop' | 'mobile' | 'tablet' {
   return 'desktop';
 }
 
+export function getDetailedDeviceType(): string {
+  const userAgent = navigator.userAgent;
+  
+  // Mobile devices
+  if (/iPhone/.test(userAgent)) return 'iPhone';
+  if (/Android.*Mobile/.test(userAgent)) return 'Android';
+  if (/Mobile/.test(userAgent)) return 'Mobile';
+  
+  // Tablets
+  if (/iPad/.test(userAgent)) return 'iPad';
+  if (/Android/.test(userAgent)) return 'Tablet';
+  
+  // Desktop/Laptop
+  if (/Mac/.test(userAgent)) return 'Mac';
+  if (/Windows/.test(userAgent)) return 'PC';
+  if (/Linux/.test(userAgent)) return 'Linux';
+  if (/CrOS/.test(userAgent)) return 'Chromebook';
+  
+  return 'Desktop';
+}
+
 export function generateRandomDeviceName(): string {
   const adjectives = [
     'swift', 'bright', 'clever', 'mighty', 'gentle', 'brave', 'cosmic', 'wild',
@@ -52,20 +73,15 @@ export function generateRandomDeviceName(): string {
     'hamster', 'ferret', 'rabbit', 'fox', 'wolf', 'bear', 'lion', 'tiger', 'cat'
   ];
   
-  const devices = [
-    'mac', 'pc', 'laptop', 'desktop', 'tablet', 'phone', 'workstation', 'chromebook',
-    'surface', 'macbook', 'imac', 'thinkpad', 'dell', 'hp', 'asus', 'lenovo'
-  ];
-  
   const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
   const animal = animals[Math.floor(Math.random() * animals.length)];
-  const device = devices[Math.floor(Math.random() * devices.length)];
+  const deviceType = getDetailedDeviceType();
   
   // Sometimes use adjective-animal-device, sometimes just animal-device
   if (Math.random() > 0.5) {
-    return `${adjective}-${animal}-${device}`;
+    return `${adjective}-${animal}-${deviceType}`;
   } else {
-    return `${animal}-${device}`;
+    return `${animal}-${deviceType}`;
   }
 }
 

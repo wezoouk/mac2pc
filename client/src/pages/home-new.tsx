@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Settings, Share2, TestTube, RefreshCw, Eye, EyeOff, Link2 } from "lucide-react";
 import { nanoid } from "nanoid";
-import { generateRandomDeviceName } from '@/lib/utils';
+import { generateRandomDeviceName, getDetailedDeviceType, getDeviceType } from '@/lib/utils';
 import { NotificationManager } from '@/lib/notifications';
 import type { Device, Transfer } from "@shared/schema";
 
@@ -76,7 +76,7 @@ export default function Home() {
   const testDevices: Device[] = [
     {
       id: "test-device-1",
-      name: "swift-otter-iphone",
+      name: "swift-otter-iPhone",
       type: "mobile",
       network: "local",
       isOnline: true,
@@ -87,7 +87,7 @@ export default function Home() {
     },
     {
       id: "test-device-2", 
-      name: "fuzzy-wombat-macbook",
+      name: "fuzzy-wombat-Mac",
       type: "desktop",
       network: "local",
       isOnline: true,
@@ -98,7 +98,7 @@ export default function Home() {
     },
     {
       id: "test-device-3",
-      name: "sleepy-pangolin-tablet",
+      name: "sleepy-pangolin-iPad",
       type: "tablet", 
       network: "local",
       isOnline: true,
@@ -109,13 +109,7 @@ export default function Home() {
     }
   ];
 
-  function getDeviceType() {
-    const userAgent = navigator.userAgent;
-    if (/Mobile|Android|iPhone|iPad/.test(userAgent)) {
-      return /iPad/.test(userAgent) ? 'tablet' : 'mobile';
-    }
-    return 'desktop';
-  }
+
 
   async function fetchDevices() {
     try {
