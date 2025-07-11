@@ -36,7 +36,8 @@ export function RadarView({
   }, [devices]);
 
   function getDeviceIconComponent(type: string, isCenter = false) {
-    const size = isCenter ? 32 : 24;
+    // Responsive icon sizes
+    const size = isCenter ? (radarSize >= 480 ? 48 : radarSize >= 360 ? 36 : 32) : (radarSize >= 480 ? 32 : radarSize >= 360 ? 28 : 24);
     const iconProps = { size, className: "text-white" };
     
     switch (type) {
@@ -54,8 +55,10 @@ export function RadarView({
     
     const angle = (2 * Math.PI * index) / total;
     // Adjust radius based on radar size - keep devices well within bounds
-    const maxRadius = (radarSize / 2) - 50; // 50px margin from edge for device icon + text
-    const radius = Math.min(maxRadius, 60 + total * 6); // Even smaller radius for mobile
+    const margin = radarSize >= 480 ? 80 : radarSize >= 360 ? 60 : 50;
+    const maxRadius = (radarSize / 2) - margin;
+    const baseRadius = radarSize >= 480 ? 120 : radarSize >= 360 ? 90 : 60;
+    const radius = Math.min(maxRadius, baseRadius + total * 8);
     
     return {
       x: Math.cos(angle) * radius,
@@ -70,7 +73,8 @@ export function RadarView({
     return 'bg-blue-500'; // Local devices
   }
 
-  const radarSize = 280; // Responsive radar size for mobile
+  // Responsive radar size - larger on desktop
+  const radarSize = window.innerWidth >= 1024 ? 480 : window.innerWidth >= 768 ? 360 : 280;
   const centerX = radarSize / 2;
   const centerY = radarSize / 2;
 
