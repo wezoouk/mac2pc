@@ -212,18 +212,22 @@ export function RadarView({
           const centerIconRadius = radarSize >= 800 ? 40 : radarSize >= 600 ? 32 : 24;
           const deviceIconRadius = radarSize >= 800 ? 32 : radarSize >= 600 ? 24 : 18;
           
+          // Calculate absolute positions of device icons
+          const deviceAbsoluteX = centerX + position.x;
+          const deviceAbsoluteY = centerY + position.y;
+          
           // Calculate the angle from center to device
           const angle = Math.atan2(position.y, position.x);
           
           // Calculate start and end points at the edge of the circles
           const startX = centerX + Math.cos(angle) * centerIconRadius;
           const startY = centerY + Math.sin(angle) * centerIconRadius;
-          const endX = centerX + position.x - Math.cos(angle) * deviceIconRadius;
-          const endY = centerY + position.y - Math.sin(angle) * deviceIconRadius;
+          const endX = deviceAbsoluteX - Math.cos(angle) * deviceIconRadius;
+          const endY = deviceAbsoluteY - Math.sin(angle) * deviceIconRadius;
           
           // Calculate number of dots based on distance
           const distance = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
-          const numDots = Math.floor(distance / 12); // Dot every 12 pixels
+          const numDots = Math.max(8, Math.floor(distance / 15)); // At least 8 dots, then every 15 pixels
           
           // Create dots array
           const dots = [];
@@ -231,7 +235,7 @@ export function RadarView({
             const t = i / numDots;
             const dotX = startX + (endX - startX) * t;
             const dotY = startY + (endY - startY) * t;
-            dots.push({ x: dotX, y: dotY, delay: i * 50 });
+            dots.push({ x: dotX, y: dotY, delay: i * 80 });
           }
           
           return (
@@ -239,13 +243,13 @@ export function RadarView({
               {dots.map((dot, index) => (
                 <div
                   key={index}
-                  className="absolute w-2 h-2 bg-gradient-to-r from-emerald-400 to-blue-400 rounded-full animate-pulse opacity-70"
+                  className="absolute w-3 h-3 bg-gradient-to-r from-emerald-400 to-blue-400 rounded-full animate-pulse opacity-80"
                   style={{
-                    left: dot.x - 4,
-                    top: dot.y - 4,
+                    left: dot.x - 6,
+                    top: dot.y - 6,
                     animationDelay: `${dot.delay}ms`,
                     animationDuration: '2s',
-                    boxShadow: '0 0 6px rgba(59, 130, 246, 0.6)'
+                    boxShadow: '0 0 8px rgba(59, 130, 246, 0.8)'
                   }}
                 />
               ))}
