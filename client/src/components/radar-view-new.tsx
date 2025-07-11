@@ -131,7 +131,54 @@ export function RadarView({
             }}
           ></div>
           
-
+          {/* Radiating Pulse Effects - Multiple Circles */}
+          <div 
+            className="absolute inset-0 animate-ping opacity-30"
+            style={{ 
+              borderRadius: '50%',
+              border: '2px solid rgb(59 130 246)',
+              animationDuration: '3s'
+            }}
+          ></div>
+          <div 
+            className="absolute animate-ping opacity-20"
+            style={{ 
+              borderRadius: '50%',
+              border: '2px solid rgb(34 197 94)',
+              animationDuration: '4s',
+              animationDelay: '0.5s',
+              top: '10%',
+              left: '10%',
+              right: '10%',
+              bottom: '10%'
+            }}
+          ></div>
+          <div 
+            className="absolute animate-ping opacity-15"
+            style={{ 
+              borderRadius: '50%',
+              border: '2px solid rgb(168 85 247)',
+              animationDuration: '5s',
+              animationDelay: '1s',
+              top: '20%',
+              left: '20%',
+              right: '20%',
+              bottom: '20%'
+            }}
+          ></div>
+          <div 
+            className="absolute animate-ping opacity-10"
+            style={{ 
+              borderRadius: '50%',
+              border: '2px solid rgb(236 72 153)',
+              animationDuration: '6s',
+              animationDelay: '1.5s',
+              top: '30%',
+              left: '30%',
+              right: '30%',
+              bottom: '30%'
+            }}
+          ></div>
         </div>
 
         {/* Center Device (Current User) */}
