@@ -299,7 +299,7 @@ export function RadarView({
             >
               <div className="relative">
                 <div className={`rounded-full ${getDeviceColor(device)} flex items-center justify-center shadow-lg border-4 border-white transition-all duration-300 hover:shadow-xl ${
-                  isSelected ? 'ring-4 ring-emerald-300 animate-pulse shadow-2xl' : ''
+                  isSelected ? 'ring-4 ring-emerald-300 animate-glow shadow-2xl' : ''
                 }`}
                 style={{ 
                   width: radarSize >= 800 ? '64px' : radarSize >= 600 ? '48px' : '36px',

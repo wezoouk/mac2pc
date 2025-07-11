@@ -970,46 +970,61 @@ export default function Home() {
 
         {/* Trusted Devices Manager */}
         <div className="w-full max-w-2xl mb-8 animate-slideInRight" style={{ animationDelay: '1.4s' }}>
-          <Collapsible open={deviceSettingsOpen} onOpenChange={setDeviceSettingsOpen}>
-            <CollapsibleTrigger asChild>
-              <Button 
-                variant="ghost" 
-                className="w-full p-0 h-auto cursor-pointer"
-                onClick={() => {
-                  console.log('Device Settings clicked, current state:', deviceSettingsOpen);
-                  setDeviceSettingsOpen(!deviceSettingsOpen);
-                }}
-              >
-                <Card className="w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center justify-between text-sm text-slate-700 dark:text-slate-300">
-                      <span>🔧 Device Settings</span>
-                      <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${deviceSettingsOpen ? 'rotate-180' : ''}`} />
-                    </CardTitle>
-                  </CardHeader>
-                </Card>
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-2">
-              <div className="space-y-4">
+          <div className="w-full">
+            <div 
+              className="cursor-pointer"
+              onClick={() => {
+                console.log('Device Settings clicked, current state:', deviceSettingsOpen);
+                setDeviceSettingsOpen(!deviceSettingsOpen);
+              }}
+            >
+              <Card className="w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center justify-between text-sm text-slate-700 dark:text-slate-300">
+                    <span>🔧 Device Settings</span>
+                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${deviceSettingsOpen ? 'rotate-180' : ''}`} />
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+            </div>
+            
+            {deviceSettingsOpen && (
+              <div className="mt-2 space-y-4">
                 <Card className="bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300">
-                  <CardContent className="p-4">
-                    <div className="text-sm text-blue-800 dark:text-blue-200">
-                      <div className="font-medium mb-2">About Device Identity:</div>
-                      <div className="space-y-1 text-xs">
-                        <div><strong>Device Name:</strong> {deviceName} (Fun random name for easy recognition)</div>
-                        <div><strong>Device ID:</strong> {deviceId.slice(-8)}... (Unique identifier for security)</div>
-                        <div className="text-blue-600 dark:text-blue-400 mt-2">
-                          Trusted devices can automatically accept transfers from each other
+                  <CardHeader>
+                    <CardTitle className="text-sm">Device Information</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <strong>Device Name:</strong>
+                        <p className="text-slate-600 dark:text-slate-400">{deviceName}</p>
+                      </div>
+                      <div>
+                        <strong>Device ID:</strong>
+                        <p className="text-slate-600 dark:text-slate-400 font-mono text-xs">{deviceId}</p>
+                      </div>
+                      <div>
+                        <strong>Network Status:</strong>
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+                          <span className={`text-xs ${isConnected ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+                            {isConnected ? 'Connected' : 'Disconnected'}
+                          </span>
                         </div>
+                      </div>
+                      <div>
+                        <strong>Room:</strong>
+                        <p className="text-slate-600 dark:text-slate-400">{currentRoom || 'Local Network'}</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-                <TrustedDevicesManager currentDeviceId={deviceId} currentDeviceName={deviceName} />
+
+                <TrustedDevicesManager deviceId={deviceId} />
               </div>
-            </CollapsibleContent>
-          </Collapsible>
+            )}
+          </div>
         </div>
 
       </main>
