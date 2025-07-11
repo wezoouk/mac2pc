@@ -564,9 +564,9 @@ export default function Home() {
   }, [currentRoom, testMode]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-indigo-900 overflow-x-hidden">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-slate-200 sticky top-0 z-40">
+      <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm shadow-sm border-b border-slate-200 dark:border-gray-700 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16">
             <div className="flex items-center space-x-3">
@@ -649,7 +649,7 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="flex flex-col items-center justify-center min-h-screen px-4 py-8">
+      <main className="flex flex-col items-center justify-center min-h-screen px-2 sm:px-4 py-8 w-full overflow-x-hidden">
         {/* Top Banner Ad */}
         {adsEnabled && (
           <div className="mb-6 w-full max-w-4xl">
@@ -668,8 +668,8 @@ export default function Home() {
         </div>
 
         {/* Large Radar View */}
-        <div className="w-full max-w-sm sm:max-w-lg lg:max-w-7xl xl:max-w-full mb-8 sm:mb-12">
-          <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-3xl p-6 sm:p-12 lg:p-20 shadow-2xl border border-white/20 dark:border-gray-700/30">
+        <div className="w-full max-w-sm sm:max-w-lg lg:max-w-6xl mb-8 sm:mb-12 px-2 sm:px-0">
+          <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-3xl p-4 sm:p-8 lg:p-12 shadow-2xl border border-white/20 dark:border-gray-700/30 overflow-hidden">
             <RadarView
               devices={devices}
               selectedDevice={selectedDevice}

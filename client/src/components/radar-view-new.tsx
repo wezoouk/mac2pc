@@ -81,15 +81,15 @@ export function RadarView({
     return 'bg-blue-500'; // Local devices
   }
 
-  // Much larger radar size - 800px on desktop for better visibility
-  const radarSize = windowWidth >= 1024 ? 800 : windowWidth >= 768 ? 600 : 320;
+  // Much larger radar size - responsive and contained
+  const radarSize = windowWidth >= 1024 ? 800 : windowWidth >= 768 ? 600 : Math.min(windowWidth - 40, 320);
   const centerX = radarSize / 2;
   const centerY = radarSize / 2;
 
   return (
-    <div className="flex flex-col items-center space-y-6">
+    <div className="flex flex-col items-center space-y-6 w-full">
       {/* Radar Display */}
-      <div className="relative" style={{ width: radarSize, height: radarSize }}>
+      <div className="relative mx-auto" style={{ width: radarSize, height: radarSize, maxWidth: '100%' }}>
         {/* Radar Background - True Circle */}
         <div 
           className="absolute inset-0 bg-gradient-to-br from-slate-700 via-blue-700 to-slate-700 shadow-2xl border-2 border-blue-400/50 dark:from-gray-700 dark:via-blue-600 dark:to-gray-700"
