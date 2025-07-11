@@ -124,7 +124,17 @@ export function DynamicAds({ position, isEnabled = true }: { position: string; i
 
   if (!isEnabled) return null;
 
-  const relevantAds = adPlacements.filter((ad: any) => ad.position === position && ad.isEnabled);
+  const relevantAds = adPlacements.filter((ad: any) => {
+    // Map position names to match database values
+    const positionMap: { [key: string]: string } = {
+      'between-content': 'between-content',
+      'footer': 'footer',
+      'header': 'top-banner',
+      'sidebar': 'sidebar'
+    };
+    
+    return ad.position === (positionMap[position] || position) && ad.isEnabled;
+  });
 
   if (relevantAds.length === 0) return null;
 
