@@ -980,9 +980,9 @@ export default function Home() {
               className="w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg cursor-pointer"
               onClick={() => {
                 console.log('Device Settings CARD clicked, current state:', deviceSettingsOpen);
-                alert('Device Settings clicked!'); // Temporary alert to confirm click
-                setDeviceSettingsOpen(!deviceSettingsOpen);
-                console.log('New state should be:', !deviceSettingsOpen);
+                const newState = !deviceSettingsOpen;
+                setDeviceSettingsOpen(newState);
+                console.log('New state should be:', newState);
               }}
             >
               <CardHeader className="pb-3">
@@ -993,11 +993,11 @@ export default function Home() {
               </CardHeader>
             </Card>
             
-            {/* Debug: Always show if state is true */}
+            {/* Device Settings Content */}
             {deviceSettingsOpen && (
               <div className="mt-2 space-y-4 border-2 border-green-500 p-4 rounded-lg">
                 <div className="bg-green-100 dark:bg-green-900 p-2 rounded text-sm">
-                  DEBUG: Device Settings is OPEN (state: {deviceSettingsOpen.toString()})
+                  Device Settings is OPEN (state: {deviceSettingsOpen.toString()}) - Click header to close
                 </div>
                 <Card className="bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300">
                   <CardHeader>
