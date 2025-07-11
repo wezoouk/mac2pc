@@ -208,34 +208,29 @@ export function RadarView({
           const selectedIndex = animatedDevices.findIndex(d => d.id === selectedDevice.id);
           const position = getDevicePosition(selectedIndex, animatedDevices.length);
           
-          // Calculate exact positions for center and device icons
-          const centerIconRadius = radarSize >= 800 ? 40 : radarSize >= 600 ? 32 : 24;
-          const deviceIconRadius = radarSize >= 800 ? 32 : radarSize >= 600 ? 24 : 18;
+          // Simple direct connection from center to device position
+          const startX = centerX;
+          const startY = centerY;
+          const endX = centerX + position.x;
+          const endY = centerY + position.y;
           
-          // Calculate absolute positions of device icons
-          const deviceAbsoluteX = centerX + position.x;
-          const deviceAbsoluteY = centerY + position.y;
-          
-          // Calculate the angle from center to device
-          const angle = Math.atan2(position.y, position.x);
-          
-          // Calculate start and end points at the edge of the circles
-          const startX = centerX + Math.cos(angle) * centerIconRadius;
-          const startY = centerY + Math.sin(angle) * centerIconRadius;
-          const endX = deviceAbsoluteX - Math.cos(angle) * deviceIconRadius;
-          const endY = deviceAbsoluteY - Math.sin(angle) * deviceIconRadius;
+          console.log('Connection calculation:', {
+            centerX, centerY,
+            'position.x': position.x, 'position.y': position.y,
+            startX, startY, endX, endY
+          });
           
           // Calculate number of dots based on distance
           const distance = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
-          const numDots = Math.max(8, Math.floor(distance / 15)); // At least 8 dots, then every 15 pixels
+          const numDots = Math.max(12, Math.floor(distance / 20)); // More dots for visibility
           
-          // Create dots array
+          // Create dots array following the direct path
           const dots = [];
           for (let i = 1; i < numDots; i++) {
             const t = i / numDots;
             const dotX = startX + (endX - startX) * t;
             const dotY = startY + (endY - startY) * t;
-            dots.push({ x: dotX, y: dotY, delay: i * 80 });
+            dots.push({ x: dotX, y: dotY, delay: i * 100 });
           }
           
           return (
@@ -243,13 +238,13 @@ export function RadarView({
               {dots.map((dot, index) => (
                 <div
                   key={index}
-                  className="absolute w-3 h-3 bg-gradient-to-r from-emerald-400 to-blue-400 rounded-full animate-pulse opacity-80"
+                  className="absolute w-4 h-4 bg-gradient-to-r from-emerald-400 to-blue-400 rounded-full animate-pulse opacity-90"
                   style={{
-                    left: dot.x - 6,
-                    top: dot.y - 6,
+                    left: dot.x - 8,
+                    top: dot.y - 8,
                     animationDelay: `${dot.delay}ms`,
                     animationDuration: '2s',
-                    boxShadow: '0 0 8px rgba(59, 130, 246, 0.8)'
+                    boxShadow: '0 0 12px rgba(59, 130, 246, 0.9)'
                   }}
                 />
               ))}
