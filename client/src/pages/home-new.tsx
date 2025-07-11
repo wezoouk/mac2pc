@@ -69,6 +69,7 @@ export default function Home() {
     
     // Initialize sound state from soundManager
     const soundState = soundManager.isEnabled();
+    console.log('Initial sound state:', soundState);
     setSoundEnabled(soundState);
     NotificationManager.setSoundEnabled(soundState);
     
@@ -178,8 +179,12 @@ export default function Home() {
           const senderName = senderDevice?.name || message.fromName || message.from.slice(-6);
           
           // Play sound notification
+          console.log('Message received - Sound enabled:', soundEnabled);
           if (soundEnabled) {
+            console.log('Playing message received sound');
             soundManager.playMessageReceived();
+          } else {
+            console.log('Sound disabled, not playing notification');
           }
           NotificationManager.notifyMessage(senderName, message.message, message.selfDestructTimer);
           
@@ -347,12 +352,14 @@ export default function Home() {
 
   function toggleSound() {
     const newEnabled = !soundEnabled;
+    console.log('Toggling sound from', soundEnabled, 'to', newEnabled);
     setSoundEnabled(newEnabled);
     soundManager.setEnabled(newEnabled);
     NotificationManager.setSoundEnabled(newEnabled);
     
     // Play a test sound when enabling
     if (newEnabled) {
+      console.log('Playing test sound after enabling');
       soundManager.playDeviceConnected();
     }
     

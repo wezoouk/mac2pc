@@ -3,27 +3,38 @@ class SoundManager {
   private enabled = true;
 
   constructor() {
-    // Initialize with user preference
+    // Initialize with user preference - default to enabled
     const savedPreference = localStorage.getItem('sound-enabled');
-    this.enabled = savedPreference !== 'false';
+    this.enabled = savedPreference !== null ? savedPreference === 'true' : true;
+    console.log('SoundManager initialized, enabled:', this.enabled);
   }
 
   private async initAudioContext() {
     if (!this.audioContext) {
       this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      console.log('Audio context created, state:', this.audioContext.state);
     }
     
     if (this.audioContext.state === 'suspended') {
+      console.log('Audio context suspended, attempting to resume...');
       await this.audioContext.resume();
+      console.log('Audio context resumed, state:', this.audioContext.state);
     }
   }
 
   private async playTone(frequency: number, duration: number, type: OscillatorType = 'sine') {
-    if (!this.enabled) return;
+    if (!this.enabled) {
+      console.log('Sound disabled, skipping tone');
+      return;
+    }
     
     try {
+      console.log('Playing tone:', frequency, 'Hz for', duration, 'seconds');
       await this.initAudioContext();
-      if (!this.audioContext) return;
+      if (!this.audioContext) {
+        console.warn('Audio context not available');
+        return;
+      }
 
       const oscillator = this.audioContext.createOscillator();
       const gainNode = this.audioContext.createGain();
@@ -39,8 +50,10 @@ class SoundManager {
 
       oscillator.start(this.audioContext.currentTime);
       oscillator.stop(this.audioContext.currentTime + duration);
+      
+      console.log('Tone played successfully');
     } catch (error) {
-      console.warn('Sound playback failed:', error);
+      console.error('Sound playback failed:', error);
     }
   }
 
