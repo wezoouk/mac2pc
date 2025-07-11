@@ -380,8 +380,10 @@ export default function Home() {
         body: JSON.stringify({
           deviceId: deviceId,
           trustedDeviceId: device.id,
+          deviceName: deviceName,
           trustedDeviceName: device.name,
-          trustedDeviceType: device.type,
+          autoAcceptFiles: true,
+          autoAcceptMessages: true,
         }),
       });
 
