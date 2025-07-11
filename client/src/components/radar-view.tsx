@@ -68,13 +68,13 @@ export function RadarView({
     return 'bg-blue-500'; // Local devices
   }
 
-  const radarSize = 450; // Larger radar size for prominent display
+  const radarSize = 280; // Responsive radar size for mobile
   const centerX = radarSize / 2;
   const centerY = radarSize / 2;
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardContent className="p-6">
+    <Card className="w-full max-w-sm sm:max-w-md lg:max-w-lg mx-auto">
+      <CardContent className="p-3 sm:p-6">
         <div className="text-center mb-4">
           <h3 className="text-lg font-semibold text-slate-900">Device Radar</h3>
           <p className="text-sm text-slate-600">
@@ -100,14 +100,14 @@ export function RadarView({
               style={{ left: centerX, top: centerY }}
             >
               <div className="relative">
-                <div className={`w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg border-4 border-white center-device ${
-                  isConnected ? 'ring-4 ring-emerald-200' : ''
+                <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg border-2 sm:border-4 border-white center-device ${
+                  isConnected ? 'ring-2 sm:ring-4 ring-emerald-200' : ''
                 }`}>
-                  <div className="text-2xl">{getDeviceIcon(currentDeviceName).icon}</div>
+                  <div className="text-xl sm:text-2xl">{getDeviceIcon(currentDeviceName).icon}</div>
                 </div>
-                <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-center">
+                <div className="absolute -bottom-6 sm:-bottom-8 left-1/2 transform -translate-x-1/2 text-center">
                   <div className="text-xs font-semibold text-slate-900 whitespace-nowrap">You</div>
-                  <div className="text-xs text-slate-600 truncate max-w-16">{currentDeviceName}</div>
+                  <div className="text-xs text-slate-600 truncate max-w-12 sm:max-w-16">{currentDeviceName}</div>
                 </div>
               </div>
             </div>
@@ -131,26 +131,26 @@ export function RadarView({
                   onClick={() => onDeviceSelect(device)}
                 >
                   <div className="relative">
-                    <div className={`w-12 h-12 rounded-full ${getDeviceColor(device)} flex items-center justify-center shadow-lg border-2 border-white transition-all duration-200 ${
-                      isSelected ? 'ring-4 ring-blue-200 shadow-xl' : 'hover:shadow-xl'
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${getDeviceColor(device)} flex items-center justify-center shadow-lg border-2 border-white transition-all duration-200 ${
+                      isSelected ? 'ring-2 sm:ring-4 ring-blue-200 shadow-xl' : 'hover:shadow-xl'
                     }`}>
-                      <div className="text-xl">{getDeviceIcon(device.name).icon}</div>
+                      <div className="text-lg sm:text-xl">{getDeviceIcon(device.name).icon}</div>
                     </div>
                     
                     {/* Device Status Indicator */}
-                    <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
+                    <div className={`absolute -top-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 rounded-full border-2 border-white ${
                       device.roomId ? 'bg-amber-400' : 'bg-emerald-400'
                     }`} />
                     
                     {/* Device Info */}
-                    <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 text-center">
-                      <div className="text-xs font-medium text-slate-900 whitespace-nowrap max-w-20 truncate flex items-center justify-center gap-1">
+                    <div className="absolute -bottom-8 sm:-bottom-10 left-1/2 transform -translate-x-1/2 text-center">
+                      <div className="text-xs font-medium text-slate-900 whitespace-nowrap max-w-16 sm:max-w-20 truncate flex items-center justify-center gap-1">
                         <span className="text-xs">{getDeviceIcon(device.name).icon}</span>
                         {device.name}
                       </div>
                       <Badge 
                         variant={device.roomId ? 'secondary' : 'default'}
-                        className="text-xs mt-1"
+                        className="text-xs mt-1 hidden sm:inline-flex"
                       >
                         {device.roomId ? 'Remote' : 'Local'}
                       </Badge>
