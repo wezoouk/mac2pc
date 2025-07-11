@@ -53,7 +53,7 @@ export function RadarView({
     if (total === 0) return { x: 0, y: 0 };
     
     const angle = (2 * Math.PI * index) / total;
-    const radius = Math.min(120, 80 + total * 8); // Adaptive radius based on device count
+    const radius = Math.min(180, 120 + total * 12); // Larger radius for prominent display
     
     return {
       x: Math.cos(angle) * radius,
@@ -68,7 +68,7 @@ export function RadarView({
     return 'bg-blue-500'; // Local devices
   }
 
-  const radarSize = 320; // Fixed radar size
+  const radarSize = 450; // Larger radar size for prominent display
   const centerX = radarSize / 2;
   const centerY = radarSize / 2;
 
@@ -89,9 +89,10 @@ export function RadarView({
             style={{ width: radarSize, height: radarSize }}
           >
             {/* Radar Rings */}
-            <div className="radar-ring absolute inset-4 rounded-full border border-slate-200 opacity-50" />
-            <div className="radar-ring absolute inset-8 rounded-full border border-slate-200 opacity-30" />
-            <div className="radar-ring absolute inset-12 rounded-full border border-slate-200 opacity-20" />
+            <div className="absolute inset-8 rounded-full border border-blue-300 opacity-40" />
+            <div className="absolute inset-16 rounded-full border border-blue-300 opacity-30" />
+            <div className="absolute inset-24 rounded-full border border-blue-300 opacity-20" />
+            <div className="absolute inset-32 rounded-full border border-blue-300 opacity-10" />
             
             {/* Center Device (Current User) */}
             <div 

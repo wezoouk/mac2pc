@@ -2,20 +2,18 @@ import { useState, useEffect } from "react";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useWebRTC } from "@/hooks/use-webrtc";
 import { useToast } from "@/hooks/use-toast";
-import { DeviceDiscovery } from "@/components/device-discovery";
 import { RadarView } from "@/components/radar-view";
 import { FileTransfer } from "@/components/file-transfer";
 import { MessagePanel } from "@/components/message-panel";
 import { TransferHistory } from "@/components/transfer-history";
 import { TransferModal } from "@/components/transfer-modal";
 import { ProgressModal } from "@/components/progress-modal";
-import { BannerAd, DynamicAds } from "@/components/google-ads";
+import { DevicePairing } from "@/components/device-pairing";
+import { DynamicAds } from "@/components/google-ads";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Share2, Laptop, Wifi, Signal, Lock, Radar, TestTube, DollarSign, Eye, EyeOff, RefreshCw } from "lucide-react";
+import { Settings, Share2, TestTube, RefreshCw, Eye, EyeOff, Link2 } from "lucide-react";
 import { nanoid } from "nanoid";
 import { generateRandomDeviceName } from '@/lib/utils';
 import { NotificationManager } from '@/lib/notifications';
@@ -36,11 +34,42 @@ export default function Home() {
   const [transferQueue, setTransferQueue] = useState<File[]>([]);
   const [fileQueue, setFileQueue] = useState<any[]>([]);
   const [testMode, setTestMode] = useState(false);
+  const [showPairing, setShowPairing] = useState(false);
   const { toast } = useToast();
+
+  function handlePairWithCode(code: string) {
+    // Join a special pairing room using the code
+    sendMessage({
+      type: 'join-room',
+      roomId: `pair-${code}`,
+      deviceId,
+      data: {
+        id: deviceId,
+        name: deviceName,
+        type: getDeviceType(),
+        network: 'remote',
+      }
+    });
+    
+    toast({
+      title: "Pairing initiated",
+      description: `Connecting with code: ${code}`,
+      duration: 3000,
+    });
+  }
 
   // Initialize notification system
   useEffect(() => {
     NotificationManager.initialize();
+    
+    // Check for pairing code in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const pairCode = urlParams.get('pair');
+    if (pairCode) {
+      handlePairWithCode(pairCode);
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   }, []);
 
   // Test devices for demo purposes
@@ -573,6 +602,16 @@ export default function Home() {
                 <span className="hidden sm:inline ml-2">Ads</span>
               </Button>
               
+              <Button
+                variant="ghost"
+                size="sm"
+                className="px-2 sm:px-3"
+                onClick={() => setShowPairing(true)}
+              >
+                <Link2 size={16} />
+                <span className="hidden sm:inline ml-2">Pair</span>
+              </Button>
+              
               <Button variant="ghost" size="sm" className="px-2 sm:px-3" onClick={() => window.open('/admin', '_blank')}>
                 <Settings size={16} />
               </Button>
@@ -581,204 +620,141 @@ export default function Home() {
         </div>
       </header>
 
+      {/* Main Content */}
       <main className="flex flex-col items-center justify-center min-h-screen px-4 py-8">
         {/* Top Banner Ad */}
         {adsEnabled && (
-          <div className="mb-6">
+          <div className="mb-6 w-full max-w-4xl">
             <DynamicAds position="top-banner" isEnabled={adsEnabled} />
           </div>
         )}
 
-        {/* Status Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          {/* Device Info Card */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-semibold">Your Device</CardTitle>
-              <Laptop className="text-blue-600" size={20} />
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">Device Name</span>
-                <span className="text-sm font-medium text-slate-900">{deviceName}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">Network</span>
-                <span className="text-sm font-medium text-slate-900">
-                  {currentRoom || 'Local Network'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">ID</span>
-                <span className="text-sm font-mono text-slate-900">{deviceId.slice(-6)}</span>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Header Message */}
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-light text-slate-700 mb-3">
+            Open ShareLink on other devices to send files
+          </h2>
+          <p className="text-sm text-slate-500">
+            Pair devices to be discoverable on other networks
+          </p>
+        </div>
 
-          {/* Room Join Card */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-semibold">Join Room</CardTitle>
-              <Wifi className="text-amber-600" size={20} />
-            </CardHeader>
-            <CardContent className="space-y-3">
+        {/* Large Radar View */}
+        <div className="w-full max-w-3xl mb-12">
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
+            <RadarView
+              devices={devices}
+              selectedDevice={selectedDevice}
+              onDeviceSelect={handleDeviceSelect}
+              currentDeviceId={deviceId}
+              currentDeviceName={deviceName}
+              currentDeviceType={getDeviceType()}
+              isConnected={isConnected}
+            />
+          </div>
+        </div>
+
+        {/* Device Info */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg border border-white/30">
+            <div className="text-sm text-slate-600 flex items-center space-x-2">
+              <span>You are known as:</span>
+              <span className="font-medium text-blue-600">{deviceName}</span>
+            </div>
+          </div>
+          <div className="text-xs text-slate-500 mt-3 space-y-1">
+            <div>You can be discovered by everyone on this network</div>
+            <div>Traffic is routed through this server, if WebRTC is not available</div>
+          </div>
+        </div>
+
+        {/* Compact Controls */}
+        <div className="w-full max-w-xl space-y-4 mb-8">
+          {/* Room Controls */}
+          <Card className="bg-white/80 backdrop-blur-sm border-white/30 shadow-lg">
+            <CardContent className="p-4">
               {!currentRoom ? (
-                <>
-                  <Input
-                    placeholder="Enter room name"
-                    value={roomName}
-                    onChange={(e) => setRoomName(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && joinRoom()}
-                  />
-                  <Input
-                    type="password"
-                    placeholder="Room password (optional)"
-                    value={roomPassword}
-                    onChange={(e) => setRoomPassword(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && joinRoom()}
-                  />
-                  <Button onClick={joinRoom} className="w-full" disabled={!roomName.trim()}>
-                    Join Room
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">Current Room</span>
-                    <Badge variant="secondary">{currentRoom}</Badge>
+                <div className="space-y-3">
+                  <div className="text-sm font-medium text-slate-700 text-center">Join Room</div>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Room name"
+                      value={roomName}
+                      onChange={(e) => setRoomName(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && joinRoom()}
+                      className="flex-1 h-9 bg-white/50"
+                    />
+                    <Input
+                      placeholder="Password"
+                      type="password"
+                      value={roomPassword}
+                      onChange={(e) => setRoomPassword(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && joinRoom()}
+                      className="flex-1 h-9 bg-white/50"
+                    />
+                    <Button onClick={joinRoom} disabled={!roomName.trim()} size="sm" className="bg-blue-600 hover:bg-blue-700">
+                      Join
+                    </Button>
                   </div>
-                  <Button onClick={leaveRoom} variant="outline" className="w-full">
-                    Leave Room
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div className="text-sm">
+                    <div className="font-medium text-slate-700">Room: {currentRoom}</div>
+                    <div className="text-xs text-slate-500">Cross-network sharing</div>
+                  </div>
+                  <Button variant="outline" onClick={leaveRoom} size="sm">
+                    Leave
                   </Button>
-                </>
+                </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Network Stats Card */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-semibold">Network Stats</CardTitle>
-              <Signal className="text-emerald-600" size={20} />
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">Devices Found</span>
-                <span className="text-sm font-medium text-slate-900">{devices.length}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">Connection Type</span>
-                <span className="text-sm font-medium text-emerald-600">
-                  {isP2PConnected ? 'P2P Direct' : 'Signaling'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">Ads</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setAdsEnabled(!adsEnabled)}
-                  className="h-6 p-1"
-                >
-                  {adsEnabled ? (
-                    <Eye size={12} className="text-emerald-600" />
-                  ) : (
-                    <EyeOff size={12} className="text-slate-400" />
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {/* File Transfer & Messages */}
+          {selectedDevice && (
+            <div className="space-y-4">
+              <Card className="bg-white/80 backdrop-blur-sm border-white/30 shadow-lg">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base text-center">Send to {selectedDevice.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <FileTransfer
+                    selectedDevice={selectedDevice}
+                    onFileSend={handleFileSend}
+                  />
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-white/80 backdrop-blur-sm border-white/30 shadow-lg">
+                <CardContent className="p-4">
+                  <MessagePanel
+                    selectedDevice={selectedDevice}
+                    onMessageSend={handleMessageSend}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
 
-        {/* Main content with sidebar layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Main Content Area (3/4 width) */}
-          <div className="lg:col-span-3">
-            <Tabs defaultValue="radar" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="radar" className="flex items-center space-x-2">
-                  <Radar size={16} />
-                  <span>Radar View</span>
-                </TabsTrigger>
-                <TabsTrigger value="list" className="flex items-center space-x-2">
-                  <Signal size={16} />
-                  <span>Device List</span>
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="radar" className="space-y-6">
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                  <RadarView
-                    devices={devices}
-                    selectedDevice={selectedDevice}
-                    onDeviceSelect={handleDeviceSelect}
-                    currentDeviceId={deviceId}
-                    currentDeviceName={deviceName}
-                    currentDeviceType={getDeviceType()}
-                    isConnected={isConnected}
-                  />
-
-                  <div className="space-y-6">
-                    <FileTransfer
-                      selectedDevice={selectedDevice}
-                      onFileSend={handleFileSend}
-                    />
-                    <MessagePanel
-                      selectedDevice={selectedDevice}
-                      onMessageSend={handleMessageSend}
-                    />
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="list" className="space-y-6">
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                  <DeviceDiscovery
-                    devices={devices}
-                    selectedDevice={selectedDevice}
-                    onDeviceSelect={handleDeviceSelect}
-                    onRefresh={fetchDevices}
-                  />
-
-                  <div className="space-y-6">
-                    <FileTransfer
-                      selectedDevice={selectedDevice}
-                      onFileSend={handleFileSend}
-                    />
-                    <MessagePanel
-                      selectedDevice={selectedDevice}
-                      onMessageSend={handleMessageSend}
-                    />
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-
-          {/* Sidebar (1/4 width) */}
-          <div className="lg:col-span-1">
-            {adsEnabled && (
-              <div className="sticky top-20">
-                <DynamicAds position="sidebar" isEnabled={adsEnabled} />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Google Ads Banner */}
+        {/* Ad Space */}
         {adsEnabled && (
-          <div className="mb-8">
+          <div className="w-full max-w-2xl mb-8">
             <DynamicAds position="between-content" isEnabled={adsEnabled} />
           </div>
         )}
-        
-        {/* Transfer History */}
-        <TransferHistory transfers={transfers} currentDeviceId={deviceId} onClear={() => setTransfers([])} />
+
+        {/* Transfer History - Compact */}
+        {transfers.length > 0 && (
+          <div className="w-full max-w-2xl mb-8">
+            <TransferHistory transfers={transfers} currentDeviceId={deviceId} onClear={() => setTransfers([])} />
+          </div>
+        )}
 
         {/* Footer Ad */}
         {adsEnabled && (
-          <div className="mt-8">
+          <div className="w-full max-w-2xl">
             <DynamicAds position="footer" isEnabled={adsEnabled} />
           </div>
         )}
@@ -796,6 +772,14 @@ export default function Home() {
       <ProgressModal
         transfer={activeTransfer}
         onCancel={() => setActiveTransfer(null)}
+      />
+      
+      <DevicePairing
+        isOpen={showPairing}
+        onClose={() => setShowPairing(false)}
+        deviceId={deviceId}
+        deviceName={deviceName}
+        onPairWithCode={handlePairWithCode}
       />
     </div>
   );
