@@ -96,6 +96,30 @@ Device naming: Fun random names with animals and adjectives (e.g., "wombat-mac",
 
 The application is designed to work seamlessly in both development and production environments, with the server automatically detecting the mode and configuring itself accordingly.
 
+## Recent Changes (July 11, 2025)
+
+### Major UI Overhaul - Large Circular Radar (NEW - July 11, 2025)
+- **800px Circular Radar**: Redesigned radar component with prominent 800px diameter display on desktop
+- **Responsive Design**: Radar scales to 600px on tablets and 320px on mobile devices
+- **Enhanced Animations**: Replaced horizontal sweep with radiating pulse circles in multiple colors
+- **Better Contrast**: Lightened background and enhanced inner ring visibility with blue-300 borders
+- **Visual Effects**: Multiple concentric pulsing circles creating dynamic radar effect
+- **Performance**: Optimized window resize handling and device positioning calculations
+
+### Dark Mode & Theme System (NEW - July 11, 2025)
+- **Theme Provider**: Complete dark mode implementation with system preference detection
+- **Theme Toggle**: Sun/moon icon toggle in header for instant theme switching
+- **CSS Variables**: Proper HSL color definitions for light and dark themes
+- **LocalStorage**: Theme preference persistence across sessions
+- **Responsive Theming**: All components adapt to theme changes
+
+### Sound Notification System (NEW - July 11, 2025)
+- **Audio Context**: Web Audio API implementation for cross-browser compatibility
+- **Sound Effects**: Different tones for messages, file transfers, errors, and connections
+- **Volume Control**: Toggle button in header with volume/mute icons
+- **User Preference**: Sound settings saved to localStorage
+- **Test Sounds**: Audio feedback when enabling sound notifications
+
 ## Recent Changes (July 10, 2025)
 
 ### Device Type Recognition and Visual Indicators

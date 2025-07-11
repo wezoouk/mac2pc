@@ -92,63 +92,91 @@ export function RadarView({
       <div className="relative" style={{ width: radarSize, height: radarSize }}>
         {/* Radar Background - True Circle */}
         <div 
-          className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 shadow-2xl border-2 border-blue-500/30 dark:from-gray-800 dark:via-blue-800 dark:to-gray-800"
+          className="absolute inset-0 bg-gradient-to-br from-slate-700 via-blue-700 to-slate-700 shadow-2xl border-2 border-blue-400/50 dark:from-gray-700 dark:via-blue-600 dark:to-gray-700"
           style={{ borderRadius: '50%' }}
         >
-          {/* Animated Radar Rings */}
+          {/* Static Radar Rings with Better Contrast */}
           <div 
-            className="absolute inset-0 border-2 border-blue-400/30 animate-pulse"
+            className="absolute inset-0 border-2 border-blue-300/60"
             style={{ borderRadius: '50%' }}
           ></div>
           <div 
-            className="absolute border border-blue-400/20 animate-pulse"
+            className="absolute border-2 border-blue-300/50"
             style={{ 
               borderRadius: '50%',
               top: '12.5%',
               left: '12.5%',
               right: '12.5%',
-              bottom: '12.5%',
-              animationDelay: '0.5s'
+              bottom: '12.5%'
             }}
           ></div>
           <div 
-            className="absolute border border-blue-400/15 animate-pulse"
+            className="absolute border-2 border-blue-300/40"
             style={{ 
               borderRadius: '50%',
               top: '25%',
               left: '25%',
               right: '25%',
-              bottom: '25%',
-              animationDelay: '1s'
+              bottom: '25%'
             }}
           ></div>
           <div 
-            className="absolute border border-blue-400/10 animate-pulse"
+            className="absolute border-2 border-blue-300/30"
             style={{ 
               borderRadius: '50%',
               top: '37.5%',
               left: '37.5%',
               right: '37.5%',
-              bottom: '37.5%',
-              animationDelay: '1.5s'
+              bottom: '37.5%'
             }}
           ></div>
           
-          {/* Radar Sweep Animation */}
+          {/* Radiating Pulse Effects - Multiple Circles */}
           <div 
-            className="absolute inset-0 overflow-hidden"
-            style={{ borderRadius: '50%' }}
-          >
-            <div className="absolute top-1/2 left-1/2 w-full h-0.5 bg-gradient-to-r from-transparent via-green-400 to-transparent transform -translate-x-1/2 -translate-y-1/2 origin-left animate-spin opacity-60"></div>
-          </div>
-          
-          {/* Radiating Pulse Effect */}
+            className="absolute inset-0 animate-ping opacity-30"
+            style={{ 
+              borderRadius: '50%',
+              border: '2px solid rgb(59 130 246)',
+              animationDuration: '3s'
+            }}
+          ></div>
           <div 
-            className="absolute inset-0 animate-ping opacity-20"
+            className="absolute animate-ping opacity-20"
             style={{ 
               borderRadius: '50%',
               border: '2px solid rgb(34 197 94)',
-              animationDuration: '3s'
+              animationDuration: '4s',
+              animationDelay: '0.5s',
+              top: '10%',
+              left: '10%',
+              right: '10%',
+              bottom: '10%'
+            }}
+          ></div>
+          <div 
+            className="absolute animate-ping opacity-15"
+            style={{ 
+              borderRadius: '50%',
+              border: '2px solid rgb(168 85 247)',
+              animationDuration: '5s',
+              animationDelay: '1s',
+              top: '20%',
+              left: '20%',
+              right: '20%',
+              bottom: '20%'
+            }}
+          ></div>
+          <div 
+            className="absolute animate-ping opacity-10"
+            style={{ 
+              borderRadius: '50%',
+              border: '2px solid rgb(236 72 153)',
+              animationDuration: '6s',
+              animationDelay: '1.5s',
+              top: '30%',
+              left: '30%',
+              right: '30%',
+              bottom: '30%'
             }}
           ></div>
         </div>
