@@ -4,6 +4,7 @@ import { getDeviceIcon } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useMobile } from "@/hooks/use-mobile";
 import type { Device } from "@shared/schema";
 
 interface RadarViewProps {
@@ -26,6 +27,7 @@ export function RadarView({
   isConnected
 }: RadarViewProps) {
   const [animatedDevices, setAnimatedDevices] = useState<Device[]>([]);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
 
   useEffect(() => {
     // Animate devices appearing
@@ -35,9 +37,19 @@ export function RadarView({
     return () => clearTimeout(timer);
   }, [devices]);
 
+  useEffect(() => {
+    // Update window width on resize
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   function getDeviceIconComponent(type: string, isCenter = false) {
     // Responsive icon sizes
-    const size = isCenter ? (radarSize >= 480 ? 48 : radarSize >= 360 ? 36 : 32) : (radarSize >= 480 ? 32 : radarSize >= 360 ? 28 : 24);
+    const size = isCenter ? (radarSize >= 500 ? 56 : radarSize >= 400 ? 44 : 32) : (radarSize >= 500 ? 36 : radarSize >= 400 ? 32 : 24);
     const iconProps = { size, className: "text-white" };
     
     switch (type) {
@@ -55,10 +67,10 @@ export function RadarView({
     
     const angle = (2 * Math.PI * index) / total;
     // Adjust radius based on radar size - keep devices well within bounds
-    const margin = radarSize >= 480 ? 80 : radarSize >= 360 ? 60 : 50;
+    const margin = radarSize >= 500 ? 90 : radarSize >= 400 ? 70 : 50;
     const maxRadius = (radarSize / 2) - margin;
-    const baseRadius = radarSize >= 480 ? 120 : radarSize >= 360 ? 90 : 60;
-    const radius = Math.min(maxRadius, baseRadius + total * 8);
+    const baseRadius = radarSize >= 500 ? 140 : radarSize >= 400 ? 110 : 60;
+    const radius = Math.min(maxRadius, baseRadius + total * 10);
     
     return {
       x: Math.cos(angle) * radius,
@@ -74,7 +86,7 @@ export function RadarView({
   }
 
   // Responsive radar size - larger on desktop
-  const radarSize = window.innerWidth >= 1024 ? 480 : window.innerWidth >= 768 ? 360 : 280;
+  const radarSize = windowWidth >= 1024 ? 500 : windowWidth >= 768 ? 400 : 280;
   const centerX = radarSize / 2;
   const centerY = radarSize / 2;
 

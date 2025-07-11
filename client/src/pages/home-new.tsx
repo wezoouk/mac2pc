@@ -636,8 +636,8 @@ export default function Home() {
         </div>
 
         {/* Large Radar View */}
-        <div className="w-full max-w-xs sm:max-w-md lg:max-w-4xl xl:max-w-5xl mb-8 sm:mb-12">
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 sm:p-8 lg:p-12 shadow-xl border border-white/20">
+        <div className="w-full max-w-xs sm:max-w-md lg:max-w-5xl xl:max-w-6xl mb-8 sm:mb-12">
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 sm:p-8 lg:p-16 shadow-xl border border-white/20">
             <RadarView
               devices={devices}
               selectedDevice={selectedDevice}
