@@ -113,12 +113,20 @@ The application is designed to work seamlessly in both development and productio
 - **LocalStorage**: Theme preference persistence across sessions
 - **Responsive Theming**: All components adapt to theme changes
 
-### Sound Notification System (NEW - July 11, 2025)
-- **Audio Context**: Web Audio API implementation for cross-browser compatibility
-- **Sound Effects**: Different tones for messages, file transfers, errors, and connections
-- **Volume Control**: Toggle button in header with volume/mute icons
+### Sound Notification System (FIXED - July 11, 2025)
+- **Audio Context**: Web Audio API implementation with proper user interaction activation
+- **Sound Effects**: Different tones for messages (800Hz→600Hz), file transfers, errors, and connections
+- **Volume Control**: Toggle button in header with volume/mute icons that properly activates audio context
 - **User Preference**: Sound settings saved to localStorage
 - **Test Sounds**: Audio feedback when enabling sound notifications
+- **Browser Compatibility**: Fixed audio context suspension issue requiring user interaction
+
+### Enhanced Trusted Device Management (NEW - July 11, 2025)
+- **Trust Device Button**: Added "Trust Device" button when selecting devices from radar
+- **Device Identity**: Clear explanation of Device ID (unique security identifier) vs Device Name (fun random name)
+- **Auto-Accept**: Trusted devices can automatically accept transfers from each other
+- **One-Click Trust**: Easy device trusting directly from the main interface
+- **Device Information**: Shows device identity details in Device Settings section
 
 ## Recent Changes (July 10, 2025)
 

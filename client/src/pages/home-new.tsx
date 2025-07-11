@@ -370,6 +370,42 @@ export default function Home() {
     });
   }
 
+  async function addToTrustedDevices(device: Device) {
+    try {
+      const response = await fetch('/api/trusted-devices', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          deviceId: deviceId,
+          trustedDeviceId: device.id,
+          trustedDeviceName: device.name,
+          trustedDeviceType: device.type,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Device trusted",
+          description: `${device.name} has been added to your trusted devices`,
+          duration: 3000,
+        });
+      } else {
+        const error = await response.text();
+        throw new Error(error);
+      }
+    } catch (error) {
+      console.error('Error adding trusted device:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add device to trusted list",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  }
+
   async function joinRoom() {
     if (!roomName.trim()) return;
     
@@ -717,6 +753,9 @@ export default function Home() {
           <div className="text-xs text-slate-500 mt-3 space-y-1 hidden sm:block">
             <div>You can be discovered by everyone on this network</div>
             <div>Traffic is routed through this server, if WebRTC is not available</div>
+            <div className="text-xs text-slate-400 mt-2">
+              Device ID: {deviceId.slice(-8)} • Device Name: {deviceName}
+            </div>
           </div>
         </div>
 
@@ -768,7 +807,17 @@ export default function Home() {
             <div className="space-y-4">
               <Card className="bg-white/80 backdrop-blur-sm border-white/30 shadow-lg">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base text-center">Send to {selectedDevice.name}</CardTitle>
+                  <CardTitle className="text-base text-center flex items-center justify-between">
+                    <span>Send to {selectedDevice.name}</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addToTrustedDevices(selectedDevice)}
+                      className="text-xs px-2 py-1 h-7"
+                    >
+                      Trust Device
+                    </Button>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <FileTransfer
@@ -818,7 +867,23 @@ export default function Home() {
               </Card>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-2">
-              <TrustedDevicesManager currentDeviceId={deviceId} currentDeviceName={deviceName} />
+              <div className="space-y-4">
+                <Card className="bg-blue-50 border-blue-200">
+                  <CardContent className="p-4">
+                    <div className="text-sm text-blue-800">
+                      <div className="font-medium mb-2">About Device Identity:</div>
+                      <div className="space-y-1 text-xs">
+                        <div><strong>Device Name:</strong> {deviceName} (Fun random name for easy recognition)</div>
+                        <div><strong>Device ID:</strong> {deviceId.slice(-8)}... (Unique identifier for security)</div>
+                        <div className="text-blue-600 mt-2">
+                          Trusted devices can automatically accept transfers from each other
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <TrustedDevicesManager currentDeviceId={deviceId} currentDeviceName={deviceName} />
+              </div>
             </CollapsibleContent>
           </Collapsible>
         </div>
