@@ -88,7 +88,7 @@ export function DevicePairing({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto mx-2 sm:mx-0 my-2 sm:my-0">
         <DialogHeader>
           <DialogTitle className="text-center text-blue-600">Pair Devices</DialogTitle>
         </DialogHeader>
