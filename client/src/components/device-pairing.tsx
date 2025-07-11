@@ -114,8 +114,8 @@ export function DevicePairing({
                     {pairingCode.split('').join(' ')}
                   </div>
                   <p className="text-sm text-slate-600 mb-4">
-                    Input this key on another device<br />
-                    or scan the QR-Code.
+                    Both devices will join the same pairing room<br />
+                    Share this code or scan the QR-Code on another device.
                   </p>
                   
                   <div className="flex gap-2 justify-center">
@@ -148,7 +148,7 @@ export function DevicePairing({
             <CardContent className="p-6">
               <div className="text-center mb-4">
                 <p className="text-sm text-slate-600 mb-4">
-                  Enter key from another device to continue.
+                  Enter pairing code from another device to join their room.
                 </p>
                 
                 <div className="flex gap-2 mb-4">

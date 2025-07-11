@@ -44,9 +44,11 @@ export default function Home() {
 
   function handlePairWithCode(code: string) {
     // Join a special pairing room using the code
+    const pairRoomId = `pair-${code}`;
+    
     sendMessage({
       type: 'join-room',
-      roomId: `pair-${code}`,
+      roomId: pairRoomId,
       deviceId,
       data: {
         id: deviceId,
@@ -56,10 +58,14 @@ export default function Home() {
       }
     });
     
+    // Update current room to show we're in a pairing room
+    setCurrentRoom(pairRoomId);
+    setRoomName(pairRoomId);
+    
     toast({
-      title: "Pairing initiated",
-      description: `Connecting with code: ${code}`,
-      duration: 3000,
+      title: "Pairing successful!",
+      description: `Connected to pairing room: ${code}`,
+      duration: 5000,
     });
   }
 

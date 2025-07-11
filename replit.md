@@ -98,6 +98,15 @@ The application is designed to work seamlessly in both development and productio
 
 ## Recent Changes (July 11, 2025)
 
+### Device Pairing System (ENHANCED - July 11, 2025)
+- **Room-Based Pairing**: Device pairing works through temporary rooms using 6-digit codes
+- **QR Code Generation**: Automatic QR code generation for easy mobile device pairing
+- **Pairing Process**: When devices use the same pairing code, they join room `pair-${code}` and can discover each other
+- **Cross-Network Sharing**: Pairing enables devices from different networks to connect securely
+- **Improved UI**: Updated pairing dialog with clearer explanations of how the system works
+- **Connection Lines**: Added animated connection lines from center device to selected devices in radar view
+- **Trust Device Integration**: Prominent "Trust Device" button appears when selecting devices from radar
+
 ### Major UI Overhaul - Large Circular Radar (NEW - July 11, 2025)
 - **800px Circular Radar**: Redesigned radar component with prominent 800px diameter display on desktop
 - **Responsive Design**: Radar scales to 600px on tablets and 320px on mobile devices
