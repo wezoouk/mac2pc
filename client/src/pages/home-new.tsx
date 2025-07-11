@@ -40,6 +40,7 @@ export default function Home() {
   const [testMode, setTestMode] = useState(true); // Start with test mode ON to show multiple devices
   const [showPairing, setShowPairing] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(soundManager.isEnabled());
+  const [deviceSettingsOpen, setDeviceSettingsOpen] = useState(false);
   const { toast } = useToast();
 
   function handlePairWithCode(code: string) {
@@ -969,13 +970,13 @@ export default function Home() {
 
         {/* Trusted Devices Manager */}
         <div className="w-full max-w-2xl mb-8 animate-slideInRight" style={{ animationDelay: '1.4s' }}>
-          <Collapsible>
+          <Collapsible open={deviceSettingsOpen} onOpenChange={setDeviceSettingsOpen}>
             <CollapsibleTrigger className="w-full">
               <Card className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center justify-between text-sm text-slate-700 dark:text-slate-300">
                     <span>Device Settings</span>
-                    <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${deviceSettingsOpen ? 'rotate-180' : ''}`} />
                   </CardTitle>
                 </CardHeader>
               </Card>

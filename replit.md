@@ -8,6 +8,7 @@ This is a modern web application for peer-to-peer file transfer and messaging be
 
 Preferred communication style: Simple, everyday language.
 Device naming: Fun random names with animals and adjectives (e.g., "wombat-mac", "sleepy-otter-laptop").
+Interface expectations: Large circular radar as main focal point with properly angled connection lines and working trust device functionality.
 
 ## System Architecture
 
@@ -97,6 +98,14 @@ Device naming: Fun random names with animals and adjectives (e.g., "wombat-mac",
 The application is designed to work seamlessly in both development and production environments, with the server automatically detecting the mode and configuring itself accordingly.
 
 ## Recent Changes (July 11, 2025)
+
+### Critical Bug Fixes - Radar & Trust Functionality (FIXED - July 11, 2025)
+- **Fixed Device Positioning**: Corrected positioning algorithm to distribute devices around full circle instead of only horizontal/vertical lines
+- **Fixed Trust Button**: Both trust buttons (main and card) now work with proper error handling and success messages
+- **Fixed Device Settings**: Collapsible Device Settings section now opens/closes properly with state management
+- **Enhanced Debug Logging**: Added comprehensive logging for device positioning calculations showing proper angle distribution
+- **Test Mode Enhancement**: Added 6 test devices that automatically load to demonstrate proper circular positioning
+- **Connection Line Angles**: Lines now properly angle toward selected devices from center-to-edge calculations
 
 ### Major UI Overhaul - Large Circular Radar (NEW - July 11, 2025)
 - **800px Circular Radar**: Redesigned radar component with prominent 800px diameter display on desktop
