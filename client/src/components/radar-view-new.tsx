@@ -92,7 +92,7 @@ export function RadarView({
       <div className="relative mx-auto" style={{ width: radarSize, height: radarSize, maxWidth: '100%' }}>
         {/* Radar Background - True Circle */}
         <div 
-          className="absolute inset-0 bg-gradient-to-br from-slate-700 via-blue-700 to-slate-700 shadow-2xl border-2 border-blue-400/50 dark:from-gray-700 dark:via-blue-600 dark:to-gray-700"
+          className="absolute inset-0 bg-gradient-to-br from-slate-700 via-blue-700 to-slate-700 shadow-2xl border-2 border-blue-400/50 dark:from-gray-700 dark:via-blue-600 dark:to-gray-700 transition-all duration-500 hover:shadow-3xl"
           style={{ borderRadius: '50%' }}
         >
           {/* Static Radar Rings with Better Contrast */}
@@ -183,12 +183,12 @@ export function RadarView({
 
         {/* Center Device (Current User) */}
         <div 
-          className="absolute z-20 transform -translate-x-1/2 -translate-y-1/2"
+          className="absolute z-20 transform -translate-x-1/2 -translate-y-1/2 animate-scaleIn"
           style={{ left: centerX, top: centerY }}
         >
           <div className="relative">
-            <div className={`rounded-full bg-emerald-500 flex items-center justify-center shadow-lg border-4 border-white ${
-              isConnected ? 'ring-4 ring-emerald-200' : ''
+            <div className={`rounded-full bg-emerald-500 flex items-center justify-center shadow-lg border-4 border-white transition-all duration-300 ${
+              isConnected ? 'ring-4 ring-emerald-200 animate-glow' : ''
             }`}
             style={{ 
               width: radarSize >= 800 ? '80px' : radarSize >= 600 ? '64px' : '48px',
@@ -251,7 +251,7 @@ export function RadarView({
           return (
             <div
               key={device.id}
-              className={`absolute z-10 transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-out cursor-pointer hover:scale-110 ${
+              className={`absolute z-10 transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-out cursor-pointer hover:scale-110 animate-fadeInUp ${
                 isSelected ? 'scale-110 z-30' : ''
               }`}
               style={{
@@ -262,8 +262,8 @@ export function RadarView({
               onClick={() => onDeviceSelect(device)}
             >
               <div className="relative">
-                <div className={`rounded-full ${getDeviceColor(device)} flex items-center justify-center shadow-lg border-4 border-white transition-all duration-200 ${
-                  isSelected ? 'ring-4 ring-blue-200 shadow-xl' : 'hover:shadow-xl'
+                <div className={`rounded-full ${getDeviceColor(device)} flex items-center justify-center shadow-lg border-4 border-white transition-all duration-300 hover:shadow-xl ${
+                  isSelected ? 'ring-4 ring-blue-200 animate-glow' : ''
                 }`}
                 style={{ 
                   width: radarSize >= 800 ? '64px' : radarSize >= 600 ? '48px' : '36px',

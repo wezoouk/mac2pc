@@ -626,9 +626,15 @@ export default function Home() {
   }, [currentRoom, testMode]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-indigo-900 overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-indigo-900 overflow-x-hidden relative">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 opacity-5 dark:opacity-10">
+        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-blue-400 rounded-full blur-xl animate-pulse"></div>
+        <div className="absolute top-3/4 right-1/4 w-24 h-24 bg-indigo-400 rounded-full blur-xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute bottom-1/4 left-1/3 w-40 h-40 bg-purple-400 rounded-full blur-xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
       {/* Header */}
-      <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm shadow-sm border-b border-slate-200 dark:border-gray-700 sticky top-0 z-40">
+      <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm shadow-sm border-b border-slate-200 dark:border-gray-700 sticky top-0 z-40 animate-fadeInUp">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16">
             <div className="flex items-center space-x-3">
@@ -720,18 +726,18 @@ export default function Home() {
         )}
 
         {/* Header Message */}
-        <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-light text-slate-700 mb-3">
+        <div className="text-center mb-8 sm:mb-12 animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-light text-slate-700 dark:text-slate-300 mb-3 gradient-text">
             Open ShareLink on other devices to send files
           </h2>
-          <p className="text-sm text-slate-500 hidden sm:block">
+          <p className="text-sm text-slate-500 dark:text-slate-400 hidden sm:block">
             Pair devices to be discoverable on other networks
           </p>
         </div>
 
         {/* Large Radar View */}
-        <div className="w-full max-w-sm sm:max-w-lg lg:max-w-6xl mb-8 sm:mb-12 px-2 sm:px-0">
-          <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-3xl p-4 sm:p-8 lg:p-12 shadow-2xl border border-white/20 dark:border-gray-700/30 overflow-hidden">
+        <div className="w-full max-w-sm sm:max-w-lg lg:max-w-6xl mb-8 sm:mb-12 px-2 sm:px-0 animate-scaleIn" style={{ animationDelay: '0.4s' }}>
+          <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-3xl p-4 sm:p-8 lg:p-12 shadow-2xl border border-white/20 dark:border-gray-700/30 overflow-hidden hover:shadow-3xl transition-shadow duration-300">
             <RadarView
               devices={devices}
               selectedDevice={selectedDevice}
@@ -745,27 +751,27 @@ export default function Home() {
         </div>
 
         {/* Device Info */}
-        <div className="text-center mb-6 sm:mb-8">
-          <div className="inline-flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-full px-4 sm:px-6 py-2 sm:py-3 shadow-lg border border-white/30">
-            <div className="text-sm text-slate-600 flex items-center space-x-2">
+        <div className="text-center mb-6 sm:mb-8 animate-fadeInUp" style={{ animationDelay: '0.6s' }}>
+          <div className="inline-flex items-center justify-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full px-4 sm:px-6 py-2 sm:py-3 shadow-lg border border-white/30 dark:border-gray-600/30 hover:shadow-xl transition-all duration-300">
+            <div className="text-sm text-slate-600 dark:text-slate-400 flex items-center space-x-2">
               <span className="hidden sm:inline">You are known as:</span>
-              <span className="font-medium text-blue-600">{deviceName}</span>
+              <span className="font-medium text-blue-600 dark:text-blue-400">{deviceName}</span>
             </div>
           </div>
-          <div className="text-xs text-slate-500 mt-3 space-y-1 hidden sm:block">
+          <div className="text-xs text-slate-500 dark:text-slate-400 mt-3 space-y-1 hidden sm:block">
             <div>You can be discovered by everyone on this network</div>
             <div>Traffic is routed through this server, if WebRTC is not available</div>
-            <div className="text-xs text-slate-400 mt-2">
+            <div className="text-xs text-slate-400 dark:text-slate-500 mt-2">
               Device ID: {deviceId.slice(-8)} • Device Name: {deviceName}
             </div>
           </div>
           
           {/* Trust Device Button for Selected Device */}
           {selectedDevice && (
-            <div className="mt-4">
+            <div className="mt-4 animate-scaleIn">
               <Button
                 onClick={() => addToTrustedDevices(selectedDevice)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-full shadow-lg transition-all duration-200 hover:scale-105"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-full shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl animate-glow"
                 size="sm"
               >
                 Trust {selectedDevice.name}
@@ -775,13 +781,13 @@ export default function Home() {
         </div>
 
         {/* Compact Controls */}
-        <div className="w-full max-w-xl space-y-4 mb-8">
+        <div className="w-full max-w-xl space-y-4 mb-8 animate-fadeInUp" style={{ animationDelay: '0.8s' }}>
           {/* Room Controls */}
-          <Card className="bg-white/80 backdrop-blur-sm border-white/30 shadow-lg">
+          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-white/30 dark:border-gray-600/30 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardContent className="p-4">
               {!currentRoom ? (
                 <div className="space-y-3">
-                  <div className="text-sm font-medium text-slate-700 text-center">Join Room</div>
+                  <div className="text-sm font-medium text-slate-700 dark:text-slate-300 text-center">Join Room</div>
                   <div className="flex gap-2">
                     <Input
                       placeholder="Room name"
@@ -798,7 +804,7 @@ export default function Home() {
                       onKeyPress={(e) => e.key === 'Enter' && joinRoom()}
                       className="flex-1 h-9 bg-white/50"
                     />
-                    <Button onClick={joinRoom} disabled={!roomName.trim()} size="sm" className="bg-blue-600 hover:bg-blue-700">
+                    <Button onClick={joinRoom} disabled={!roomName.trim()} size="sm" className="bg-blue-600 hover:bg-blue-700 transition-all duration-200 hover:scale-105">
                       Join
                     </Button>
                   </div>
@@ -806,8 +812,8 @@ export default function Home() {
               ) : (
                 <div className="flex items-center justify-between">
                   <div className="text-sm">
-                    <div className="font-medium text-slate-700">Room: {currentRoom}</div>
-                    <div className="text-xs text-slate-500">Cross-network sharing</div>
+                    <div className="font-medium text-slate-700 dark:text-slate-300">Room: {currentRoom}</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">Cross-network sharing</div>
                   </div>
                   <Button variant="outline" onClick={leaveRoom} size="sm">
                     Leave
@@ -819,16 +825,16 @@ export default function Home() {
 
           {/* File Transfer & Messages */}
           {selectedDevice && (
-            <div className="space-y-4">
-              <Card className="bg-white/80 backdrop-blur-sm border-white/30 shadow-lg">
+            <div className="space-y-4 animate-scaleIn">
+              <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-white/30 dark:border-gray-600/30 shadow-lg hover:shadow-xl transition-all duration-300">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base text-center flex items-center justify-between">
+                  <CardTitle className="text-base text-center flex items-center justify-between text-slate-700 dark:text-slate-300">
                     <span>Send to {selectedDevice.name}</span>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => addToTrustedDevices(selectedDevice)}
-                      className="text-xs px-2 py-1 h-7"
+                      className="text-xs px-2 py-1 h-7 transition-all duration-200 hover:scale-105"
                     >
                       Trust Device
                     </Button>
@@ -842,7 +848,7 @@ export default function Home() {
                 </CardContent>
               </Card>
               
-              <Card className="bg-white/80 backdrop-blur-sm border-white/30 shadow-lg">
+              <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-white/30 dark:border-gray-600/30 shadow-lg hover:shadow-xl transition-all duration-300">
                 <CardContent className="p-4">
                   <MessagePanel
                     selectedDevice={selectedDevice}
@@ -863,34 +869,34 @@ export default function Home() {
 
         {/* Transfer History - Compact */}
         {transfers.length > 0 && (
-          <div className="w-full max-w-2xl mb-8">
+          <div className="w-full max-w-2xl mb-8 animate-fadeInUp" style={{ animationDelay: '1.2s' }}>
             <TransferHistory transfers={transfers} currentDeviceId={deviceId} onClear={() => setTransfers([])} />
           </div>
         )}
 
         {/* Trusted Devices Manager */}
-        <div className="w-full max-w-2xl mb-8">
+        <div className="w-full max-w-2xl mb-8 animate-slideInRight" style={{ animationDelay: '1.4s' }}>
           <Collapsible>
             <CollapsibleTrigger className="w-full">
-              <Card className="cursor-pointer hover:bg-gray-50 transition-colors">
+              <Card className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg">
                 <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center justify-between text-sm">
+                  <CardTitle className="flex items-center justify-between text-sm text-slate-700 dark:text-slate-300">
                     <span>Device Settings</span>
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className="h-4 w-4 transition-transform duration-200" />
                   </CardTitle>
                 </CardHeader>
               </Card>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-2">
               <div className="space-y-4">
-                <Card className="bg-blue-50 border-blue-200">
+                <Card className="bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300">
                   <CardContent className="p-4">
-                    <div className="text-sm text-blue-800">
+                    <div className="text-sm text-blue-800 dark:text-blue-200">
                       <div className="font-medium mb-2">About Device Identity:</div>
                       <div className="space-y-1 text-xs">
                         <div><strong>Device Name:</strong> {deviceName} (Fun random name for easy recognition)</div>
                         <div><strong>Device ID:</strong> {deviceId.slice(-8)}... (Unique identifier for security)</div>
-                        <div className="text-blue-600 mt-2">
+                        <div className="text-blue-600 dark:text-blue-400 mt-2">
                           Trusted devices can automatically accept transfers from each other
                         </div>
                       </div>
