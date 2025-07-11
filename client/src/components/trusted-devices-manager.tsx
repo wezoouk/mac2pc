@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Shield, Plus, Trash2, ShieldCheck, ShieldX, Clock, FileText, MessageSquare } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -283,31 +284,58 @@ export function TrustedDevicesManager({ currentDeviceId, currentDeviceName }: Tr
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1">
-                      <Button
-                        variant={device.autoAcceptFiles ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handleToggleAutoAccept(device, 'autoAcceptFiles')}
-                        disabled={updateTrustedMutation.isPending}
-                      >
-                        <FileText className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant={device.autoAcceptMessages ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handleToggleAutoAccept(device, 'autoAcceptMessages')}
-                        disabled={updateTrustedMutation.isPending}
-                      >
-                        <MessageSquare className="h-3 w-3" />
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant={device.autoAcceptFiles ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => handleToggleAutoAccept(device, 'autoAcceptFiles')}
+                              disabled={updateTrustedMutation.isPending}
+                            >
+                              <FileText className="h-3 w-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{device.autoAcceptFiles ? 'Auto-accept files enabled' : 'Auto-accept files disabled'}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant={device.autoAcceptMessages ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => handleToggleAutoAccept(device, 'autoAcceptMessages')}
+                              disabled={updateTrustedMutation.isPending}
+                            >
+                              <MessageSquare className="h-3 w-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{device.autoAcceptMessages ? 'Auto-accept messages enabled' : 'Auto-accept messages disabled'}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleRemove(device.id)}
-                      disabled={deleteTrustedMutation.isPending}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleRemove(device.id)}
+                            disabled={deleteTrustedMutation.isPending}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Remove from trusted devices</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
               ))}
