@@ -63,9 +63,14 @@ export default function Home() {
     });
   }
 
-  // Initialize notification system
+  // Initialize notification and sound systems
   useEffect(() => {
     NotificationManager.initialize();
+    
+    // Initialize sound state from soundManager
+    const soundState = soundManager.isEnabled();
+    setSoundEnabled(soundState);
+    NotificationManager.setSoundEnabled(soundState);
     
     // Check for pairing code in URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -173,6 +178,9 @@ export default function Home() {
           const senderName = senderDevice?.name || message.fromName || message.from.slice(-6);
           
           // Play sound notification
+          if (soundEnabled) {
+            soundManager.playMessageReceived();
+          }
           NotificationManager.notifyMessage(senderName, message.message, message.selfDestructTimer);
           
           toast({
@@ -210,6 +218,9 @@ export default function Home() {
           setFileQueue(prev => [...prev, fileTransfer]);
           
           // Play sound notification for file
+          if (soundEnabled) {
+            soundManager.playFileTransferStart();
+          }
           NotificationManager.notifyFile(senderName, message.fileName, message.fileSize);
           
           // Show toast notification about incoming file
@@ -230,6 +241,11 @@ export default function Home() {
     a.href = transfer.fileData;
     a.download = transfer.fileName;
     a.click();
+    
+    // Play success sound
+    if (soundEnabled) {
+      soundManager.playFileTransferComplete();
+    }
     
     const newTransfer = {
       id: Date.now() + Math.random(), // Make ID unique
@@ -333,6 +349,7 @@ export default function Home() {
     const newEnabled = !soundEnabled;
     setSoundEnabled(newEnabled);
     soundManager.setEnabled(newEnabled);
+    NotificationManager.setSoundEnabled(newEnabled);
     
     // Play a test sound when enabling
     if (newEnabled) {
