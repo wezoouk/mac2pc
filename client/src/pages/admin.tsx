@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Plus, Trash2, Eye, EyeOff, Save } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Settings, Plus, Trash2, Eye, EyeOff, Save, AlertTriangle, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { AdPlacement, InsertAdPlacement } from "@shared/schema";
@@ -26,6 +27,8 @@ export default function Admin() {
     isEnabled: true,
     priority: 1,
   });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [placementToDelete, setPlacementToDelete] = useState<number | null>(null);
 
   // Fetch ad placements
   const { data: adPlacements = [], isLoading: loadingPlacements } = useQuery({
@@ -144,8 +147,15 @@ export default function Admin() {
   };
 
   const handleDeletePlacement = (id: number) => {
-    if (confirm("Are you sure you want to delete this ad placement?")) {
-      deletePlacementMutation.mutate(id);
+    setPlacementToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (placementToDelete !== null) {
+      deletePlacementMutation.mutate(placementToDelete);
+      setDeleteDialogOpen(false);
+      setPlacementToDelete(null);
     }
   };
 
@@ -293,7 +303,17 @@ export default function Admin() {
             {/* Existing Ad Placements */}
             <Card>
               <CardHeader>
-                <CardTitle>Existing Ad Placements</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Existing Ad Placements</CardTitle>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/admin/ad-placements"] })}
+                  >
+                    <RefreshCw size={16} className="mr-2" />
+                    Refresh
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {loadingPlacements ? (
@@ -330,7 +350,8 @@ export default function Admin() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDeletePlacement(placement.id)}
-                              className="text-red-600 hover:text-red-800"
+                              className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                              disabled={deletePlacementMutation.isPending}
                             >
                               <Trash2 size={16} />
                             </Button>
@@ -377,6 +398,36 @@ export default function Admin() {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <AlertTriangle className="text-red-500" size={20} />
+              <span>Delete Ad Placement</span>
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-slate-600">
+            Are you sure you want to delete this ad placement? This action cannot be undone.
+          </p>
+          <DialogFooter className="space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={deletePlacementMutation.isPending}
+            >
+              {deletePlacementMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
