@@ -209,51 +209,75 @@ export function RadarView({
           </div>
         </div>
 
-        {/* Connection Dots to Selected Device */}
+        {/* Connection Line to Selected Device */}
         {selectedDevice && animatedDevices.find(d => d.id === selectedDevice.id) && (() => {
           const selectedIndex = animatedDevices.findIndex(d => d.id === selectedDevice.id);
           const position = getDevicePosition(selectedIndex, animatedDevices.length);
           
-          // Simple direct connection from center to device position
-          const startX = centerX;
-          const startY = centerY;
-          const endX = centerX + position.x;
-          const endY = centerY + position.y;
+          // Calculate actual device position on screen
+          const deviceX = centerX + position.x;
+          const deviceY = centerY + position.y;
+          
+          // Calculate angle for proper line direction
+          const angle = Math.atan2(position.y, position.x);
+          const distance = Math.sqrt(position.x ** 2 + position.y ** 2);
           
           console.log('Connection calculation:', {
-            centerX, centerY,
+            selectedIndex, totalDevices: animatedDevices.length,
             'position.x': position.x, 'position.y': position.y,
-            startX, startY, endX, endY
+            deviceX, deviceY, angle: angle.toFixed(2), distance: distance.toFixed(1)
           });
-          
-          // Calculate number of dots based on distance
-          const distance = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
-          const numDots = Math.max(12, Math.floor(distance / 20)); // More dots for visibility
-          
-          // Create dots array following the direct path
-          const dots = [];
-          for (let i = 1; i < numDots; i++) {
-            const t = i / numDots;
-            const dotX = startX + (endX - startX) * t;
-            const dotY = startY + (endY - startY) * t;
-            dots.push({ x: dotX, y: dotY, delay: i * 100 });
-          }
           
           return (
             <div className="absolute inset-0 pointer-events-none z-5">
-              {dots.map((dot, index) => (
-                <div
-                  key={index}
-                  className="absolute w-4 h-4 bg-gradient-to-r from-emerald-400 to-blue-400 rounded-full animate-pulse opacity-90"
+              <svg 
+                width={radarSize} 
+                height={radarSize} 
+                className="absolute inset-0"
+                style={{ overflow: 'visible' }}
+              >
+                <defs>
+                  <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="rgb(34, 197, 94)" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="rgb(59, 130, 246)" stopOpacity="0.8" />
+                  </linearGradient>
+                </defs>
+                <line
+                  x1={centerX}
+                  y1={centerY}
+                  x2={deviceX}
+                  y2={deviceY}
+                  stroke="url(#connectionGradient)"
+                  strokeWidth="4"
+                  strokeDasharray="8,4"
+                  className="animate-pulse"
                   style={{
-                    left: dot.x - 8,
-                    top: dot.y - 8,
-                    animationDelay: `${dot.delay}ms`,
-                    animationDuration: '2s',
-                    boxShadow: '0 0 12px rgba(59, 130, 246, 0.9)'
+                    filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.6))',
+                    animationDuration: '2s'
                   }}
                 />
-              ))}
+                {/* Animated dots along the line */}
+                {Array.from({ length: 8 }, (_, i) => {
+                  const t = (i + 1) / 9;
+                  const dotX = centerX + (deviceX - centerX) * t;
+                  const dotY = centerY + (deviceY - centerY) * t;
+                  return (
+                    <circle
+                      key={i}
+                      cx={dotX}
+                      cy={dotY}
+                      r="3"
+                      fill="rgb(34, 197, 94)"
+                      className="animate-ping"
+                      style={{
+                        animationDelay: `${i * 200}ms`,
+                        animationDuration: '1.5s',
+                        filter: 'drop-shadow(0 0 6px rgba(34, 197, 94, 0.8))'
+                      }}
+                    />
+                  );
+                })}
+              </svg>
             </div>
           );
         })()}
