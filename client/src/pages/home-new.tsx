@@ -973,23 +973,31 @@ export default function Home() {
           <div className="w-full">
             <div 
               className="cursor-pointer"
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 console.log('Device Settings clicked, current state:', deviceSettingsOpen);
-                setDeviceSettingsOpen(!deviceSettingsOpen);
+                const newState = !deviceSettingsOpen;
+                setDeviceSettingsOpen(newState);
+                console.log('Setting deviceSettingsOpen to:', newState);
               }}
             >
               <Card className="w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center justify-between text-sm text-slate-700 dark:text-slate-300">
-                    <span>🔧 Device Settings</span>
+                    <span>🔧 Device Settings {deviceSettingsOpen ? '(OPEN)' : '(CLOSED)'}</span>
                     <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${deviceSettingsOpen ? 'rotate-180' : ''}`} />
                   </CardTitle>
                 </CardHeader>
               </Card>
             </div>
             
+            {/* Debug: Always show if state is true */}
             {deviceSettingsOpen && (
-              <div className="mt-2 space-y-4">
+              <div className="mt-2 space-y-4 border-2 border-green-500 p-4 rounded-lg">
+                <div className="bg-green-100 dark:bg-green-900 p-2 rounded text-sm">
+                  DEBUG: Device Settings is OPEN (state: {deviceSettingsOpen.toString()})
+                </div>
                 <Card className="bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300">
                   <CardHeader>
                     <CardTitle className="text-sm">Device Information</CardTitle>
@@ -1024,6 +1032,11 @@ export default function Home() {
                 <TrustedDevicesManager deviceId={deviceId} />
               </div>
             )}
+            
+            {/* Debug: Always show what the current state is */}
+            <div className="mt-2 text-xs text-gray-500">
+              Current deviceSettingsOpen state: {deviceSettingsOpen.toString()}
+            </div>
           </div>
         </div>
 
