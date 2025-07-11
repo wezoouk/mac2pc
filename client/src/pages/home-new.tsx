@@ -130,6 +130,13 @@ export default function Home() {
 
   async function fetchDevices() {
     try {
+      // If we're in a pairing room, don't fetch local devices
+      // Room devices will be provided via 'room-devices' WebSocket message
+      if (currentRoom && currentRoom.startsWith('pair-')) {
+        console.log('In pairing room, not fetching local devices');
+        return;
+      }
+      
       console.log('Fetching local network devices');
       const response = await fetch('/api/devices/network/local');
       if (response.ok) {
@@ -152,7 +159,8 @@ export default function Home() {
     
     switch (message.type) {
       case 'device-list-update':
-        if (!currentRoom) {
+        // Only fetch devices if we're not in a pairing room
+        if (!currentRoom || !currentRoom.startsWith('pair-')) {
           setDevices([]);
           setTimeout(() => fetchDevices(), 100);
         }
@@ -172,6 +180,7 @@ export default function Home() {
       case 'room-devices':
         if (!testMode) {
           const roomDevices = message.devices.filter((d: Device) => d.id !== deviceId);
+          console.log(`Room devices received: ${roomDevices.length} devices in room ${currentRoom}`);
           setDevices(roomDevices);
         }
         break;
