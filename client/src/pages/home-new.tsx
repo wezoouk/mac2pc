@@ -42,10 +42,14 @@ export default function Home() {
   const [soundEnabled, setSoundEnabled] = useState(soundManager.isEnabled());
   const [deviceSettingsOpen, setDeviceSettingsOpen] = useState(false);
   
-  // Debug: Log state changes
+  // Debug: Log state changes and component mount
   useEffect(() => {
     console.log('deviceSettingsOpen state changed to:', deviceSettingsOpen);
   }, [deviceSettingsOpen]);
+  
+  useEffect(() => {
+    console.log('Home component mounted, deviceSettingsOpen initial state:', deviceSettingsOpen);
+  }, []);
   const { toast } = useToast();
 
   function handlePairWithCode(code: string) {
@@ -978,11 +982,12 @@ export default function Home() {
           <div className="w-full">
             <Card 
               className="w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg cursor-pointer"
-              onClick={() => {
+              onClick={(e) => {
                 console.log('Device Settings CARD clicked, current state:', deviceSettingsOpen);
+                console.log('Click event:', e.type);
                 const newState = !deviceSettingsOpen;
                 setDeviceSettingsOpen(newState);
-                console.log('New state should be:', newState);
+                console.log('Setting new state to:', newState);
               }}
             >
               <CardHeader className="pb-3">
