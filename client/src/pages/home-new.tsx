@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useWebRTC } from "@/hooks/use-webrtc";
 import { useToast } from "@/hooks/use-toast";
-import { RadarView } from "@/components/radar-view";
+import { RadarView } from "@/components/radar-view-new";
 import { FileTransfer } from "@/components/file-transfer";
 import { MessagePanel } from "@/components/message-panel";
 import { TransferHistory } from "@/components/transfer-history";
@@ -11,11 +11,13 @@ import { ProgressModal } from "@/components/progress-modal";
 import { DevicePairing } from "@/components/device-pairing";
 import { DynamicAds } from "@/components/google-ads";
 import { TrustedDevicesManager } from "@/components/trusted-devices-manager";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Settings, Share2, TestTube, RefreshCw, Eye, EyeOff, Link2, ChevronDown } from "lucide-react";
+import { Settings, Share2, TestTube, RefreshCw, Eye, EyeOff, Link2, ChevronDown, Volume2, VolumeX } from "lucide-react";
+import { soundManager } from "@/lib/sound-manager";
 import { nanoid } from "nanoid";
 import { generateRandomDeviceName, getDetailedDeviceType, getDeviceType } from '@/lib/utils';
 import { NotificationManager } from '@/lib/notifications';
@@ -37,6 +39,7 @@ export default function Home() {
   const [fileQueue, setFileQueue] = useState<any[]>([]);
   const [testMode, setTestMode] = useState(false);
   const [showPairing, setShowPairing] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(soundManager.isEnabled());
   const { toast } = useToast();
 
   function handlePairWithCode(code: string) {
@@ -326,6 +329,23 @@ export default function Home() {
     }
   }
 
+  function toggleSound() {
+    const newEnabled = !soundEnabled;
+    setSoundEnabled(newEnabled);
+    soundManager.setEnabled(newEnabled);
+    
+    // Play a test sound when enabling
+    if (newEnabled) {
+      soundManager.playDeviceConnected();
+    }
+    
+    toast({
+      title: newEnabled ? "Sound enabled" : "Sound disabled",
+      description: newEnabled ? "You'll hear notifications for transfers" : "Audio notifications turned off",
+      duration: 2000,
+    });
+  }
+
   async function joinRoom() {
     if (!roomName.trim()) return;
     
@@ -608,6 +628,18 @@ export default function Home() {
                 <span className="hidden sm:inline ml-2">Pair</span>
               </Button>
               
+              <Button
+                variant="ghost"
+                size="sm"
+                className="px-2 sm:px-3"
+                onClick={toggleSound}
+              >
+                {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+                <span className="hidden sm:inline ml-2">Sound</span>
+              </Button>
+              
+              <ThemeToggle />
+              
               <Button variant="ghost" size="sm" className="px-2 sm:px-3" onClick={() => window.open('/admin', '_blank')}>
                 <Settings size={16} />
               </Button>
@@ -636,8 +668,8 @@ export default function Home() {
         </div>
 
         {/* Large Radar View */}
-        <div className="w-full max-w-xs sm:max-w-md lg:max-w-5xl xl:max-w-6xl mb-8 sm:mb-12">
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-4 sm:p-8 lg:p-16 shadow-xl border border-white/20">
+        <div className="w-full max-w-sm sm:max-w-lg lg:max-w-7xl xl:max-w-full mb-8 sm:mb-12">
+          <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-3xl p-6 sm:p-12 lg:p-20 shadow-2xl border border-white/20 dark:border-gray-700/30">
             <RadarView
               devices={devices}
               selectedDevice={selectedDevice}
