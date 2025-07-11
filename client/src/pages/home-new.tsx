@@ -40,7 +40,7 @@ export default function Home() {
   const [testMode, setTestMode] = useState(true); // Start with test mode ON to show multiple devices
   const [showPairing, setShowPairing] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(soundManager.isEnabled());
-  const [deviceSettingsOpen, setDeviceSettingsOpen] = useState(false);
+  const [deviceSettingsOpen, setDeviceSettingsOpen] = useState(true);
   
   // Debug: Log state changes and component mount
   useEffect(() => {
@@ -1000,9 +1000,9 @@ export default function Home() {
             
             {/* Device Settings Content */}
             {deviceSettingsOpen && (
-              <div className="mt-2 space-y-4 border-2 border-green-500 p-4 rounded-lg">
-                <div className="bg-green-100 dark:bg-green-900 p-2 rounded text-sm">
-                  Device Settings is OPEN (state: {deviceSettingsOpen.toString()}) - Click header to close
+              <div className="mt-2 space-y-4">
+                <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded text-sm border border-slate-200 dark:border-slate-700">
+                  Device Settings - Click header to toggle
                 </div>
                 <Card className="bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300">
                   <CardHeader>
@@ -1039,10 +1039,7 @@ export default function Home() {
               </div>
             )}
             
-            {/* Debug: Always show what the current state is */}
-            <div className="mt-2 text-xs text-gray-500">
-              Current deviceSettingsOpen state: {deviceSettingsOpen.toString()}
-            </div>
+
           </div>
         </div>
 

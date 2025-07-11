@@ -99,6 +99,15 @@ The application is designed to work seamlessly in both development and productio
 
 ## Recent Changes (July 11, 2025)
 
+### Device Settings Toggle Fixed (FIXED - July 11, 2025)
+- **Fixed Click Detection**: Device Settings now properly toggles open/closed when clicking the header card
+- **Always Open by Default**: Device Settings box now starts in the open state for better user experience
+- **Improved Click Handler**: Changed from div to Card component with direct onClick for better event handling
+- **Enhanced Debug Logging**: Added comprehensive logging to track state changes and click events
+- **Visual Feedback**: Shows "(OPEN)" or "(CLOSED)" status in the header title
+- **Content Display**: Shows Device Information card with device name, ID, network status, and room
+- **Trusted Device Management**: Includes TrustedDevicesManager component for device pairing functionality
+
 ### Critical Bug Fixes - Radar & Trust Functionality (FIXED - July 11, 2025)
 - **Fixed Device Positioning**: Corrected positioning algorithm to distribute devices around full circle instead of only horizontal/vertical lines
 - **Fixed Trust Button**: Both trust buttons (main and card) now work with proper error handling and success messages
