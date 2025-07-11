@@ -61,23 +61,17 @@ export function RadarView({
   function getDevicePosition(index: number, total: number) {
     if (total === 0) return { x: 0, y: 0 };
     
-    // Distribute devices evenly around the circle, starting from the top
-    const baseAngle = (2 * Math.PI * index) / total;
-    const angle = baseAngle - Math.PI / 2; // Start from top (12 o'clock position)
-    
+    const angle = (2 * Math.PI * index) / total;
     // Adjust radius based on radar size - keep devices well within bounds
     const margin = radarSize >= 800 ? 120 : radarSize >= 600 ? 100 : 60;
     const maxRadius = (radarSize / 2) - margin;
     const baseRadius = radarSize >= 800 ? 220 : radarSize >= 600 ? 180 : 80;
     const radius = Math.min(maxRadius, baseRadius + total * 15);
     
-    // Calculate position using trigonometry
-    const x = Math.cos(angle) * radius;
-    const y = Math.sin(angle) * radius;
-    
-    console.log(`Device ${index}/${total}: baseAngle=${baseAngle.toFixed(2)}, angle=${angle.toFixed(2)}, radius=${radius}, x=${x.toFixed(1)}, y=${y.toFixed(1)}`);
-    
-    return { x, y };
+    return {
+      x: Math.cos(angle) * radius,
+      y: Math.sin(angle) * radius
+    };
   }
 
   function getDeviceColor(device: Device) {
@@ -98,7 +92,7 @@ export function RadarView({
       <div className="relative mx-auto" style={{ width: radarSize, height: radarSize, maxWidth: '100%' }}>
         {/* Radar Background - True Circle */}
         <div 
-          className="absolute inset-0 bg-gradient-to-br from-slate-700 via-blue-700 to-slate-700 shadow-2xl border-2 border-blue-400/50 dark:from-gray-700 dark:via-blue-600 dark:to-gray-700 transition-all duration-500 hover:shadow-3xl"
+          className="absolute inset-0 bg-gradient-to-br from-slate-700 via-blue-700 to-slate-700 shadow-2xl border-2 border-blue-400/50 dark:from-gray-700 dark:via-blue-600 dark:to-gray-700"
           style={{ borderRadius: '50%' }}
         >
           {/* Static Radar Rings with Better Contrast */}
@@ -189,12 +183,12 @@ export function RadarView({
 
         {/* Center Device (Current User) */}
         <div 
-          className="absolute z-20 transform -translate-x-1/2 -translate-y-1/2 animate-scaleIn"
+          className="absolute z-20 transform -translate-x-1/2 -translate-y-1/2"
           style={{ left: centerX, top: centerY }}
         >
           <div className="relative">
-            <div className={`rounded-full bg-emerald-500 flex items-center justify-center shadow-lg border-4 border-white transition-all duration-300 ${
-              isConnected ? 'ring-4 ring-emerald-200 animate-glow' : ''
+            <div className={`rounded-full bg-emerald-500 flex items-center justify-center shadow-lg border-4 border-white ${
+              isConnected ? 'ring-4 ring-emerald-200' : ''
             }`}
             style={{ 
               width: radarSize >= 800 ? '80px' : radarSize >= 600 ? '64px' : '48px',
@@ -213,67 +207,39 @@ export function RadarView({
         {selectedDevice && animatedDevices.find(d => d.id === selectedDevice.id) && (() => {
           const selectedIndex = animatedDevices.findIndex(d => d.id === selectedDevice.id);
           const position = getDevicePosition(selectedIndex, animatedDevices.length);
-          
-          // Calculate actual device position on screen
-          const deviceX = centerX + position.x;
-          const deviceY = centerY + position.y;
-          
-          // Calculate angle for proper line direction
-          const angle = Math.atan2(position.y, position.x);
-          const distance = Math.sqrt(position.x ** 2 + position.y ** 2);
-          
-          console.log('Connection calculation:', {
-            selectedIndex, totalDevices: animatedDevices.length,
-            'position.x': position.x, 'position.y': position.y,
-            deviceX, deviceY, angle: angle.toFixed(2), distance: distance.toFixed(1)
-          });
+          const lineLength = Math.sqrt(position.x * position.x + position.y * position.y);
+          const angle = Math.atan2(position.y, position.x) * 180 / Math.PI;
           
           return (
-            <div className="absolute inset-0 pointer-events-none z-5">
-              <svg 
-                width={radarSize} 
-                height={radarSize} 
-                className="absolute inset-0"
-                style={{ overflow: 'visible' }}
-              >
-                <defs>
-                  <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="rgb(34, 197, 94)" stopOpacity="0.8" />
-                    <stop offset="100%" stopColor="rgb(59, 130, 246)" stopOpacity="0.8" />
-                  </linearGradient>
-                </defs>
-                <line
-                  x1={centerX}
-                  y1={centerY}
-                  x2={deviceX}
-                  y2={deviceY}
-                  stroke="url(#connectionGradient)"
-                  strokeWidth="4"
-                  strokeDasharray="8,4"
-                  className="animate-pulse"
-                  style={{
-                    filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.6))',
-                    animationDuration: '2s'
-                  }}
-                />
-                {/* Static dots along the line */}
-                {Array.from({ length: 6 }, (_, i) => {
-                  const t = (i + 1) / 7;
-                  const dotX = centerX + (deviceX - centerX) * t;
-                  const dotY = centerY + (deviceY - centerY) * t;
-                  return (
-                    <circle
-                      key={i}
-                      cx={dotX}
-                      cy={dotY}
-                      r="2"
-                      fill="rgb(34, 197, 94)"
-                      opacity="0.8"
-                    />
-                  );
-                })}
-              </svg>
-            </div>
+            <>
+              {/* Main connection line */}
+              <div
+                className="absolute z-5 bg-gradient-to-r from-emerald-400 to-blue-400 opacity-70 animate-pulse"
+                style={{
+                  left: centerX,
+                  top: centerY - 1,
+                  width: lineLength,
+                  height: '3px',
+                  transform: `rotate(${angle}deg)`,
+                  transformOrigin: '0 50%',
+                  borderRadius: '1px',
+                  boxShadow: '0 0 8px rgba(59, 130, 246, 0.5)'
+                }}
+              />
+              {/* Animated connection pulse */}
+              <div
+                className="absolute z-5 bg-white opacity-90 animate-ping"
+                style={{
+                  left: centerX,
+                  top: centerY - 0.5,
+                  width: lineLength,
+                  height: '1px',
+                  transform: `rotate(${angle}deg)`,
+                  transformOrigin: '0 50%',
+                  animationDuration: '2s'
+                }}
+              />
+            </>
           );
         })()}
 
@@ -286,20 +252,18 @@ export function RadarView({
             <div
               key={device.id}
               className={`absolute z-10 transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-out cursor-pointer hover:scale-110 ${
-                isSelected ? 'scale-125 z-30 animate-bounce' : ''
+                isSelected ? 'scale-110 z-30' : ''
               }`}
               style={{
                 left: centerX + position.x,
                 top: centerY + position.y,
-                opacity: 0,
-                animation: `fadeInPlace 0.6s ease-out ${index * 100}ms forwards`,
-                filter: isSelected ? 'drop-shadow(0 0 20px rgba(34, 197, 94, 0.8))' : 'none'
+                animationDelay: `${index * 100}ms`
               }}
               onClick={() => onDeviceSelect(device)}
             >
               <div className="relative">
-                <div className={`rounded-full ${getDeviceColor(device)} flex items-center justify-center shadow-lg border-4 border-white transition-all duration-300 hover:shadow-xl ${
-                  isSelected ? 'ring-4 ring-emerald-300 animate-glow shadow-2xl' : ''
+                <div className={`rounded-full ${getDeviceColor(device)} flex items-center justify-center shadow-lg border-4 border-white transition-all duration-200 ${
+                  isSelected ? 'ring-4 ring-blue-200 shadow-xl' : 'hover:shadow-xl'
                 }`}
                 style={{ 
                   width: radarSize >= 800 ? '64px' : radarSize >= 600 ? '48px' : '36px',
