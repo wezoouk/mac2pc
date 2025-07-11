@@ -625,7 +625,7 @@ export default function Home() {
         {/* Top Banner Ad */}
         {adsEnabled && (
           <div className="mb-6 w-full max-w-4xl">
-            <DynamicAds position="top-banner" isEnabled={adsEnabled} />
+            <DynamicAds position="header" isEnabled={adsEnabled} />
           </div>
         )}
 
