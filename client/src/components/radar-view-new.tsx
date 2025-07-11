@@ -61,17 +61,22 @@ export function RadarView({
   function getDevicePosition(index: number, total: number) {
     if (total === 0) return { x: 0, y: 0 };
     
-    const angle = (2 * Math.PI * index) / total;
+    // Start from top (-90 degrees) and distribute evenly around the circle
+    const angle = (2 * Math.PI * index) / total - Math.PI / 2;
+    
     // Adjust radius based on radar size - keep devices well within bounds
     const margin = radarSize >= 800 ? 120 : radarSize >= 600 ? 100 : 60;
     const maxRadius = (radarSize / 2) - margin;
     const baseRadius = radarSize >= 800 ? 220 : radarSize >= 600 ? 180 : 80;
     const radius = Math.min(maxRadius, baseRadius + total * 15);
     
-    return {
-      x: Math.cos(angle) * radius,
-      y: Math.sin(angle) * radius
-    };
+    // Calculate position using full circle (including y axis)
+    const x = Math.cos(angle) * radius;
+    const y = Math.sin(angle) * radius;
+    
+    console.log(`Device ${index}: angle=${angle.toFixed(2)}, radius=${radius}, x=${x.toFixed(1)}, y=${y.toFixed(1)}`);
+    
+    return { x, y };
   }
 
   function getDeviceColor(device: Device) {

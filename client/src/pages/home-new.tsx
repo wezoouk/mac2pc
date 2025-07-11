@@ -408,9 +408,10 @@ export default function Home() {
         const responseData = await response.json();
         console.log('Trust device response:', responseData);
         
+        // Show success message
         toast({
           title: "Device trusted successfully!",
-          description: `${device.name} can now automatically accept your transfers`,
+          description: `${device.name} is now a trusted device and will auto-accept transfers`,
           duration: 5000,
         });
         
@@ -418,6 +419,15 @@ export default function Home() {
         if (soundEnabled) {
           soundManager.playDeviceConnected();
         }
+        
+        // Update UI to show trust status
+        setSelectedDevice(null); // Clear selection to show the change
+        
+        // Refresh devices to show updated trust status
+        setTimeout(() => {
+          fetchDevices();
+        }, 1000);
+        
       } else {
         const error = await response.text();
         console.error('Server error:', error);
@@ -426,10 +436,10 @@ export default function Home() {
     } catch (error) {
       console.error('Error adding trusted device:', error);
       toast({
-        title: "Error",
-        description: "Failed to add device to trusted list",
+        title: "Trust failed",
+        description: "Could not add device to trusted list. Please try again.",
         variant: "destructive",
-        duration: 3000,
+        duration: 4000,
       });
     }
   }
