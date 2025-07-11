@@ -17,8 +17,12 @@ class SoundManager {
     
     if (this.audioContext.state === 'suspended') {
       console.log('Audio context suspended, attempting to resume...');
-      await this.audioContext.resume();
-      console.log('Audio context resumed, state:', this.audioContext.state);
+      try {
+        await this.audioContext.resume();
+        console.log('Audio context resumed, state:', this.audioContext.state);
+      } catch (error) {
+        console.error('Failed to resume audio context:', error);
+      }
     }
   }
 
@@ -87,9 +91,14 @@ class SoundManager {
     setTimeout(() => this.playTone(554, 0.1), 50);
   }
 
-  setEnabled(enabled: boolean) {
+  async setEnabled(enabled: boolean) {
     this.enabled = enabled;
     localStorage.setItem('sound-enabled', enabled.toString());
+    
+    // If enabling sound, initialize audio context with user interaction
+    if (enabled) {
+      await this.initAudioContext();
+    }
   }
 
   isEnabled(): boolean {

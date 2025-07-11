@@ -350,17 +350,17 @@ export default function Home() {
     }
   }
 
-  function toggleSound() {
+  async function toggleSound() {
     const newEnabled = !soundEnabled;
     console.log('Toggling sound from', soundEnabled, 'to', newEnabled);
     setSoundEnabled(newEnabled);
-    soundManager.setEnabled(newEnabled);
+    await soundManager.setEnabled(newEnabled);
     NotificationManager.setSoundEnabled(newEnabled);
     
     // Play a test sound when enabling
     if (newEnabled) {
       console.log('Playing test sound after enabling');
-      soundManager.playDeviceConnected();
+      await soundManager.playDeviceConnected();
     }
     
     toast({
