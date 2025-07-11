@@ -976,22 +976,22 @@ export default function Home() {
         {/* Trusted Devices Manager */}
         <div className="w-full max-w-2xl mb-8 animate-slideInRight" style={{ animationDelay: '1.4s' }}>
           <div className="w-full">
-            <button 
-              className="cursor-pointer w-full text-left"
+            <Card 
+              className="w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg cursor-pointer"
               onClick={() => {
-                console.log('Device Settings button clicked, current state:', deviceSettingsOpen);
+                console.log('Device Settings CARD clicked, current state:', deviceSettingsOpen);
+                alert('Device Settings clicked!'); // Temporary alert to confirm click
                 setDeviceSettingsOpen(!deviceSettingsOpen);
+                console.log('New state should be:', !deviceSettingsOpen);
               }}
             >
-              <Card className="w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center justify-between text-sm text-slate-700 dark:text-slate-300">
-                    <span>🔧 Device Settings {deviceSettingsOpen ? '(OPEN)' : '(CLOSED)'}</span>
-                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${deviceSettingsOpen ? 'rotate-180' : ''}`} />
-                  </CardTitle>
-                </CardHeader>
-              </Card>
-            </button>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center justify-between text-sm text-slate-700 dark:text-slate-300">
+                  <span>🔧 Device Settings {deviceSettingsOpen ? '(OPEN)' : '(CLOSED)'}</span>
+                  <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${deviceSettingsOpen ? 'rotate-180' : ''}`} />
+                </CardTitle>
+              </CardHeader>
+            </Card>
             
             {/* Debug: Always show if state is true */}
             {deviceSettingsOpen && (
