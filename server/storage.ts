@@ -4,16 +4,22 @@ import {
   transfers,
   adminSettings,
   adPlacements,
+  trustedDevices,
+  adminAuth,
   type Device,
   type Room,
   type Transfer,
   type AdminSetting,
   type AdPlacement,
+  type TrustedDevice,
+  type AdminAuth,
   type InsertDevice,
   type InsertRoom,
   type InsertTransfer,
   type InsertAdminSetting,
   type InsertAdPlacement,
+  type InsertTrustedDevice,
+  type InsertAdminAuth,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -54,6 +60,20 @@ export interface IStorage {
   deleteAdPlacement(id: number): Promise<void>;
   getAllAdPlacements(): Promise<AdPlacement[]>;
   getEnabledAdPlacements(): Promise<AdPlacement[]>;
+  
+  // Trusted devices operations
+  createTrustedDevice(trustedDevice: InsertTrustedDevice): Promise<TrustedDevice>;
+  getTrustedDevice(deviceId: string, trustedDeviceId: string): Promise<TrustedDevice | undefined>;
+  getTrustedDevices(deviceId: string): Promise<TrustedDevice[]>;
+  updateTrustedDevice(id: number, updates: Partial<TrustedDevice>): Promise<TrustedDevice | undefined>;
+  deleteTrustedDevice(id: number): Promise<void>;
+  isTrustedDevice(deviceId: string, trustedDeviceId: string): Promise<boolean>;
+  
+  // Admin authentication operations
+  createAdminAuth(admin: InsertAdminAuth): Promise<AdminAuth>;
+  getAdminByUsername(username: string): Promise<AdminAuth | undefined>;
+  updateAdminAuth(id: number, updates: Partial<AdminAuth>): Promise<AdminAuth | undefined>;
+  getAllAdmins(): Promise<AdminAuth[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -62,8 +82,12 @@ export class MemStorage implements IStorage {
   private transfers: Map<number, Transfer>;
   private adminSettings: Map<string, AdminSetting>;
   private adPlacements: Map<number, AdPlacement>;
+  private trustedDevices: Map<number, TrustedDevice>;
+  private adminAuth: Map<number, AdminAuth>;
   private currentTransferId: number;
   private currentAdPlacementId: number;
+  private currentTrustedDeviceId: number;
+  private currentAdminAuthId: number;
 
   constructor() {
     this.devices = new Map();
@@ -71,11 +95,31 @@ export class MemStorage implements IStorage {
     this.transfers = new Map();
     this.adminSettings = new Map();
     this.adPlacements = new Map();
+    this.trustedDevices = new Map();
+    this.adminAuth = new Map();
     this.currentTransferId = 1;
     this.currentAdPlacementId = 1;
+    this.currentTrustedDeviceId = 1;
+    this.currentAdminAuthId = 1;
     
-    // Initialize with default ad placements
+    // Initialize with default ad placements and admin account
     this.initializeDefaultAdPlacements();
+    this.initializeDefaultAdmin();
+  }
+  
+  private async initializeDefaultAdmin() {
+    // Create default admin account with username "admin" and password "admin123"
+    const defaultAdmin: AdminAuth = {
+      id: this.currentAdminAuthId++,
+      username: "admin",
+      passwordHash: "$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // bcrypt hash of "admin123"
+      isActive: true,
+      lastLogin: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    
+    this.adminAuth.set(defaultAdmin.id, defaultAdmin);
   }
   
   private async initializeDefaultAdPlacements() {
@@ -334,6 +378,86 @@ export class MemStorage implements IStorage {
     return Array.from(this.adPlacements.values())
       .filter(placement => placement.isEnabled)
       .sort((a, b) => a.priority - b.priority);
+  }
+
+  // Trusted devices operations
+  async createTrustedDevice(insertTrustedDevice: InsertTrustedDevice): Promise<TrustedDevice> {
+    const id = this.currentTrustedDeviceId++;
+    const trustedDevice: TrustedDevice = {
+      id,
+      deviceId: insertTrustedDevice.deviceId,
+      trustedDeviceId: insertTrustedDevice.trustedDeviceId,
+      deviceName: insertTrustedDevice.deviceName,
+      trustedDeviceName: insertTrustedDevice.trustedDeviceName,
+      autoAcceptFiles: insertTrustedDevice.autoAcceptFiles ?? true,
+      autoAcceptMessages: insertTrustedDevice.autoAcceptMessages ?? true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.trustedDevices.set(id, trustedDevice);
+    return trustedDevice;
+  }
+
+  async getTrustedDevice(deviceId: string, trustedDeviceId: string): Promise<TrustedDevice | undefined> {
+    return Array.from(this.trustedDevices.values())
+      .find(td => td.deviceId === deviceId && td.trustedDeviceId === trustedDeviceId);
+  }
+
+  async getTrustedDevices(deviceId: string): Promise<TrustedDevice[]> {
+    return Array.from(this.trustedDevices.values())
+      .filter(td => td.deviceId === deviceId);
+  }
+
+  async updateTrustedDevice(id: number, updates: Partial<TrustedDevice>): Promise<TrustedDevice | undefined> {
+    const trustedDevice = this.trustedDevices.get(id);
+    if (!trustedDevice) return undefined;
+    
+    const updated = { ...trustedDevice, ...updates, updatedAt: new Date() };
+    this.trustedDevices.set(id, updated);
+    return updated;
+  }
+
+  async deleteTrustedDevice(id: number): Promise<void> {
+    this.trustedDevices.delete(id);
+  }
+
+  async isTrustedDevice(deviceId: string, trustedDeviceId: string): Promise<boolean> {
+    const trustedDevice = await this.getTrustedDevice(deviceId, trustedDeviceId);
+    return trustedDevice !== undefined;
+  }
+
+  // Admin authentication operations
+  async createAdminAuth(insertAdmin: InsertAdminAuth): Promise<AdminAuth> {
+    const id = this.currentAdminAuthId++;
+    const admin: AdminAuth = {
+      id,
+      username: insertAdmin.username,
+      passwordHash: insertAdmin.passwordHash,
+      isActive: insertAdmin.isActive ?? true,
+      lastLogin: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.adminAuth.set(id, admin);
+    return admin;
+  }
+
+  async getAdminByUsername(username: string): Promise<AdminAuth | undefined> {
+    return Array.from(this.adminAuth.values())
+      .find(admin => admin.username === username);
+  }
+
+  async updateAdminAuth(id: number, updates: Partial<AdminAuth>): Promise<AdminAuth | undefined> {
+    const admin = this.adminAuth.get(id);
+    if (!admin) return undefined;
+    
+    const updated = { ...admin, ...updates, updatedAt: new Date() };
+    this.adminAuth.set(id, updated);
+    return updated;
+  }
+
+  async getAllAdmins(): Promise<AdminAuth[]> {
+    return Array.from(this.adminAuth.values());
   }
 }
 

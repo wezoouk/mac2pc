@@ -2,7 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertDeviceSchema, insertRoomSchema, insertTransferSchema } from "@shared/schema";
+import bcrypt from "bcrypt";
+import { insertDeviceSchema, insertRoomSchema, insertTransferSchema, insertTrustedDeviceSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
 
 interface WebSocketClient extends WebSocket {
@@ -172,54 +173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin API routes
-  app.get("/api/admin/settings", async (req, res) => {
-    try {
-      const settings = await storage.getAllAdminSettings();
-      res.json(settings);
-    } catch (error) {
-      console.error("Error fetching admin settings:", error);
-      res.status(500).json({ message: "Failed to fetch admin settings" });
-    }
-  });
-
-  app.post("/api/admin/settings", async (req, res) => {
-    try {
-      const setting = await storage.createAdminSetting(req.body);
-      res.json(setting);
-    } catch (error) {
-      console.error("Error creating admin setting:", error);
-      res.status(500).json({ message: "Failed to create admin setting" });
-    }
-  });
-
-  app.put("/api/admin/settings/:key", async (req, res) => {
-    try {
-      const { key } = req.params;
-      const { value } = req.body;
-      const setting = await storage.updateAdminSetting(key, value);
-      if (!setting) {
-        res.status(404).json({ message: "Setting not found" });
-        return;
-      }
-      res.json(setting);
-    } catch (error) {
-      console.error("Error updating admin setting:", error);
-      res.status(500).json({ message: "Failed to update admin setting" });
-    }
-  });
-
-  // Ad placement API routes
-  app.get("/api/admin/ad-placements", async (req, res) => {
-    try {
-      const placements = await storage.getAllAdPlacements();
-      res.json(placements);
-    } catch (error) {
-      console.error("Error fetching ad placements:", error);
-      res.status(500).json({ message: "Failed to fetch ad placements" });
-    }
-  });
-
+  // Public ad placement API (no auth required)
   app.get("/api/ad-placements/enabled", async (req, res) => {
     try {
       const placements = await storage.getEnabledAdPlacements();
@@ -230,7 +184,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/ad-placements", async (req, res) => {
+  // Admin authentication middleware
+  function requireAuth(req: any, res: any, next: any) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No valid token provided' });
+    }
+    
+    const token = authHeader.split(' ')[1];
+    if (!token || token !== 'admin-session') {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    
+    next();
+  }
+
+  // Admin authentication routes
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password required' });
+      }
+      
+      const admin = await storage.getAdminByUsername(username);
+      if (!admin || !admin.isActive) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+      
+      const isValid = await bcrypt.compare(password, admin.passwordHash);
+      if (!isValid) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+      
+      // Update last login
+      await storage.updateAdminAuth(admin.id, { lastLogin: new Date() });
+      
+      res.json({ 
+        success: true, 
+        token: 'admin-session', // Simple token for demo
+        admin: { id: admin.id, username: admin.username } 
+      });
+    } catch (error) {
+      console.error("Admin login error:", error);
+      res.status(500).json({ error: 'Login failed' });
+    }
+  });
+
+  // Protected admin routes
+  app.get("/api/admin/settings", requireAuth, async (req, res) => {
+    try {
+      const settings = await storage.getAllAdminSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching admin settings:", error);
+      res.status(500).json({ message: "Failed to fetch admin settings" });
+    }
+  });
+
+  app.get("/api/admin/ad-placements", requireAuth, async (req, res) => {
+    try {
+      const placements = await storage.getAllAdPlacements();
+      res.json(placements);
+    } catch (error) {
+      console.error("Error fetching ad placements:", error);
+      res.status(500).json({ message: "Failed to fetch ad placements" });
+    }
+  });
+
+  app.post("/api/admin/ad-placements", requireAuth, async (req, res) => {
     try {
       const placement = await storage.createAdPlacement(req.body);
       res.json(placement);
@@ -240,7 +263,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/ad-placements/:id", async (req, res) => {
+  app.put("/api/admin/ad-placements/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const placement = await storage.updateAdPlacement(id, req.body);
@@ -255,22 +278,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/admin/ad-placements/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const placement = await storage.updateAdPlacement(id, req.body);
-      if (!placement) {
-        res.status(404).json({ message: "Ad placement not found" });
-        return;
-      }
-      res.json(placement);
-    } catch (error) {
-      console.error("Error updating ad placement:", error);
-      res.status(500).json({ message: "Failed to update ad placement" });
-    }
-  });
-
-  app.delete("/api/admin/ad-placements/:id", async (req, res) => {
+  app.delete("/api/admin/ad-placements/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteAdPlacement(id);
@@ -278,6 +286,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting ad placement:", error);
       res.status(500).json({ message: "Failed to delete ad placement" });
+    }
+  });
+
+  // Trusted devices API routes
+  app.get("/api/trusted-devices/:deviceId", async (req, res) => {
+    try {
+      const trustedDevices = await storage.getTrustedDevices(req.params.deviceId);
+      res.json(trustedDevices);
+    } catch (error) {
+      console.error("Error fetching trusted devices:", error);
+      res.status(500).json({ message: "Failed to fetch trusted devices" });
+    }
+  });
+
+  app.post("/api/trusted-devices", async (req, res) => {
+    try {
+      const trustedDeviceData = insertTrustedDeviceSchema.parse(req.body);
+      const trustedDevice = await storage.createTrustedDevice(trustedDeviceData);
+      res.json(trustedDevice);
+    } catch (error) {
+      console.error("Error creating trusted device:", error);
+      res.status(500).json({ message: "Failed to create trusted device" });
+    }
+  });
+
+  app.put("/api/trusted-devices/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const trustedDevice = await storage.updateTrustedDevice(id, req.body);
+      if (!trustedDevice) {
+        res.status(404).json({ message: "Trusted device not found" });
+        return;
+      }
+      res.json(trustedDevice);
+    } catch (error) {
+      console.error("Error updating trusted device:", error);
+      res.status(500).json({ message: "Failed to update trusted device" });
+    }
+  });
+
+  app.delete("/api/trusted-devices/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteTrustedDevice(id);
+      res.json({ message: "Trusted device removed successfully" });
+    } catch (error) {
+      console.error("Error deleting trusted device:", error);
+      res.status(500).json({ message: "Failed to remove trusted device" });
+    }
+  });
+
+  app.get("/api/trusted-devices/check/:deviceId/:trustedDeviceId", async (req, res) => {
+    try {
+      const isTrusted = await storage.isTrustedDevice(req.params.deviceId, req.params.trustedDeviceId);
+      res.json({ isTrusted });
+    } catch (error) {
+      console.error("Error checking trusted device:", error);
+      res.status(500).json({ message: "Failed to check trusted device" });
     }
   });
 
@@ -513,9 +579,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   async function handleTransferRequest(ws: WebSocketClient, data: SignalingMessage) {
     if (!data.to || !data.from) return;
 
-    const targetWs = clients.get(data.to);
-    if (targetWs && targetWs.readyState === WebSocket.OPEN) {
-      targetWs.send(JSON.stringify(data));
+    // Check if the sender is a trusted device for auto-accepting files
+    const isTrusted = await storage.isTrustedDevice(data.to, data.from);
+    
+    if (isTrusted) {
+      // Auto-accept the transfer for trusted devices
+      const autoAcceptResponse = {
+        type: 'transfer-response',
+        from: data.to,
+        to: data.from,
+        data: {
+          accepted: true,
+          autoAccepted: true,
+          message: 'Auto-accepted from trusted device'
+        }
+      };
+      
+      const senderWs = clients.get(data.from);
+      if (senderWs && senderWs.readyState === WebSocket.OPEN) {
+        senderWs.send(JSON.stringify(autoAcceptResponse));
+      }
+    } else {
+      // Normal transfer request requiring user acceptance
+      const targetWs = clients.get(data.to);
+      if (targetWs && targetWs.readyState === WebSocket.OPEN) {
+        targetWs.send(JSON.stringify(data));
+      }
     }
   }
 

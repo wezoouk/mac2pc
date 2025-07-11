@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,14 +9,41 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Settings, Plus, Trash2, Eye, EyeOff, RefreshCw, AlertTriangle } from "lucide-react";
+import { Settings, Plus, Trash2, Eye, EyeOff, RefreshCw, AlertTriangle, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 import type { AdPlacement, InsertAdPlacement } from "@shared/schema";
 
 export default function AdminNew() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
+  
+  // Authentication check
+  useEffect(() => {
+    const token = localStorage.getItem('admin-token');
+    if (!token) {
+      setLocation('/admin-login');
+      return;
+    }
+  }, [setLocation]);
+  
+  // Helper function to get auth headers
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('admin-token');
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+  };
+  
+  // Logout function
+  const handleLogout = () => {
+    localStorage.removeItem('admin-token');
+    localStorage.removeItem('admin-user');
+    setLocation('/admin-login');
+  };
   
   // Form state
   const [formData, setFormData] = useState({
@@ -37,8 +64,16 @@ export default function AdminNew() {
   const { data: adPlacements = [], isLoading: loadingPlacements, refetch } = useQuery({
     queryKey: ["/api/admin/ad-placements"],
     queryFn: async () => {
-      const response = await fetch("/api/admin/ad-placements");
+      const response = await fetch("/api/admin/ad-placements", {
+        headers: getAuthHeaders()
+      });
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('admin-token');
+          localStorage.removeItem('admin-user');
+          setLocation('/admin-login');
+          throw new Error("Authentication required");
+        }
         throw new Error("Failed to fetch ad placements");
       }
       return response.json();
@@ -50,10 +85,16 @@ export default function AdminNew() {
     mutationFn: async (placement: InsertAdPlacement) => {
       const response = await fetch("/api/admin/ad-placements", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
         body: JSON.stringify(placement),
       });
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('admin-token');
+          localStorage.removeItem('admin-user');
+          setLocation('/admin-login');
+          throw new Error("Authentication required");
+        }
         throw new Error("Failed to create ad placement");
       }
       return response.json();
@@ -88,10 +129,16 @@ export default function AdminNew() {
     mutationFn: async ({ id, updates }: { id: number; updates: Partial<AdPlacement> }) => {
       const response = await fetch(`/api/admin/ad-placements/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
         body: JSON.stringify(updates),
       });
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('admin-token');
+          localStorage.removeItem('admin-user');
+          setLocation('/admin-login');
+          throw new Error("Authentication required");
+        }
         throw new Error("Failed to update ad placement");
       }
       return response.json();
@@ -117,8 +164,15 @@ export default function AdminNew() {
     mutationFn: async (id: number) => {
       const response = await fetch(`/api/admin/ad-placements/${id}`, {
         method: "DELETE",
+        headers: getAuthHeaders(),
       });
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('admin-token');
+          localStorage.removeItem('admin-user');
+          setLocation('/admin-login');
+          throw new Error("Authentication required");
+        }
         throw new Error("Failed to delete ad placement");
       }
       return response.json();
@@ -196,9 +250,15 @@ export default function AdminNew() {
                 <p className="text-xs text-slate-500">Manage Google Ads & Configuration</p>
               </div>
             </div>
-            <Button variant="outline" onClick={() => window.history.back()}>
-              Back to App
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" onClick={() => window.history.back()}>
+                Back to App
+              </Button>
+              <Button variant="destructive" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </header>

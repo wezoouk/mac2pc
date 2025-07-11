@@ -10,10 +10,12 @@ import { TransferModal } from "@/components/transfer-modal";
 import { ProgressModal } from "@/components/progress-modal";
 import { DevicePairing } from "@/components/device-pairing";
 import { DynamicAds } from "@/components/google-ads";
+import { TrustedDevicesManager } from "@/components/trusted-devices-manager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Share2, TestTube, RefreshCw, Eye, EyeOff, Link2 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Settings, Share2, TestTube, RefreshCw, Eye, EyeOff, Link2, ChevronDown } from "lucide-react";
 import { nanoid } from "nanoid";
 import { generateRandomDeviceName, getDetailedDeviceType, getDeviceType } from '@/lib/utils';
 import { NotificationManager } from '@/lib/notifications';
@@ -746,6 +748,24 @@ export default function Home() {
           </div>
         )}
 
+        {/* Trusted Devices Manager */}
+        <div className="w-full max-w-2xl mb-8">
+          <Collapsible>
+            <CollapsibleTrigger className="w-full">
+              <Card className="cursor-pointer hover:bg-gray-50 transition-colors">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center justify-between text-sm">
+                    <span>Device Settings</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2">
+              <TrustedDevicesManager currentDeviceId={deviceId} currentDeviceName={deviceName} />
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
 
       </main>
 

@@ -59,6 +59,30 @@ export const adPlacements = pgTable("ad_placements", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Trusted devices table for auto-accept functionality
+export const trustedDevices = pgTable("trusted_devices", {
+  id: serial("id").primaryKey(),
+  deviceId: text("device_id").notNull(),
+  trustedDeviceId: text("trusted_device_id").notNull(),
+  deviceName: text("device_name").notNull(),
+  trustedDeviceName: text("trusted_device_name").notNull(),
+  autoAcceptFiles: boolean("auto_accept_files").default(true),
+  autoAcceptMessages: boolean("auto_accept_messages").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Admin authentication table
+export const adminAuth = pgTable("admin_auth", {
+  id: serial("id").primaryKey(),
+  username: varchar("username", { length: 50 }).unique().notNull(),
+  passwordHash: text("password_hash").notNull(),
+  isActive: boolean("is_active").default(true),
+  lastLogin: timestamp("last_login"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertDeviceSchema = createInsertSchema(devices).pick({
   id: true,
   name: true,
@@ -100,6 +124,21 @@ export const insertAdminSettingSchema = createInsertSchema(adminSettings).pick({
   category: true,
 });
 
+export const insertTrustedDeviceSchema = createInsertSchema(trustedDevices).pick({
+  deviceId: true,
+  trustedDeviceId: true,
+  deviceName: true,
+  trustedDeviceName: true,
+  autoAcceptFiles: true,
+  autoAcceptMessages: true,
+});
+
+export const insertAdminAuthSchema = createInsertSchema(adminAuth).pick({
+  username: true,
+  passwordHash: true,
+  isActive: true,
+});
+
 export type InsertDevice = z.infer<typeof insertDeviceSchema>;
 export type Device = typeof devices.$inferSelect;
 export type InsertRoom = z.infer<typeof insertRoomSchema>;
@@ -110,3 +149,7 @@ export type InsertAdPlacement = z.infer<typeof insertAdPlacementSchema>;
 export type AdPlacement = typeof adPlacements.$inferSelect;
 export type InsertAdminSetting = z.infer<typeof insertAdminSettingSchema>;
 export type AdminSetting = typeof adminSettings.$inferSelect;
+export type InsertTrustedDevice = z.infer<typeof insertTrustedDeviceSchema>;
+export type TrustedDevice = typeof trustedDevices.$inferSelect;
+export type InsertAdminAuth = z.infer<typeof insertAdminAuthSchema>;
+export type AdminAuth = typeof adminAuth.$inferSelect;
