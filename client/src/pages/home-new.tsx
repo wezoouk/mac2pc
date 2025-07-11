@@ -37,7 +37,7 @@ export default function Home() {
   const [activeTransfer, setActiveTransfer] = useState<any>(null);
   const [transferQueue, setTransferQueue] = useState<File[]>([]);
   const [fileQueue, setFileQueue] = useState<any[]>([]);
-  const [testMode, setTestMode] = useState(false);
+  const [testMode, setTestMode] = useState(true); // Start with test mode ON to show multiple devices
   const [showPairing, setShowPairing] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(soundManager.isEnabled());
   const { toast } = useToast();
@@ -78,6 +78,12 @@ export default function Home() {
     console.log('Initial sound state:', soundState);
     setSoundEnabled(soundState);
     NotificationManager.setSoundEnabled(soundState);
+    
+    // Initialize test devices if test mode is enabled
+    if (testMode) {
+      console.log('Initializing with test devices:', testDevices.length);
+      setDevices(testDevices);
+    }
     
     // Check for pairing code in URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -120,6 +126,39 @@ export default function Home() {
       id: "test-device-3",
       name: "sleepy-pangolin-iPad",
       type: "tablet", 
+      network: "local",
+      isOnline: true,
+      lastSeen: new Date(),
+      roomId: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: "test-device-4",
+      name: "clever-dolphin-phone",
+      type: "mobile",
+      network: "local",
+      isOnline: true,
+      lastSeen: new Date(),
+      roomId: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: "test-device-5",
+      name: "brave-falcon-desktop",
+      type: "desktop",
+      network: "local",
+      isOnline: true,
+      lastSeen: new Date(),
+      roomId: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: "test-device-6",
+      name: "nimble-wolf-tablet",
+      type: "tablet",
       network: "local",
       isOnline: true,
       lastSeen: new Date(),
@@ -352,8 +391,10 @@ export default function Home() {
     setTestMode(newTestMode);
     
     if (newTestMode) {
+      console.log('Setting test devices:', testDevices.length);
       setDevices(testDevices);
     } else {
+      console.log('Exiting test mode, fetching real devices');
       setDevices([]);
       fetchDevices();
     }
@@ -402,7 +443,7 @@ export default function Home() {
         body: JSON.stringify(requestData),
       });
 
-      console.log('Response status:', response.status);
+      console.log('Response status:', response.status, response.statusText);
       
       if (response.ok) {
         const responseData = await response.json();
@@ -807,12 +848,12 @@ export default function Home() {
             <div className="mt-4 animate-scaleIn">
               <Button
                 onClick={async () => {
-                  console.log('Trust button clicked for:', selectedDevice.name);
+                  console.log('Main trust button clicked for:', selectedDevice.name, selectedDevice.id);
                   try {
                     await addToTrustedDevices(selectedDevice);
-                    console.log('Trust device completed successfully');
+                    console.log('Main trust device completed successfully');
                   } catch (error) {
-                    console.error('Trust device failed:', error);
+                    console.error('Main trust device failed:', error);
                   }
                 }}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-full shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl animate-glow hover:animate-pulse"
@@ -877,10 +918,18 @@ export default function Home() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => addToTrustedDevices(selectedDevice)}
-                      className="text-xs px-2 py-1 h-7 transition-all duration-200 hover:scale-105"
+                      onClick={async () => {
+                        console.log('Card trust button clicked for:', selectedDevice.name, selectedDevice.id);
+                        try {
+                          await addToTrustedDevices(selectedDevice);
+                          console.log('Card trust device completed successfully');
+                        } catch (error) {
+                          console.error('Card trust device failed:', error);
+                        }
+                      }}
+                      className="text-xs px-2 py-1 h-7 transition-all duration-200 hover:scale-105 bg-emerald-600 hover:bg-emerald-700 text-white"
                     >
-                      Trust Device
+                      🤝 Trust Device
                     </Button>
                   </CardTitle>
                 </CardHeader>
