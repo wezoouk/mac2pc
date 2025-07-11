@@ -746,12 +746,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* Footer Ad */}
-        {adsEnabled && (
-          <div className="w-full max-w-2xl">
-            <DynamicAds position="footer" isEnabled={adsEnabled} />
-          </div>
-        )}
+
       </main>
 
       {/* Modals */}

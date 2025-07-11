@@ -138,18 +138,19 @@ export function DynamicAds({ position, isEnabled = true }: { position: string; i
 
   if (relevantAds.length === 0) return null;
 
+  // Show only the first ad for each position to avoid duplicates
+  const adToShow = relevantAds[0];
+  
   return (
-    <div className="space-y-4">
-      {relevantAds.map((ad: any) => (
-        <GoogleAds
-          key={ad.id}
-          adClient={ad.adClient}
-          adSlot={ad.adSlot}
-          adFormat={ad.adFormat}
-          isEnabled={isEnabled}
-          className="w-full"
-        />
-      ))}
+    <div className="w-full">
+      <GoogleAds
+        key={adToShow.id}
+        adClient={adToShow.adClient}
+        adSlot={adToShow.adSlot}
+        adFormat={adToShow.adFormat}
+        isEnabled={isEnabled}
+        className="w-full"
+      />
     </div>
   );
 }
