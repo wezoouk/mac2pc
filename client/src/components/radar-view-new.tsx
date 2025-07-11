@@ -207,8 +207,24 @@ export function RadarView({
         {selectedDevice && animatedDevices.find(d => d.id === selectedDevice.id) && (() => {
           const selectedIndex = animatedDevices.findIndex(d => d.id === selectedDevice.id);
           const position = getDevicePosition(selectedIndex, animatedDevices.length);
-          const lineLength = Math.sqrt(position.x * position.x + position.y * position.y);
-          const angle = Math.atan2(position.y, position.x) * 180 / Math.PI;
+          
+          // Calculate exact positions for center and device icons
+          const centerIconRadius = radarSize >= 800 ? 40 : radarSize >= 600 ? 32 : 24;
+          const deviceIconRadius = radarSize >= 800 ? 32 : radarSize >= 600 ? 24 : 18;
+          
+          // Calculate the distance and angle
+          const distance = Math.sqrt(position.x * position.x + position.y * position.y);
+          const angle = Math.atan2(position.y, position.x);
+          
+          // Calculate start and end points accounting for icon sizes
+          const startX = centerX + Math.cos(angle) * centerIconRadius;
+          const startY = centerY + Math.sin(angle) * centerIconRadius;
+          const endX = centerX + position.x - Math.cos(angle) * deviceIconRadius;
+          const endY = centerY + position.y - Math.sin(angle) * deviceIconRadius;
+          
+          // Calculate line properties
+          const lineLength = Math.sqrt((endX - startX) * (endX - startX) + (endY - startY) * (endY - startY));
+          const lineAngle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
           
           return (
             <>
@@ -216,11 +232,11 @@ export function RadarView({
               <div
                 className="absolute z-5 bg-gradient-to-r from-emerald-400 to-blue-400 opacity-70 animate-pulse"
                 style={{
-                  left: centerX,
-                  top: centerY - 1,
+                  left: startX,
+                  top: startY - 1.5,
                   width: lineLength,
                   height: '3px',
-                  transform: `rotate(${angle}deg)`,
+                  transform: `rotate(${lineAngle}deg)`,
                   transformOrigin: '0 50%',
                   borderRadius: '1px',
                   boxShadow: '0 0 8px rgba(59, 130, 246, 0.5)'
@@ -230,11 +246,11 @@ export function RadarView({
               <div
                 className="absolute z-5 bg-white opacity-90 animate-ping"
                 style={{
-                  left: centerX,
-                  top: centerY - 0.5,
+                  left: startX,
+                  top: startY - 0.5,
                   width: lineLength,
                   height: '1px',
-                  transform: `rotate(${angle}deg)`,
+                  transform: `rotate(${lineAngle}deg)`,
                   transformOrigin: '0 50%',
                   animationDuration: '2s'
                 }}

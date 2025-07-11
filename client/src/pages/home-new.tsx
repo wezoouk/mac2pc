@@ -791,9 +791,14 @@ export default function Home() {
           {selectedDevice && (
             <div className="mt-4 animate-scaleIn">
               <Button
-                onClick={() => {
+                onClick={async () => {
                   console.log('Trust button clicked for:', selectedDevice.name);
-                  addToTrustedDevices(selectedDevice);
+                  try {
+                    await addToTrustedDevices(selectedDevice);
+                    console.log('Trust device completed successfully');
+                  } catch (error) {
+                    console.error('Trust device failed:', error);
+                  }
                 }}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-full shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl animate-glow"
                 size="sm"
