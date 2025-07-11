@@ -286,19 +286,20 @@ export function RadarView({
             <div
               key={device.id}
               className={`absolute z-10 transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-out cursor-pointer hover:scale-110 ${
-                isSelected ? 'scale-110 z-30' : ''
+                isSelected ? 'scale-125 z-30 animate-bounce' : ''
               }`}
               style={{
                 left: centerX + position.x,
                 top: centerY + position.y,
                 opacity: 0,
-                animation: `fadeInPlace 0.6s ease-out ${index * 100}ms forwards`
+                animation: `fadeInPlace 0.6s ease-out ${index * 100}ms forwards`,
+                filter: isSelected ? 'drop-shadow(0 0 20px rgba(34, 197, 94, 0.8))' : 'none'
               }}
               onClick={() => onDeviceSelect(device)}
             >
               <div className="relative">
                 <div className={`rounded-full ${getDeviceColor(device)} flex items-center justify-center shadow-lg border-4 border-white transition-all duration-300 hover:shadow-xl ${
-                  isSelected ? 'ring-4 ring-blue-200 animate-glow' : ''
+                  isSelected ? 'ring-4 ring-emerald-300 animate-pulse shadow-2xl' : ''
                 }`}
                 style={{ 
                   width: radarSize >= 800 ? '64px' : radarSize >= 600 ? '48px' : '36px',

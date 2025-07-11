@@ -186,6 +186,19 @@
   }
 }
 
+@keyframes glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 20px rgba(34, 197, 94, 0.8));
+  }
+  50% {
+    filter: drop-shadow(0 0 30px rgba(34, 197, 94, 1));
+  }
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
 :root {
   --background: hsl(210, 20%, 98%);
   --foreground: hsl(222, 84%, 5%);

@@ -971,18 +971,16 @@ export default function Home() {
         {/* Trusted Devices Manager */}
         <div className="w-full max-w-2xl mb-8 animate-slideInRight" style={{ animationDelay: '1.4s' }}>
           <Collapsible open={deviceSettingsOpen} onOpenChange={setDeviceSettingsOpen}>
-            <CollapsibleTrigger 
-              className="w-full"
-              asChild
-            >
-              <div 
-                className="cursor-pointer"
+            <CollapsibleTrigger asChild>
+              <Button 
+                variant="ghost" 
+                className="w-full p-0 h-auto cursor-pointer"
                 onClick={() => {
                   console.log('Device Settings clicked, current state:', deviceSettingsOpen);
                   setDeviceSettingsOpen(!deviceSettingsOpen);
                 }}
               >
-                <Card className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg">
+                <Card className="w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:shadow-lg">
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center justify-between text-sm text-slate-700 dark:text-slate-300">
                       <span>🔧 Device Settings</span>
@@ -990,7 +988,7 @@ export default function Home() {
                     </CardTitle>
                   </CardHeader>
                 </Card>
-              </div>
+              </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-2">
               <div className="space-y-4">
