@@ -178,6 +178,11 @@ export default function Home() {
     const urlParams = new URLSearchParams(window.location.search);
     const pairCode = urlParams.get('pair');
     
+    console.log('Mount effect - checking URL parameters');
+    console.log('URL on mount:', window.location.href);
+    console.log('Search params on mount:', window.location.search);
+    console.log('Pair code on mount:', pairCode);
+    
     if (pairCode) {
       console.log('Found pair code on mount:', pairCode);
       setPendingPairCode(pairCode);
@@ -191,6 +196,16 @@ export default function Home() {
         description: `Processing pairing code: ${pairCode}`,
         duration: 5000,
       });
+      
+      // Also try to process immediately if possible
+      if (deviceId) {
+        console.log('Device ID available on mount, processing immediately');
+        setTimeout(() => {
+          handlePairWithCode(pairCode);
+        }, 1000);
+      }
+    } else {
+      console.log('No pair code found on mount');
     }
   }, []); // Run once on mount
 
@@ -968,6 +983,30 @@ export default function Home() {
               </p>
             </div>
           )}
+          
+          {/* Test URL for manual testing */}
+          <div className="mt-4 p-3 bg-gray-50 rounded-lg text-xs">
+            <h4 className="font-medium text-gray-800 mb-2">Test QR Code URL (copy to phone):</h4>
+            <code className="bg-gray-100 px-2 py-1 rounded text-xs block break-all">
+              {window.location.origin}?pair=191520
+            </code>
+            <p className="text-gray-600 mt-1">
+              Copy this URL and paste it in your phone's browser to test QR code processing
+            </p>
+            <button 
+              onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}?pair=191520`);
+                toast({
+                  title: "URL Copied",
+                  description: "Test URL copied to clipboard",
+                  duration: 2000,
+                });
+              }}
+              className="mt-2 px-3 py-1 bg-blue-100 text-blue-800 rounded text-xs hover:bg-blue-200"
+            >
+              Copy URL to Clipboard
+            </button>
+          </div>
           
           <div className="text-xs text-slate-500 mt-3 space-y-1 hidden sm:block">
             <div>You can be discovered by everyone on this network</div>
