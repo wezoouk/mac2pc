@@ -43,10 +43,8 @@ export function DevicePairing({
       setQrCodeUrl("");
       setPairingCode(code);
       
-      // Generate QR code after a small delay to ensure state is clean
-      setTimeout(() => {
-        generateQRCode(code);
-      }, 100);
+      // Generate QR code immediately
+      generateQRCode(code);
       
       // Auto-join the room when generating the code
       // This ensures the generating device is in the room when someone scans the QR code
@@ -58,6 +56,8 @@ export function DevicePairing({
 
   async function generateQRCode(code: string) {
     try {
+      console.log('Starting QR code generation for code:', code);
+      
       // Add timestamp to prevent caching issues
       const timestamp = Date.now();
       const url = `${window.location.origin}?pair=${code}&t=${timestamp}`;
@@ -77,10 +77,15 @@ export function DevicePairing({
         type: 'image/png'
       });
       
+      console.log('QR code data URL generated, length:', qrDataUrl.length);
+      console.log('QR code starts with:', qrDataUrl.substring(0, 50));
+      
       // Add timestamp to the data URL to force image refresh
       const timestampedQrUrl = qrDataUrl + '?t=' + timestamp;
-      console.log('QR code generated successfully for code:', code);
+      console.log('Setting QR code URL in state');
       setQrCodeUrl(timestampedQrUrl);
+      
+      console.log('QR code generated successfully for code:', code);
     } catch (error) {
       console.error('QR Code generation failed:', error);
     }
@@ -155,16 +160,23 @@ export function DevicePairing({
           {showQR && pairingCode && (
             <Card className="border-blue-200">
               <CardContent className="p-6 text-center">
-                {qrCodeUrl && (
-                  <div className="mb-4">
+                <div className="mb-4">
+                  {qrCodeUrl ? (
                     <img 
                       key={pairingCode} 
                       src={qrCodeUrl} 
                       alt={`QR Code for room pair-${pairingCode}`}
                       className="mx-auto rounded-lg shadow-sm"
                     />
-                  </div>
-                )}
+                  ) : (
+                    <div className="w-48 h-48 mx-auto border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                      <div className="text-gray-500 text-center">
+                        <div className="text-lg mb-2">📱</div>
+                        <div className="text-sm">Generating QR Code...</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 
                 {/* Pairing Code Display */}
                 <div className="mb-4">
