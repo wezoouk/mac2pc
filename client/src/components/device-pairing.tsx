@@ -44,7 +44,7 @@ export function DevicePairing({
     if (pairingCode && onGenerateCode) {
       onGenerateCode(pairingCode);
     }
-  }, [pairingCode]); // Only trigger when pairingCode changes
+  }, [pairingCode]); // Only trigger when pairingCode changes, not when onGenerateCode changes
 
   async function generateQRCode(code: string) {
     try {
