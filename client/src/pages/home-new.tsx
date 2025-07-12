@@ -60,26 +60,33 @@ export default function Home() {
     
     console.log('Joining pairing room:', pairRoomId, 'with device:', deviceId);
     
+    // Use the same room joining logic that works for test rooms
+    setRoomName(pairRoomId);
+    setRoomPassword('');
     sendMessage({
       type: 'join-room',
       roomId: pairRoomId,
+      password: '',
       deviceId,
       data: {
         id: deviceId,
         name: deviceName,
         type: getDeviceType(),
-        network: 'remote',
+        network: 'local',
       }
     });
     
     // Update current room to show we're in a pairing room
     setCurrentRoom(pairRoomId);
-    setRoomName(pairRoomId);
     
     console.log('Updated current room state to:', pairRoomId);
     
-    // Don't close the pairing dialog when joining via QR code
-    // This allows the user to see the confirmation
+    // Show success message
+    toast({
+      title: "QR Code Successful",
+      description: `Joined pairing room: ${pairRoomId}`,
+      duration: 3000,
+    });
   }
 
   function handleDeviceNameChange() {
