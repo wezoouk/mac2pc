@@ -1138,11 +1138,11 @@ export default function Home() {
             <div className="mt-2 p-2 bg-blue-50 rounded text-xs">
               <p className="text-blue-800 font-medium">QR Code Test URL:</p>
               <code className="text-blue-600 text-xs block break-all">
-                {window.location.origin}?pair=840652
+                {window.location.origin}?pair=905769
               </code>
               <button 
                 onClick={() => {
-                  const testUrl = `${window.location.origin}?pair=840652`;
+                  const testUrl = `${window.location.origin}?pair=905769`;
                   navigator.clipboard.writeText(testUrl);
                   toast({
                     title: "QR Test URL Copied",
@@ -1154,6 +1154,12 @@ export default function Home() {
               >
                 Copy QR Test URL
               </button>
+            </div>
+            <div className="mt-2 p-2 bg-orange-50 rounded text-xs">
+              <p className="text-orange-800 font-medium">Manual Room Join Test:</p>
+              <p className="text-orange-600 text-xs mb-1">Copy this exact room code to your phone:</p>
+              <code className="text-orange-700 font-mono bg-orange-100 px-1 rounded">pair-905769</code>
+              <p className="text-orange-600 text-xs mt-1">Then type it in the room input field and click "Join Room"</p>
             </div>
           </div>
           
