@@ -216,15 +216,7 @@ export default function Home() {
           pairCode = codeMatch[1];
         }
       }
-      
-      console.log('Enhanced URL checking:');
-      console.log('- Full URL:', url);
-      console.log('- Search params:', urlObj.search);
-      console.log('- Hash:', hash);
-      console.log('- Detected pair code:', pairCode);
-      console.log('- Is redirect:', isRedirect);
-      console.log('- Device ID:', deviceId);
-      console.log('- Pending pair code:', pendingPairCode);
+
       
       if (pairCode && !pendingPairCode) {
         console.log('🎯 QR Code detected via enhanced method:', pairCode);
@@ -1104,132 +1096,6 @@ export default function Home() {
               <span className="hidden sm:inline">You are known as:</span>
               <span className="font-medium text-blue-600">{deviceName}</span>
             </div>
-          </div>
-          
-          {/* QR Code Debug Info */}
-          {pendingPairCode && (
-            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <h3 className="font-medium text-blue-800 mb-2">🔗 QR Code Detected!</h3>
-              <p className="text-sm text-blue-700">
-                Processing pairing code: <code className="bg-blue-100 px-2 py-1 rounded">{pendingPairCode}</code>
-              </p>
-              <p className="text-xs text-blue-600 mt-2">
-                {isConnected ? 'WebSocket connected - joining room...' : 'Waiting for WebSocket connection...'}
-              </p>
-            </div>
-          )}
-          
-          {/* Simple Room Test */}
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg text-xs">
-            <h4 className="font-medium text-gray-800 mb-2">Quick Room Test:</h4>
-            <p className="text-gray-600 mb-2">Join the same room from both devices to test pairing</p>
-            <div className="flex gap-2 items-center">
-              <input 
-                type="text" 
-                placeholder="Enter test room (e.g., test123)" 
-                className="px-2 py-1 border rounded text-xs flex-1"
-                id="testRoomInput"
-              />
-              <button 
-                onClick={() => {
-                  const input = document.getElementById('testRoomInput') as HTMLInputElement;
-                  const testRoomName = input.value.trim();
-                  if (testRoomName) {
-                    setRoomName(testRoomName);
-                    setRoomPassword('');
-                    sendMessage({
-                      type: 'join-room',
-                      roomId: testRoomName,
-                      password: '',
-                      deviceId,
-                      data: {
-                        id: deviceId,
-                        name: deviceName,
-                        type: getDeviceType(),
-                        network: 'local',
-                      }
-                    });
-                    toast({
-                      title: "Joining Room",
-                      description: `Joining room: ${testRoomName}`,
-                      duration: 2000,
-                    });
-                  }
-                }}
-                className="px-3 py-1 bg-blue-100 text-blue-800 rounded text-xs hover:bg-blue-200"
-              >
-                Join Room
-              </button>
-            </div>
-            <p className="text-gray-500 mt-1">
-              Enter the same room name on both devices. No QR code needed!
-            </p>
-            <div className="mt-2 flex gap-2">
-              <button 
-                onClick={() => {
-                  const testCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-                  const testRoomName = `test-${testCode}`;
-                  setRoomName(testRoomName);
-                  setRoomPassword('');
-                  sendMessage({
-                    type: 'join-room',
-                    roomId: testRoomName,
-                    password: '',
-                    deviceId,
-                    data: {
-                      id: deviceId,
-                      name: deviceName,
-                      type: getDeviceType(),
-                      network: 'local',
-                    }
-                  });
-                  toast({
-                    title: "Test Room Created",
-                    description: `Joined room: ${testRoomName}. Share this code: ${testCode}`,
-                    duration: 5000,
-                  });
-                }}
-                className="px-3 py-1 bg-green-100 text-green-800 rounded text-xs hover:bg-green-200"
-              >
-                Create Test Room
-              </button>
-              <button 
-                onClick={() => {
-                  // Force simulate a pairing code
-                  const testCode = "840652";
-                  handlePairWithCode(testCode);
-                  toast({
-                    title: "Testing Pairing",
-                    description: `Simulating QR code with test code: ${testCode}`,
-                    duration: 3000,
-                  });
-                }}
-                className="px-3 py-1 bg-purple-100 text-purple-800 rounded text-xs hover:bg-purple-200"
-              >
-                Test QR Code: 840652
-              </button>
-            </div>
-            <div className="mt-2 p-2 bg-blue-50 rounded text-xs">
-              <p className="text-blue-800 font-medium">QR Code Test URL:</p>
-              <code className="text-blue-600 text-xs block break-all">
-                {window.location.origin}?pair=905769
-              </code>
-              <button 
-                onClick={() => {
-                  const testUrl = `${window.location.origin}?pair=905769`;
-                  navigator.clipboard.writeText(testUrl);
-                  toast({
-                    title: "QR Test URL Copied",
-                    description: "Paste this URL in your phone browser to test QR code detection",
-                    duration: 3000,
-                  });
-                }}
-                className="mt-1 px-2 py-1 bg-blue-200 text-blue-800 rounded text-xs hover:bg-blue-300"
-              >
-                Copy QR Test URL
-              </button>
-            </div>
-
           </div>
           
           <div className="text-xs text-slate-500 mt-3 space-y-1 hidden sm:block">
