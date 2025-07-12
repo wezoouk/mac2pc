@@ -32,9 +32,9 @@ export function DevicePairing({
   const [showQR, setShowQR] = useState(true);
   const { toast } = useToast();
 
-  // Generate a 6-digit pairing code only if not already in a pairing room
+  // Generate a 6-digit pairing code when dialog opens
   useEffect(() => {
-    if (isOpen && (!currentRoom || !currentRoom.startsWith('pair-'))) {
+    if (isOpen && !pairingCode) {
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       console.log('Generating pairing code:', code);
       setPairingCode(code);
@@ -45,13 +45,8 @@ export function DevicePairing({
       if (onGenerateCode) {
         onGenerateCode(code);
       }
-    } else if (isOpen && currentRoom && currentRoom.startsWith('pair-')) {
-      // If already in a pairing room, clear the pairing code to show success message
-      console.log('Already in pairing room, showing success message');
-      setPairingCode("");
-      setQrCodeUrl("");
     }
-  }, [isOpen, currentRoom, onGenerateCode]);
+  }, [isOpen, pairingCode, onGenerateCode]);
 
   async function generateQRCode(code: string) {
     try {
@@ -117,7 +112,7 @@ export function DevicePairing({
         </DialogHeader>
         
         <div className="space-y-6">
-          {/* Already in room message */}
+          {/* Already in room message - only show if we didn't generate the code */}
           {currentRoom && currentRoom.startsWith('pair-') && !pairingCode && (
             <Card className="border-green-200 bg-green-50">
               <CardContent className="p-6 text-center">
@@ -134,8 +129,8 @@ export function DevicePairing({
             </Card>
           )}
           
-          {/* QR Code Section - Only show if code is generated and not already in a room */}
-          {showQR && pairingCode && (!currentRoom || !currentRoom.startsWith('pair-')) && (
+          {/* QR Code Section - Show if code is generated */}
+          {showQR && pairingCode && (
             <Card className="border-blue-200">
               <CardContent className="p-6 text-center">
                 {qrCodeUrl && (
