@@ -64,10 +64,16 @@ export default function Home() {
     setCurrentRoom(pairRoomId);
     setRoomName(pairRoomId);
     
+    // Close the pairing dialog automatically when joining via QR code
+    // but keep it open if manually generating a code
+    if (showPairing) {
+      setShowPairing(false);
+    }
+    
     toast({
       title: "Pairing successful!",
-      description: `Connected to pairing room: ${code}`,
-      duration: 5000,
+      description: `Connected to pairing room: ${code}. Look for other devices in the radar.`,
+      duration: 8000,
     });
   }
 
@@ -678,6 +684,24 @@ export default function Home() {
                   {isConnected ? 'Connected' : 'Disconnected'}
                 </span>
               </div>
+              
+              {/* Room Status */}
+              {currentRoom && currentRoom.startsWith('pair-') && (
+                <div className="flex items-center space-x-1">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                  <span className="text-xs text-blue-600 hidden sm:inline">
+                    Pairing Room: {currentRoom.replace('pair-', '')}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={leaveRoom}
+                    className="px-1 text-xs text-red-600 hover:text-red-700"
+                  >
+                    Leave
+                  </Button>
+                </div>
+              )}
               
               <Button
                 variant="ghost"
