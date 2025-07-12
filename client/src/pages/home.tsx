@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useWebRTC } from "@/hooks/use-webrtc";
 import { useToast } from "@/hooks/use-toast";
@@ -38,10 +39,41 @@ export default function Home() {
   const [testMode, setTestMode] = useState(false);
   const { toast } = useToast();
 
+  // Load admin settings from server
+  const { data: appSettings } = useQuery({
+    queryKey: ["/api/settings"],
+  });
+
   // Initialize notification system
   useEffect(() => {
     NotificationManager.initialize();
   }, []);
+
+  // Listen for admin settings updates
+  useEffect(() => {
+    const handleAdminMessage = (event: MessageEvent) => {
+      if (event.data.type === 'admin-settings-update') {
+        const { settings } = event.data;
+        if (settings.demoMode !== undefined) {
+          setTestMode(settings.demoMode);
+        }
+        if (settings.adsEnabled !== undefined) {
+          setAdsEnabled(settings.adsEnabled);
+        }
+      }
+    };
+
+    window.addEventListener('message', handleAdminMessage);
+    return () => window.removeEventListener('message', handleAdminMessage);
+  }, []);
+
+  // Sync app settings from server
+  useEffect(() => {
+    if (appSettings) {
+      setTestMode(appSettings.demoMode || false);
+      setAdsEnabled(appSettings.adsEnabled !== undefined ? appSettings.adsEnabled : true);
+    }
+  }, [appSettings]);
 
   // Test devices for demo purposes
   const testDevices: Device[] = [

@@ -86,11 +86,24 @@ export default function Admin() {
     queryKey: ["/api/admin/users"],
   });
 
+  // Fetch admin settings
+  const { data: adminSettings } = useQuery({
+    queryKey: ["/api/admin/settings"],
+  });
+
   // Initialize ads state based on placement data
   useEffect(() => {
     const hasEnabledAds = adPlacements.some((placement: any) => placement.isEnabled);
     setAdsEnabled(hasEnabledAds);
   }, [adPlacements]);
+
+  // Sync admin settings with state
+  useEffect(() => {
+    if (adminSettings) {
+      setDemoMode(adminSettings.demoMode || false);
+      setAdsEnabled(adminSettings.adsEnabled !== undefined ? adminSettings.adsEnabled : true);
+    }
+  }, [adminSettings]);
 
   // Create ad placement mutation
   const createPlacementMutation = useMutation({
@@ -228,6 +241,19 @@ export default function Admin() {
 
   const handleSaveSettings = async () => {
     try {
+      // Save settings to server
+      await apiRequest("/api/admin/settings", {
+        method: "POST",
+        body: JSON.stringify({
+          demoMode,
+          adsEnabled
+        }),
+      });
+      
+      // Invalidate settings cache so main app reloads
+      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/settings"] });
+      
       // Send settings to parent window (main app)
       window.parent.postMessage({
         type: 'admin-settings-update',

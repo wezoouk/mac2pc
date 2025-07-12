@@ -184,6 +184,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public admin settings API (no auth required)
+  app.get("/api/settings", async (req, res) => {
+    try {
+      const demoModeSetting = await storage.getAdminSetting('demoMode');
+      const adsEnabledSetting = await storage.getAdminSetting('adsEnabled');
+      
+      res.json({
+        demoMode: demoModeSetting ? demoModeSetting.value === 'true' : false,
+        adsEnabled: adsEnabledSetting ? adsEnabledSetting.value === 'true' : true
+      });
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+      res.status(500).json({ error: 'Failed to fetch settings' });
+    }
+  });
+
   // Admin authentication middleware
   function requireAuth(req: any, res: any, next: any) {
     const authHeader = req.headers.authorization;
@@ -530,6 +546,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error toggling ads:", error);
       res.status(500).json({ error: 'Failed to toggle ads' });
+    }
+  });
+
+  // Admin settings endpoints
+  app.post("/api/admin/settings", requireAuth, async (req, res) => {
+    try {
+      const { demoMode, adsEnabled } = req.body;
+      
+      // Save demo mode setting
+      if (demoMode !== undefined) {
+        await storage.updateAdminSetting('demoMode', demoMode.toString());
+      }
+      
+      // Save ads enabled setting
+      if (adsEnabled !== undefined) {
+        await storage.updateAdminSetting('adsEnabled', adsEnabled.toString());
+      }
+      
+      res.json({ success: true, message: 'Settings saved successfully' });
+    } catch (error) {
+      console.error("Error saving admin settings:", error);
+      res.status(500).json({ error: 'Failed to save settings' });
+    }
+  });
+
+  app.get("/api/admin/settings", requireAuth, async (req, res) => {
+    try {
+      const demoModeSetting = await storage.getAdminSetting('demoMode');
+      const adsEnabledSetting = await storage.getAdminSetting('adsEnabled');
+      
+      res.json({
+        demoMode: demoModeSetting ? demoModeSetting.value === 'true' : false,
+        adsEnabled: adsEnabledSetting ? adsEnabledSetting.value === 'true' : true
+      });
+    } catch (error) {
+      console.error("Error fetching admin settings:", error);
+      res.status(500).json({ error: 'Failed to fetch settings' });
     }
   });
 
