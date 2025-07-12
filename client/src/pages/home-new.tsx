@@ -195,12 +195,13 @@ export default function Home() {
         setTimeout(() => fetchDevices(), 100);
         break;
       case 'room-devices':
-        if (!testMode) {
-          const roomDevices = message.devices.filter((d: Device) => d.id !== deviceId);
-          console.log(`Room devices received: ${roomDevices.length} devices in room ${message.roomId}`);
-          console.log('Room devices data:', roomDevices);
-          setDevices(roomDevices);
-        }
+        const roomDevices = message.devices.filter((d: Device) => d.id !== deviceId);
+        console.log(`Room devices received: ${roomDevices.length} devices in room ${message.roomId}`);
+        console.log('Room devices data:', roomDevices);
+        console.log('Test mode:', testMode);
+        
+        // Always set room devices regardless of test mode
+        setDevices(roomDevices);
         break;
       case 'direct-message':
         // Handle received message
