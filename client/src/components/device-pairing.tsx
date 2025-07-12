@@ -35,10 +35,17 @@ export function DevicePairing({
   // Generate a 6-digit pairing code when dialog opens
   useEffect(() => {
     if (isOpen && !pairingCode) {
+      // Force clear any existing QR code first
+      setQrCodeUrl("");
+      
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       console.log('Generating pairing code:', code);
       setPairingCode(code);
-      generateQRCode(code);
+      
+      // Generate QR code after a small delay to ensure state is clean
+      setTimeout(() => {
+        generateQRCode(code);
+      }, 100);
       
       // Auto-join the room when generating the code
       // This ensures the generating device is in the room when someone scans the QR code
@@ -50,7 +57,9 @@ export function DevicePairing({
 
   async function generateQRCode(code: string) {
     try {
-      const url = `${window.location.origin}?pair=${code}`;
+      // Add timestamp to prevent caching issues
+      const timestamp = Date.now();
+      const url = `${window.location.origin}?pair=${code}&t=${timestamp}`;
       console.log('Generated QR code URL:', url);
       console.log('This URL should make the scanning device join room: pair-' + code);
       const qrDataUrl = await QRCode.toDataURL(url, {
@@ -98,6 +107,7 @@ export function DevicePairing({
     setInputCode("");
     setPairingCode("");
     setQrCodeUrl("");
+    setShowQR(true);
     onClose();
   }
 
