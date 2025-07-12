@@ -37,7 +37,7 @@ export default function Home() {
   const [activeTransfer, setActiveTransfer] = useState<any>(null);
   const [transferQueue, setTransferQueue] = useState<File[]>([]);
   const [fileQueue, setFileQueue] = useState<any[]>([]);
-  const [testMode, setTestMode] = useState(true);
+  const [testMode, setTestMode] = useState(false);
   const [showPairing, setShowPairing] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(soundManager.isEnabled());
   const { toast } = useToast();
@@ -796,13 +796,10 @@ export default function Home() {
         {/* Large Radar View */}
         <div className="w-full max-w-sm sm:max-w-lg lg:max-w-6xl mb-8 sm:mb-12 px-2 sm:px-0">
           <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-3xl p-4 sm:p-8 lg:p-12 shadow-2xl border border-white/20 dark:border-gray-700/30 overflow-hidden">
-            {/* Debug Info */}
+            {/* Status Info */}
             <div className="mb-4 text-xs text-gray-500 text-center space-y-1">
-              <div>Debug: Test Mode: {testMode ? 'ON' : 'OFF'}</div>
-              <div>Real Devices: {devices.length} | Test Devices: {testDevices.length}</div>
-              <div>Showing: {(testMode ? devices.concat(testDevices) : devices).length} devices</div>
+              <div>Devices Found: {devices.length}</div>
               <div>Current Room: {currentRoom || 'None'}</div>
-              <div>Your Device ID: {deviceId.slice(-8)}</div>
               {currentRoom && currentRoom.startsWith('pair-') && devices.length === 0 && (
                 <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-xs">
                   <div className="font-medium">QR Code Pairing Instructions:</div>
