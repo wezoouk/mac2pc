@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import bcrypt from "bcrypt";
 import { insertDeviceSchema, insertRoomSchema, insertTransferSchema, insertTrustedDeviceSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
+import path from "path";
 
 interface WebSocketClient extends WebSocket {
   deviceId?: string;
@@ -31,6 +32,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Track the first IP that connects to establish the "local network" baseline
   let firstLocalIP: string | null = null;
+
+  // Serve the QR redirect page
+  app.get('/qr-redirect.html', (req, res) => {
+    res.sendFile(path.resolve(process.cwd(), 'client', 'qr-redirect.html'));
+  });
 
   // Device management API
   app.post('/api/devices', async (req, res) => {
