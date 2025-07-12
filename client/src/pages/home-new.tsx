@@ -66,12 +66,6 @@ export default function Home() {
     
     // Don't close the pairing dialog when joining via QR code
     // This allows the user to see the confirmation
-    
-    toast({
-      title: "Pairing successful!",
-      description: `Connected to pairing room: ${code}. Look for other devices in the radar.`,
-      duration: 8000,
-    });
   }
 
   // Initialize notification and sound systems

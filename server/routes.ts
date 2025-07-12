@@ -970,17 +970,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Send updated room devices to all clients in the same room
     if (roomId) {
       const roomDevices = await storage.getDevicesByRoom(roomId);
+      console.log(`Broadcasting room devices for room ${roomId}: ${roomDevices.length} devices`);
+      console.log('Room devices:', roomDevices.map(d => ({ id: d.id, name: d.name })));
+      
       const roomMessage = JSON.stringify({
         type: 'room-devices',
         roomId,
         devices: roomDevices
       });
       
+      let sentCount = 0;
       clients.forEach((client, clientId) => {
         if (client.readyState === WebSocket.OPEN && client.roomId === roomId) {
           client.send(roomMessage);
+          sentCount++;
         }
       });
+      
+      console.log(`Sent room devices to ${sentCount} clients in room ${roomId}`);
     } else {
       // For non-room updates, send the regular device-list-update
       clients.forEach((client, clientId) => {
