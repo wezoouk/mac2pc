@@ -25,16 +25,13 @@ import type { Device, Transfer } from "@shared/schema";
 
 export default function Home() {
   const [deviceId] = useState(() => {
-    // Create a unique device ID for each browser tab/session
-    const tabId = sessionStorage.getItem('tabId') || nanoid();
-    sessionStorage.setItem('tabId', tabId);
-    return tabId;
+    // Create a completely unique device ID for each tab instance
+    // Don't use sessionStorage to ensure each tab gets a fresh ID
+    return `${nanoid()}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   });
   const [deviceName, setDeviceName] = useState(() => {
-    // Create a unique device name for each browser tab/session
-    const tabName = sessionStorage.getItem('tabName') || generateRandomDeviceName();
-    sessionStorage.setItem('tabName', tabName);
-    return tabName;
+    // Create a unique device name for each tab instance
+    return generateRandomDeviceName();
   });
   const [roomName, setRoomName] = useState("");
   const [roomPassword, setRoomPassword] = useState("");
@@ -810,12 +807,13 @@ export default function Home() {
             <div className="mb-4 text-xs text-gray-500 text-center space-y-1">
               <div>Devices Found: {devices.length}</div>
               <div>Current Room: {currentRoom || 'None'}</div>
+              <div>Your Device ID: {deviceId.slice(-8)}</div>
               {currentRoom && currentRoom.startsWith('pair-') && devices.length === 0 && (
                 <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-xs">
                   <div className="font-medium">QR Code Pairing Instructions:</div>
-                  <div>1. Use a different device (phone/tablet) to scan the QR code</div>
-                  <div>2. Or open the link in a different browser (Chrome, Firefox, etc.)</div>
-                  <div>3. Scanning from the same browser tab won't work - it's the same device!</div>
+                  <div>1. Copy the QR code link and open it in a NEW BROWSER TAB</div>
+                  <div>2. Or use a different device (phone/tablet) to scan the QR code</div>
+                  <div>3. Each browser tab will get a unique device ID</div>
                 </div>
               )}
             </div>
