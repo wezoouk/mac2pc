@@ -36,10 +36,12 @@ export function DevicePairing({
   useEffect(() => {
     if (isOpen && (!currentRoom || !currentRoom.startsWith('pair-'))) {
       const code = Math.floor(100000 + Math.random() * 900000).toString();
+      console.log('Generating pairing code:', code);
       setPairingCode(code);
       generateQRCode(code);
     } else if (isOpen && currentRoom && currentRoom.startsWith('pair-')) {
       // If already in a pairing room, clear the pairing code to show success message
+      console.log('Already in pairing room, showing success message');
       setPairingCode("");
       setQrCodeUrl("");
     }
