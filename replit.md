@@ -98,6 +98,16 @@ The application is designed to work seamlessly in both development and productio
 
 ## Recent Changes (July 11, 2025)
 
+### User-Editable Device Names (NEW - July 12, 2025)
+- **Call Sign Customization**: Users can now change their device name/call sign from Device Settings
+- **Real-time Updates**: Name changes instantly update across all connected devices
+- **Inline Editing**: Clean inline edit interface with Save/Cancel buttons
+- **Keyboard Shortcuts**: Press Enter to save, Escape to cancel name editing
+- **Broadcast Updates**: Device name changes are immediately broadcast to all devices in the network/room
+- **Toast Notifications**: Confirmation messages when device name is successfully updated
+- **Input Validation**: Trims whitespace and prevents empty names
+- **UI Enhancement**: Device Settings section now shows "Your Call Sign" for better user understanding
+
 ### Comprehensive Admin System (MAJOR UPDATE - July 12, 2025)
 - **Complete Admin Overhaul**: Built comprehensive admin system with 4 main sections
 - **User Management**: Full CRUD operations for admin users with username/email/password management

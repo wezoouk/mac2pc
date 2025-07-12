@@ -49,6 +49,8 @@ export default function Home() {
   const [testMode, setTestMode] = useState(false);
   const [showPairing, setShowPairing] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(soundManager.isEnabled());
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [newDeviceName, setNewDeviceName] = useState(deviceName);
   const { toast } = useToast();
 
   function handlePairWithCode(code: string) {
@@ -75,6 +77,40 @@ export default function Home() {
     
     // Don't close the pairing dialog when joining via QR code
     // This allows the user to see the confirmation
+  }
+
+  function handleDeviceNameChange() {
+    if (newDeviceName.trim() && newDeviceName.trim() !== deviceName) {
+      const updatedName = newDeviceName.trim();
+      setDeviceName(updatedName);
+      setIsEditingName(false);
+      
+      // Update device name in storage and broadcast to other devices
+      sendMessage({
+        type: 'device-update',
+        deviceId,
+        data: {
+          id: deviceId,
+          name: updatedName,
+          type: getDeviceType(),
+          network: 'local',
+        }
+      });
+
+      toast({
+        title: "Device name updated",
+        description: `Your device is now known as: ${updatedName}`,
+        duration: 3000,
+      });
+    } else {
+      setIsEditingName(false);
+      setNewDeviceName(deviceName);
+    }
+  }
+
+  function cancelNameEdit() {
+    setIsEditingName(false);
+    setNewDeviceName(deviceName);
   }
 
   // Initialize notification and sound systems
@@ -691,6 +727,11 @@ export default function Home() {
     }
   }, [currentRoom, testMode]);
 
+  // Keep newDeviceName synchronized with deviceName
+  useEffect(() => {
+    setNewDeviceName(deviceName);
+  }, [deviceName]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-indigo-900 overflow-x-hidden">
       {/* Header */}
@@ -967,12 +1008,60 @@ export default function Home() {
                 <Card className="bg-blue-50 border-blue-200">
                   <CardContent className="p-4">
                     <div className="text-sm text-blue-800">
-                      <div className="font-medium mb-2">About Device Identity:</div>
-                      <div className="space-y-1 text-xs">
-                        <div><strong>Device Name:</strong> {deviceName} (Fun random name for easy recognition)</div>
-                        <div><strong>Device ID:</strong> {deviceId.slice(-8)}... (Unique identifier for security)</div>
-                        <div className="text-blue-600 mt-2">
-                          Trusted devices can automatically accept transfers from each other
+                      <div className="font-medium mb-3">Device Identity:</div>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="text-xs text-blue-600 mb-1">Device Name (Your Call Sign)</div>
+                            {isEditingName ? (
+                              <div className="flex gap-2">
+                                <Input
+                                  value={newDeviceName}
+                                  onChange={(e) => setNewDeviceName(e.target.value)}
+                                  onKeyPress={(e) => {
+                                    if (e.key === 'Enter') handleDeviceNameChange();
+                                    if (e.key === 'Escape') cancelNameEdit();
+                                  }}
+                                  className="h-8 text-sm bg-white"
+                                  placeholder="Enter new device name"
+                                  autoFocus
+                                />
+                                <Button 
+                                  size="sm" 
+                                  onClick={handleDeviceNameChange}
+                                  className="h-8 px-3 text-xs"
+                                >
+                                  Save
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={cancelNameEdit}
+                                  className="h-8 px-3 text-xs"
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{deviceName}</span>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => setIsEditingName(true)}
+                                  className="h-6 px-2 text-xs"
+                                >
+                                  Edit
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-xs border-t border-blue-200 pt-2">
+                          <div><strong>Device ID:</strong> {deviceId.slice(-8)}... (Unique identifier for security)</div>
+                          <div className="text-blue-600 mt-2">
+                            Trusted devices can automatically accept transfers from each other
+                          </div>
                         </div>
                       </div>
                     </div>
