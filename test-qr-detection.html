@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Detection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: #f0f0f0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .code {
+            background: #333;
+            color: #fff;
+            padding: 10px;
+            font-family: monospace;
+            border-radius: 3px;
+            white-space: pre-wrap;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>QR Code URL Parameter Detection Test</h1>
+    
+    <div class="test-section">
+        <h3>Current URL Analysis</h3>
+        <div class="code" id="urlAnalysis"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test URLs</h3>
+        <button onclick="testUrl('?pair=123456')">Test: ?pair=123456</button>
+        <button onclick="testUrl('?pair=145827&t=1234567890')">Test: ?pair=145827&t=1234567890</button>
+        <button onclick="testUrl('#pair=789012')">Test: #pair=789012</button>
+        <button onclick="testUrl('?code=ABC123')">Test: ?code=ABC123</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Detection Results</h3>
+        <div id="results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Real QR Code Test</h3>
+        <p>Scan this QR code with your phone:</p>
+        <div style="text-align: center; margin: 20px 0;">
+            <canvas id="qrcode" width="200" height="200" style="border: 1px solid #ccc;"></canvas>
+        </div>
+        <button onclick="generateQR()">Generate QR Code</button>
+        <div id="qrUrl" class="code" style="margin-top: 10px;"></div>
+    </div>
+
+    <script>
+        function analyzeCurrentUrl() {
+            const url = window.location.href;
+            const urlObj = new URL(url);
+            const params = new URLSearchParams(urlObj.search);
+            const hash = urlObj.hash;
+            
+            const analysis = {
+                fullUrl: url,
+                origin: urlObj.origin,
+                pathname: urlObj.pathname,
+                search: urlObj.search,
+                hash: hash,
+                params: {}
+            };
+            
+            // Get all URL parameters
+            for (const [key, value] of params) {
+                analysis.params[key] = value;
+            }
+            
+            // Check for pair parameter
+            const pairParam = params.get('pair');
+            const hashPair = hash.includes('pair=') ? hash.split('pair=')[1]?.split('&')[0] : null;
+            
+            analysis.detectedPair = pairParam || hashPair;
+            
+            document.getElementById('urlAnalysis').textContent = JSON.stringify(analysis, null, 2);
+            
+            // If pair parameter detected, show success
+            if (analysis.detectedPair) {
+                addResult(`✅ SUCCESS: Found pair code: ${analysis.detectedPair}`, 'success');
+                
+                // Try to redirect to main app
+                if (window.location.pathname.includes('test-qr-detection.html')) {
+                    const mainUrl = window.location.origin + '?pair=' + analysis.detectedPair;
+                    addResult(`🔄 Redirecting to main app: ${mainUrl}`, 'success');
+                    setTimeout(() => {
+                        window.location.href = mainUrl;
+                    }, 2000);
+                }
+            } else {
+                addResult('❌ No pair parameter detected', 'error');
+            }
+        }
+        
+        function addResult(message, type = '') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-section ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            results.appendChild(div);
+        }
+        
+        function testUrl(queryString) {
+            const testUrl = window.location.origin + window.location.pathname + queryString;
+            addResult(`Testing URL: ${testUrl}`);
+            window.history.pushState({}, '', testUrl);
+            analyzeCurrentUrl();
+        }
+        
+        function generateQR() {
+            const pairCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+            const qrUrl = `${window.location.origin}?pair=${pairCode}&t=${Date.now()}`;
+            
+            document.getElementById('qrUrl').textContent = qrUrl;
+            
+            // Simple QR code generation (just display the URL for now)
+            const canvas = document.getElementById('qrcode');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, 200, 200);
+            
+            // Draw simple QR-like pattern
+            ctx.fillStyle = '#000';
+            for (let i = 0; i < 20; i++) {
+                for (let j = 0; j < 20; j++) {
+                    if (Math.random() > 0.5) {
+                        ctx.fillRect(i * 10, j * 10, 10, 10);
+                    }
+                }
+            }
+            
+            // Add URL text
+            ctx.fillStyle = '#000';
+            ctx.font = '8px Arial';
+            ctx.fillText('QR Code', 10, 190);
+            
+            addResult(`Generated QR code for: ${qrUrl}`, 'success');
+        }
+        
+        // Run analysis on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            analyzeCurrentUrl();
+            
+            // Listen for back/forward navigation
+            window.addEventListener('popstate', analyzeCurrentUrl);
+        });
+    </script>
+</body>
+</html>

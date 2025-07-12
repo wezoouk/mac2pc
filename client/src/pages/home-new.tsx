@@ -180,28 +180,60 @@ export default function Home() {
     }
   }, [deviceId]); // Run this when deviceId is available
   
-  // Check URL parameters multiple times to catch mobile timing issues
+  // Enhanced QR code detection with multiple methods
   useEffect(() => {
     const checkUrlParams = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const pairCode = urlParams.get('pair');
+      const url = window.location.href;
+      const urlObj = new URL(url);
+      const params = new URLSearchParams(urlObj.search);
+      const hash = urlObj.hash;
       
-      console.log('Checking URL parameters');
-      console.log('URL:', window.location.href);
-      console.log('Search params:', window.location.search);
-      console.log('Pair code:', pairCode);
+      // Try multiple ways to extract pair code
+      let pairCode = null;
+      
+      // Method 1: Standard URL parameter
+      pairCode = params.get('pair');
+      
+      // Method 2: Hash parameter (some mobile browsers)
+      if (!pairCode && hash) {
+        const hashParams = new URLSearchParams(hash.substring(1));
+        pairCode = hashParams.get('pair');
+      }
+      
+      // Method 3: Manual parsing of URL string
+      if (!pairCode) {
+        const pairMatch = url.match(/[?&#]pair=([^&#]+)/);
+        if (pairMatch) {
+          pairCode = pairMatch[1];
+        }
+      }
+      
+      // Method 4: Check for any 6-digit code pattern
+      if (!pairCode) {
+        const codeMatch = url.match(/[?&#](?:pair|code)=([A-Z0-9]{6})/i);
+        if (codeMatch) {
+          pairCode = codeMatch[1];
+        }
+      }
+      
+      console.log('Enhanced URL checking:');
+      console.log('- Full URL:', url);
+      console.log('- Search params:', urlObj.search);
+      console.log('- Hash:', hash);
+      console.log('- Detected pair code:', pairCode);
       
       if (pairCode && !pendingPairCode) {
-        console.log('Found pair code:', pairCode);
+        console.log('🎯 QR Code detected via enhanced method:', pairCode);
         setPendingPairCode(pairCode);
         
-        // Clean up URL
-        window.history.replaceState({}, document.title, window.location.pathname);
+        // Clean up URL immediately
+        const cleanUrl = urlObj.origin + urlObj.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
         
         // Show toast
         toast({
-          title: "QR Code Detected",
-          description: `Processing pairing code: ${pairCode}`,
+          title: "QR Code Detected!",
+          description: `Found pairing code: ${pairCode}`,
           duration: 5000,
         });
         
@@ -218,28 +250,54 @@ export default function Home() {
     // Check immediately
     checkUrlParams();
     
-    // Check again after a short delay for mobile devices
-    const timeouts = [100, 500, 1000, 2000].map(delay => 
+    // Check again after delays for mobile devices
+    const timeouts = [100, 300, 500, 1000, 2000, 3000].map(delay => 
       setTimeout(checkUrlParams, delay)
     );
     
     return () => timeouts.forEach(clearTimeout);
   }, []); // Run once on mount
   
-  // Listen for page focus events to catch QR code detection on mobile
+  // Listen for page events to catch QR code detection on mobile
   useEffect(() => {
-    const handleFocus = () => {
-      console.log('Page focused, checking for QR code parameters');
-      const urlParams = new URLSearchParams(window.location.search);
-      const pairCode = urlParams.get('pair');
+    const handlePageEvent = (eventName: string) => {
+      console.log(`Page event: ${eventName}, checking for QR code parameters`);
+      const url = window.location.href;
+      const urlObj = new URL(url);
+      const params = new URLSearchParams(urlObj.search);
+      const hash = urlObj.hash;
+      
+      // Try multiple detection methods
+      let pairCode = params.get('pair');
+      
+      // Check hash parameters
+      if (!pairCode && hash) {
+        const hashParams = new URLSearchParams(hash.substring(1));
+        pairCode = hashParams.get('pair');
+      }
+      
+      // Manual parsing
+      if (!pairCode) {
+        const pairMatch = url.match(/[?&#]pair=([^&#]+)/);
+        if (pairMatch) {
+          pairCode = pairMatch[1];
+        }
+      }
+      
+      console.log(`${eventName} - URL:`, url);
+      console.log(`${eventName} - Detected pair code:`, pairCode);
       
       if (pairCode && !pendingPairCode) {
-        console.log('Found pair code on focus:', pairCode);
+        console.log(`🎯 QR Code detected on ${eventName}:`, pairCode);
         setPendingPairCode(pairCode);
-        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Clean up URL
+        const cleanUrl = urlObj.origin + urlObj.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+        
         toast({
-          title: "QR Code Detected on Focus",
-          description: `Processing pairing code: ${pairCode}`,
+          title: "QR Code Detected!",
+          description: `Found pairing code: ${pairCode} (via ${eventName})`,
           duration: 5000,
         });
         
@@ -251,8 +309,27 @@ export default function Home() {
       }
     };
     
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
+    // Listen for multiple events
+    const events = ['focus', 'visibilitychange', 'pageshow', 'DOMContentLoaded'];
+    
+    events.forEach(event => {
+      const handler = () => handlePageEvent(event);
+      window.addEventListener(event, handler);
+      document.addEventListener(event, handler);
+    });
+    
+    // Also check on hash change
+    const hashHandler = () => handlePageEvent('hashchange');
+    window.addEventListener('hashchange', hashHandler);
+    
+    return () => {
+      events.forEach(event => {
+        const handler = () => handlePageEvent(event);
+        window.removeEventListener(event, handler);
+        document.removeEventListener(event, handler);
+      });
+      window.removeEventListener('hashchange', hashHandler);
+    };
   }, [pendingPairCode, deviceId]);
 
   // Test devices for demo purposes
