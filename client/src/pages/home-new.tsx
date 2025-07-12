@@ -204,6 +204,15 @@ export default function Home() {
         
         // Always set room devices regardless of test mode
         setDevices(roomDevices);
+        
+        // Show success message when other devices are found
+        if (roomDevices.length > 0) {
+          toast({
+            title: "Device(s) found!",
+            description: `Found ${roomDevices.length} device(s) in room ${message.roomId}`,
+            duration: 3000,
+          });
+        }
         break;
       case 'direct-message':
         // Handle received message
@@ -722,6 +731,24 @@ export default function Home() {
               >
                 <Link2 size={16} />
                 <span className="hidden sm:inline ml-2">Pair</span>
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                className="px-2 sm:px-3 text-purple-600"
+                onClick={() => {
+                  const testRoomId = 'pair-TEST';
+                  handlePairWithCode('TEST');
+                  toast({
+                    title: "Test Room",
+                    description: `Joined test room: ${testRoomId}`,
+                    duration: 3000,
+                  });
+                }}
+              >
+                <TestTube size={16} />
+                <span className="hidden sm:inline ml-2">Test</span>
               </Button>
               
               <Button
