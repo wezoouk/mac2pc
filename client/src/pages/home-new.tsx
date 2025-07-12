@@ -64,11 +64,8 @@ export default function Home() {
     setCurrentRoom(pairRoomId);
     setRoomName(pairRoomId);
     
-    // Close the pairing dialog automatically when joining via QR code
-    // but keep it open if manually generating a code
-    if (showPairing) {
-      setShowPairing(false);
-    }
+    // Don't close the pairing dialog when joining via QR code
+    // This allows the user to see the confirmation
     
     toast({
       title: "Pairing successful!",
@@ -94,6 +91,9 @@ export default function Home() {
       handlePairWithCode(pairCode);
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Show pairing dialog as confirmation for QR code scanning
+      setShowPairing(true);
     }
 
     // Listen for admin settings updates from admin panel
@@ -959,6 +959,7 @@ export default function Home() {
         deviceName={deviceName}
         onPairWithCode={handlePairWithCode}
         onGenerateCode={handlePairWithCode}
+        currentRoom={currentRoom}
       />
     </div>
   );

@@ -14,6 +14,7 @@ interface DevicePairingProps {
   deviceName: string;
   onPairWithCode: (code: string) => void;
   onGenerateCode?: (code: string) => void;
+  currentRoom?: string | null;
 }
 
 export function DevicePairing({ 
@@ -22,7 +23,8 @@ export function DevicePairing({
   deviceId, 
   deviceName, 
   onPairWithCode,
-  onGenerateCode 
+  onGenerateCode,
+  currentRoom 
 }: DevicePairingProps) {
   const [pairingCode, setPairingCode] = useState("");
   const [qrCodeUrl, setQrCodeUrl] = useState("");
@@ -101,12 +103,34 @@ export function DevicePairing({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto mx-2 sm:mx-0 my-2 sm:my-0">
         <DialogHeader>
-          <DialogTitle className="text-center text-blue-600">Pair Devices</DialogTitle>
+          <DialogTitle className="text-center text-blue-600">
+            {currentRoom && currentRoom.startsWith('pair-') ? 
+              `Pairing Room: ${currentRoom.replace('pair-', '')}` : 
+              'Pair Devices'
+            }
+          </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6">
+          {/* Already in room message */}
+          {currentRoom && currentRoom.startsWith('pair-') && !pairingCode && (
+            <Card className="border-green-200 bg-green-50">
+              <CardContent className="p-6 text-center">
+                <div className="text-green-600 mb-4">
+                  <div className="text-2xl font-bold mb-2">✅ Pairing Successful!</div>
+                  <p className="text-sm">
+                    You're now in pairing room: <span className="font-mono font-bold">{currentRoom.replace('pair-', '')}</span>
+                  </p>
+                  <p className="text-sm mt-2">
+                    Look for other devices in the radar view. They should appear automatically.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
           {/* QR Code Section */}
-          {showQR && (
+          {showQR && pairingCode && (
             <Card className="border-blue-200">
               <CardContent className="p-6 text-center">
                 {qrCodeUrl && (
