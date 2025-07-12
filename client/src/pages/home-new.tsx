@@ -37,7 +37,7 @@ export default function Home() {
   const [activeTransfer, setActiveTransfer] = useState<any>(null);
   const [transferQueue, setTransferQueue] = useState<File[]>([]);
   const [fileQueue, setFileQueue] = useState<any[]>([]);
-  const [testMode, setTestMode] = useState(false);
+  const [testMode, setTestMode] = useState(true);
   const [showPairing, setShowPairing] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(soundManager.isEnabled());
   const { toast } = useToast();
@@ -802,6 +802,15 @@ export default function Home() {
               <div>Real Devices: {devices.length} | Test Devices: {testDevices.length}</div>
               <div>Showing: {(testMode ? devices.concat(testDevices) : devices).length} devices</div>
               <div>Current Room: {currentRoom || 'None'}</div>
+              <div>Your Device ID: {deviceId.slice(-8)}</div>
+              {currentRoom && currentRoom.startsWith('pair-') && devices.length === 0 && (
+                <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-xs">
+                  <div className="font-medium">QR Code Pairing Instructions:</div>
+                  <div>1. Use a different device (phone/tablet) to scan the QR code</div>
+                  <div>2. Or open the link in a different browser (Chrome, Firefox, etc.)</div>
+                  <div>3. Scanning from the same browser tab won't work - it's the same device!</div>
+                </div>
+              )}
             </div>
             
             <RadarView
