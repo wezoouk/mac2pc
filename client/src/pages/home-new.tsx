@@ -173,41 +173,54 @@ export default function Home() {
     }
   }, [deviceId]); // Run this when deviceId is available
   
-  // Also check URL parameters immediately when component mounts
+  // Check URL parameters multiple times to catch mobile timing issues
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const pairCode = urlParams.get('pair');
-    
-    console.log('Mount effect - checking URL parameters');
-    console.log('URL on mount:', window.location.href);
-    console.log('Search params on mount:', window.location.search);
-    console.log('Pair code on mount:', pairCode);
-    
-    if (pairCode) {
-      console.log('Found pair code on mount:', pairCode);
-      setPendingPairCode(pairCode);
+    const checkUrlParams = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pairCode = urlParams.get('pair');
       
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname);
+      console.log('Checking URL parameters');
+      console.log('URL:', window.location.href);
+      console.log('Search params:', window.location.search);
+      console.log('Pair code:', pairCode);
       
-      // Show toast
-      toast({
-        title: "QR Code Detected",
-        description: `Processing pairing code: ${pairCode}`,
-        duration: 5000,
-      });
-      
-      // Also try to process immediately if possible
-      if (deviceId) {
-        console.log('Device ID available on mount, processing immediately');
-        setTimeout(() => {
-          console.log('Executing handlePairWithCode for:', pairCode);
-          handlePairWithCode(pairCode);
-        }, 1000);
+      if (pairCode && !pendingPairCode) {
+        console.log('Found pair code:', pairCode);
+        setPendingPairCode(pairCode);
+        
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Show toast
+        toast({
+          title: "QR Code Detected",
+          description: `Processing pairing code: ${pairCode}`,
+          duration: 5000,
+        });
+        
+        // Try to join room immediately if WebSocket is ready
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN && deviceId) {
+          console.log('WebSocket ready, joining room immediately');
+          const roomName = `pair-${pairCode}`;
+          wsRef.current.send(JSON.stringify({
+            type: 'join-room',
+            roomId: roomName,
+            deviceId: deviceId,
+            password: '',
+          }));
+        }
       }
-    } else {
-      console.log('No pair code found on mount');
-    }
+    };
+    
+    // Check immediately
+    checkUrlParams();
+    
+    // Check again after a short delay for mobile devices
+    const timeouts = [100, 500, 1000, 2000].map(delay => 
+      setTimeout(checkUrlParams, delay)
+    );
+    
+    return () => timeouts.forEach(clearTimeout);
   }, []); // Run once on mount
 
   // Test devices for demo purposes
@@ -1005,24 +1018,34 @@ export default function Home() {
           <div className="mt-4 p-3 bg-gray-50 rounded-lg text-xs">
             <h4 className="font-medium text-gray-800 mb-2">Test QR Code URL (copy to phone):</h4>
             <code className="bg-gray-100 px-2 py-1 rounded text-xs block break-all">
-              {window.location.origin}?pair=191520
+              {window.location.origin}?pair=978756
             </code>
             <p className="text-gray-600 mt-1">
               Copy this URL and paste it in your phone's browser to test QR code processing
             </p>
-            <button 
-              onClick={() => {
-                navigator.clipboard.writeText(`${window.location.origin}?pair=191520`);
-                toast({
-                  title: "URL Copied",
-                  description: "Test URL copied to clipboard",
-                  duration: 2000,
-                });
-              }}
-              className="mt-2 px-3 py-1 bg-blue-100 text-blue-800 rounded text-xs hover:bg-blue-200"
-            >
-              Copy URL to Clipboard
-            </button>
+            <div className="flex gap-2 mt-2">
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}?pair=978756`);
+                  toast({
+                    title: "URL Copied",
+                    description: "Test URL copied to clipboard",
+                    duration: 2000,
+                  });
+                }}
+                className="px-3 py-1 bg-blue-100 text-blue-800 rounded text-xs hover:bg-blue-200"
+              >
+                Copy URL
+              </button>
+              <button 
+                onClick={() => {
+                  window.open(`${window.location.origin}/debug-url.html?pair=978756`, '_blank');
+                }}
+                className="px-3 py-1 bg-green-100 text-green-800 rounded text-xs hover:bg-green-200"
+              >
+                Open Debug Page
+              </button>
+            </div>
           </div>
           
           <div className="text-xs text-slate-500 mt-3 space-y-1 hidden sm:block">
