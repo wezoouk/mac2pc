@@ -3,9 +3,13 @@
 <head>
     <title>Test QR Redirect</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .test-link { display: block; margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px; }
-        .code { font-family: monospace; background: #e0e0e0; padding: 5px; }
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .test-link { display: block; margin: 10px 0; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .code { font-family: monospace; background: #e0e0e0; padding: 8px; border-radius: 4px; margin: 5px 0; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -15,14 +19,16 @@
     
     <div class="test-link">
         <strong>Test 1: Direct redirect with code 424050</strong><br>
-        <a href="/qr-redirect.html?pair=424050" target="_blank">
-            /qr-redirect.html?pair=424050
+        <small>This should go to redirect page, detect code, then redirect to main app</small><br>
+        <a href="qr-redirect.html?pair=424050" target="_blank">
+            qr-redirect.html?pair=424050
         </a>
     </div>
     
     <div class="test-link">
         <strong>Test 2: Direct app URL with code 424050</strong><br>
-        <a href="/?pair=424050&redirect=true" target="_blank">
+        <small>This should go directly to main app and join room</small><br>
+        <a href="?pair=424050&redirect=true" target="_blank">
             /?pair=424050&redirect=true
         </a>
     </div>
@@ -36,8 +42,8 @@
     <script>
         function generateQR() {
             const code = Math.floor(Math.random() * 900000) + 100000;
-            const url = `/qr-redirect.html?pair=${code}`;
-            const fullUrl = window.location.origin + url;
+            const url = `qr-redirect.html?pair=${code}`;
+            const fullUrl = window.location.origin + '/' + url;
             
             document.getElementById('qr-info').innerHTML = `
                 <div class="code">Code: ${code}</div>
