@@ -832,12 +832,12 @@ export default function Home() {
                   </div>
                   <div className="flex gap-2 mt-2">
                     <Button 
-                      onClick={() => handlePairWithCode("652495")} 
+                      onClick={() => handlePairWithCode("509836")} 
                       variant="outline" 
                       size="sm"
                       className="text-xs"
                     >
-                      Test: Join 652495
+                      Test: Join 509836
                     </Button>
                   </div>
                 </div>
