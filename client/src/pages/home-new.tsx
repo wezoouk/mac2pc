@@ -201,6 +201,7 @@ export default function Home() {
       if (deviceId) {
         console.log('Device ID available on mount, processing immediately');
         setTimeout(() => {
+          console.log('Executing handlePairWithCode for:', pairCode);
           handlePairWithCode(pairCode);
         }, 1000);
       }
@@ -472,6 +473,22 @@ export default function Home() {
         console.log('WebSocket connected, now joining pairing room with code:', pendingPairCode);
         console.log('Current device ID:', deviceId);
         console.log('Current device name:', deviceName);
+        
+        // Join the room immediately
+        const roomName = `pair-${pendingPairCode}`;
+        console.log('Joining room:', roomName);
+        
+        // Send join room message
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+          wsRef.current.send(JSON.stringify({
+            type: 'join-room',
+            roomId: roomName,
+            deviceId: deviceId,
+            password: '', // No password for pairing rooms
+          }));
+          console.log('Sent join-room message for:', roomName);
+        }
+        
         setTimeout(() => {
           console.log('Processing pending pair code:', pendingPairCode);
           handlePairWithCode(pendingPairCode);
