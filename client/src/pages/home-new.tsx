@@ -836,6 +836,16 @@ export default function Home() {
                       Join
                     </Button>
                   </div>
+                  <div className="flex gap-2 mt-2">
+                    <Button 
+                      onClick={() => handlePairWithCode("652495")} 
+                      variant="outline" 
+                      size="sm"
+                      className="text-xs"
+                    >
+                      Test: Join 652495
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="flex items-center justify-between">
