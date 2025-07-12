@@ -82,6 +82,8 @@ export default function Home() {
     const urlParams = new URLSearchParams(window.location.search);
     const pairCode = urlParams.get('pair');
     if (pairCode) {
+      console.log('Found pairing code in URL:', pairCode);
+      console.log('Will join room: pair-' + pairCode);
       handlePairWithCode(pairCode);
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);

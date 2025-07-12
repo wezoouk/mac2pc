@@ -51,6 +51,8 @@ export function DevicePairing({
   async function generateQRCode(code: string) {
     try {
       const url = `${window.location.origin}?pair=${code}`;
+      console.log('Generated QR code URL:', url);
+      console.log('This URL should make the scanning device join room: pair-' + code);
       const qrDataUrl = await QRCode.toDataURL(url, {
         width: 200,
         margin: 2,
