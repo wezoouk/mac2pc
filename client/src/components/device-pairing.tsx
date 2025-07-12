@@ -32,21 +32,25 @@ export function DevicePairing({
   const [showQR, setShowQR] = useState(true);
   const { toast } = useToast();
 
-  // Generate a 6-digit pairing code
+  // Generate a 6-digit pairing code only if not already in a pairing room
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && (!currentRoom || !currentRoom.startsWith('pair-'))) {
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       setPairingCode(code);
       generateQRCode(code);
+    } else if (isOpen && currentRoom && currentRoom.startsWith('pair-')) {
+      // If already in a pairing room, clear the pairing code to show success message
+      setPairingCode("");
+      setQrCodeUrl("");
     }
-  }, [isOpen]);
+  }, [isOpen, currentRoom]);
 
-  // Auto-join pairing room when code is generated
+  // Auto-join pairing room when code is generated (only if not already in a pairing room)
   useEffect(() => {
-    if (pairingCode && onGenerateCode) {
+    if (pairingCode && onGenerateCode && (!currentRoom || !currentRoom.startsWith('pair-'))) {
       onGenerateCode(pairingCode);
     }
-  }, [pairingCode]); // Only trigger when pairingCode changes, not when onGenerateCode changes
+  }, [pairingCode, currentRoom]); // Only trigger when pairingCode changes, not when onGenerateCode changes
 
   async function generateQRCode(code: string) {
     try {
