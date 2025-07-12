@@ -139,7 +139,7 @@ export default function Home() {
     return () => window.removeEventListener('message', handleAdminMessage);
   }, []);
 
-  // Process URL parameters after device ID is set
+  // Process URL parameters - run immediately and also when deviceId changes
   useEffect(() => {
     // Check for pairing code in URL and store it for later processing
     const urlParams = new URLSearchParams(window.location.search);
@@ -151,9 +151,8 @@ export default function Home() {
     console.log('Parsed pair code:', pairCode);
     console.log('Device ID available:', deviceId);
     
-    if (pairCode && deviceId) {
+    if (pairCode) {
       console.log('Found pairing code in URL:', pairCode);
-      console.log('Device ID when scanning QR code:', deviceId);
       
       // Store the pairing code to process after WebSocket connects
       setPendingPairCode(pairCode);
@@ -162,12 +161,38 @@ export default function Home() {
       window.history.replaceState({}, document.title, window.location.pathname);
       
       console.log('QR code scanned, stored pending pair code:', pairCode);
-    } else if (pairCode && !deviceId) {
-      console.log('Found pair code but device ID not ready yet');
+      
+      // Show visual indicator on page that QR code was scanned
+      toast({
+        title: "QR Code Detected",
+        description: `Processing pairing code: ${pairCode}`,
+        duration: 5000,
+      });
     } else {
       console.log('No pairing code found in URL');
     }
   }, [deviceId]); // Run this when deviceId is available
+  
+  // Also check URL parameters immediately when component mounts
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pairCode = urlParams.get('pair');
+    
+    if (pairCode) {
+      console.log('Found pair code on mount:', pairCode);
+      setPendingPairCode(pairCode);
+      
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Show toast
+      toast({
+        title: "QR Code Detected",
+        description: `Processing pairing code: ${pairCode}`,
+        duration: 5000,
+      });
+    }
+  }, []); // Run once on mount
 
   // Test devices for demo purposes
   const testDevices: Device[] = [
@@ -792,6 +817,11 @@ export default function Home() {
                 <span className="text-xs text-slate-600 hidden sm:inline">
                   {isConnected ? 'Connected' : 'Disconnected'}
                 </span>
+                {pendingPairCode && (
+                  <div className="ml-2 text-xs text-blue-600 font-medium">
+                    Joining room...
+                  </div>
+                )}
               </div>
               
               {/* Room Status */}
@@ -830,6 +860,21 @@ export default function Home() {
               >
                 <Link2 size={16} />
                 <span className="hidden sm:inline ml-2">Pair</span>
+              </Button>
+              
+              {/* Test QR URL Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="px-2 sm:px-3 text-xs"
+                onClick={() => {
+                  const testUrl = `${window.location.origin}?pair=TEST123&t=${Date.now()}`;
+                  console.log('Opening test URL:', testUrl);
+                  window.open(testUrl, '_blank');
+                }}
+              >
+                <span className="hidden sm:inline">Test QR</span>
+                <span className="sm:hidden">🔍</span>
               </Button>
               
 
@@ -910,6 +955,20 @@ export default function Home() {
               <span className="font-medium text-blue-600">{deviceName}</span>
             </div>
           </div>
+          
+          {/* QR Code Debug Info */}
+          {pendingPairCode && (
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h3 className="font-medium text-blue-800 mb-2">🔗 QR Code Detected!</h3>
+              <p className="text-sm text-blue-700">
+                Processing pairing code: <code className="bg-blue-100 px-2 py-1 rounded">{pendingPairCode}</code>
+              </p>
+              <p className="text-xs text-blue-600 mt-2">
+                {isConnected ? 'WebSocket connected - joining room...' : 'Waiting for WebSocket connection...'}
+              </p>
+            </div>
+          )}
+          
           <div className="text-xs text-slate-500 mt-3 space-y-1 hidden sm:block">
             <div>You can be discovered by everyone on this network</div>
             <div>Traffic is routed through this server, if WebRTC is not available</div>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QR Code URL Test</title>
+</head>
+<body>
+    <h1>QR Code URL Test</h1>
+    <p>This page tests if the QR code URL processing works correctly.</p>
+    
+    <h2>Test URLs:</h2>
+    <p><a href="/?pair=596679&t=1752345550530" target="_blank">Test QR URL: ?pair=596679&t=1752345550530</a></p>
+    <p><a href="/?pair=123456" target="_blank">Simple Test URL: ?pair=123456</a></p>
+    
+    <h2>Manual Test:</h2>
+    <p>Copy this URL to test: <code>https://e58a2dac-3287-48ba-a6b8-7951f9cb5e2d-00-1x0xqkrywgybh.riker.replit.dev?pair=596679&t=1752345550530</code></p>
+    
+    <script>
+        // Test URL parameter parsing
+        const urlParams = new URLSearchParams(window.location.search);
+        const pairCode = urlParams.get('pair');
+        
+        if (pairCode) {
+            document.body.innerHTML += `<div style="background: yellow; padding: 10px; margin: 20px 0;">
+                <h3>SUCCESS: Found pair code in URL!</h3>
+                <p>Pair code: ${pairCode}</p>
+                <p>Full URL: ${window.location.href}</p>
+            </div>`;
+        } else {
+            document.body.innerHTML += `<div style="background: lightgray; padding: 10px; margin: 20px 0;">
+                <h3>No pair code found in URL</h3>
+                <p>Current URL: ${window.location.href}</p>
+            </div>`;
+        }
+    </script>
+</body>
+</html>
