@@ -80,10 +80,9 @@ export function DevicePairing({
       console.log('QR code data URL generated, length:', qrDataUrl.length);
       console.log('QR code starts with:', qrDataUrl.substring(0, 50));
       
-      // Add timestamp to the data URL to force image refresh
-      const timestampedQrUrl = qrDataUrl + '?t=' + timestamp;
+      // Set the QR code data URL directly (data URLs don't need timestamps)
       console.log('Setting QR code URL in state');
-      setQrCodeUrl(timestampedQrUrl);
+      setQrCodeUrl(qrDataUrl);
       
       console.log('QR code generated successfully for code:', code);
     } catch (error) {
