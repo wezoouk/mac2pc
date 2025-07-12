@@ -226,7 +226,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Username and password required' });
       }
       
-      const admin = await storage.getAdminByUsername(username);
+      // Try to find admin by email first, then by username
+      let admin = await storage.getAdminByEmail(username);
+      if (!admin) {
+        admin = await storage.getAdminByUsername(username);
+      }
+      
       console.log("Found admin:", admin ? admin.username : 'none');
       
       if (!admin || !admin.isActive) {
