@@ -39,16 +39,19 @@ export function DevicePairing({
       console.log('Generating pairing code:', code);
       setPairingCode(code);
       generateQRCode(code);
+      
+      // Auto-join the room when generating the code
+      // This ensures the generating device is in the room when someone scans the QR code
+      if (onGenerateCode) {
+        onGenerateCode(code);
+      }
     } else if (isOpen && currentRoom && currentRoom.startsWith('pair-')) {
       // If already in a pairing room, clear the pairing code to show success message
       console.log('Already in pairing room, showing success message');
       setPairingCode("");
       setQrCodeUrl("");
     }
-  }, [isOpen, currentRoom]);
-
-  // Don't auto-join - let the device that generates the code share it first
-  // The generating device will only join when they manually click a "Join Room" button
+  }, [isOpen, currentRoom, onGenerateCode]);
 
   async function generateQRCode(code: string) {
     try {
