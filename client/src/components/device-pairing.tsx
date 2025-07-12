@@ -85,6 +85,8 @@ export function DevicePairing({
       setQrCodeUrl(qrDataUrl);
       
       console.log('QR code generated successfully for code:', code);
+      console.log('QR code URL contains:', url);
+      console.log('Current pairing code state:', pairingCode);
     } catch (error) {
       console.error('QR Code generation failed:', error);
     }
@@ -186,6 +188,9 @@ export function DevicePairing({
                     📱 <strong>Share this code or scan the QR code on another device.</strong><br />
                     Room will be created: <span className="font-mono">pair-{pairingCode}</span>
                   </p>
+                  <div className="text-xs text-gray-500 mb-2">
+                    Debug: Displayed code: {pairingCode} | QR code generated: {qrCodeUrl ? 'Yes' : 'No'}
+                  </div>
                   
                   <div className="flex gap-2 justify-center mb-4">
                     <Button 
