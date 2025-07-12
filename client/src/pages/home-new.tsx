@@ -1158,8 +1158,35 @@ export default function Home() {
             <div className="mt-2 p-2 bg-orange-50 rounded text-xs">
               <p className="text-orange-800 font-medium">Manual Room Join Test:</p>
               <p className="text-orange-600 text-xs mb-1">Copy this exact room code to your phone:</p>
-              <code className="text-orange-700 font-mono bg-orange-100 px-1 rounded">pair-905769</code>
+              <code className="text-orange-700 font-mono bg-orange-100 px-1 rounded">pair-145827</code>
               <p className="text-orange-600 text-xs mt-1">Then type it in the room input field and click "Join Room"</p>
+              <button 
+                onClick={() => {
+                  const roomCode = "pair-145827";
+                  setRoomName(roomCode);
+                  setRoomPassword('');
+                  sendMessage({
+                    type: 'join-room',
+                    roomId: roomCode,
+                    password: '',
+                    deviceId,
+                    data: {
+                      id: deviceId,
+                      name: deviceName,
+                      type: getDeviceType(),
+                      network: 'local',
+                    }
+                  });
+                  toast({
+                    title: "Rejoined Test Room",
+                    description: `Desktop back in room: ${roomCode}`,
+                    duration: 3000,
+                  });
+                }}
+                className="mt-1 px-2 py-1 bg-orange-200 text-orange-800 rounded text-xs hover:bg-orange-300"
+              >
+                Rejoin Desktop to pair-145827
+              </button>
             </div>
           </div>
           
