@@ -24,8 +24,18 @@ import { NotificationManager } from '@/lib/notifications';
 import type { Device, Transfer } from "@shared/schema";
 
 export default function Home() {
-  const [deviceId] = useState(() => nanoid());
-  const [deviceName, setDeviceName] = useState(() => generateRandomDeviceName());
+  const [deviceId] = useState(() => {
+    // Create a unique device ID for each browser tab/session
+    const tabId = sessionStorage.getItem('tabId') || nanoid();
+    sessionStorage.setItem('tabId', tabId);
+    return tabId;
+  });
+  const [deviceName, setDeviceName] = useState(() => {
+    // Create a unique device name for each browser tab/session
+    const tabName = sessionStorage.getItem('tabName') || generateRandomDeviceName();
+    sessionStorage.setItem('tabName', tabName);
+    return tabName;
+  });
   const [roomName, setRoomName] = useState("");
   const [roomPassword, setRoomPassword] = useState("");
   const [currentRoom, setCurrentRoom] = useState<string | null>(null);
