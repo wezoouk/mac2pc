@@ -195,6 +195,8 @@ export default function Home() {
         setTimeout(() => fetchDevices(), 100);
         break;
       case 'room-devices':
+        console.log('Raw room devices from server:', message.devices);
+        console.log('Current device ID:', deviceId);
         const roomDevices = message.devices.filter((d: Device) => d.id !== deviceId);
         console.log(`Room devices received: ${roomDevices.length} devices in room ${message.roomId}`);
         console.log('Room devices data:', roomDevices);
