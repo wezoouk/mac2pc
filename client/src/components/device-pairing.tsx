@@ -34,12 +34,13 @@ export function DevicePairing({
 
   // Generate a 6-digit pairing code when dialog opens
   useEffect(() => {
-    if (isOpen && !pairingCode) {
-      // Force clear any existing QR code first
-      setQrCodeUrl("");
-      
+    if (isOpen) {
+      // Always generate a fresh code when dialog opens
       const code = Math.floor(100000 + Math.random() * 900000).toString();
-      console.log('Generating pairing code:', code);
+      console.log('Generating fresh pairing code:', code);
+      
+      // Force clear any existing state
+      setQrCodeUrl("");
       setPairingCode(code);
       
       // Generate QR code after a small delay to ensure state is clean
@@ -53,7 +54,7 @@ export function DevicePairing({
         onGenerateCode(code);
       }
     }
-  }, [isOpen, pairingCode, onGenerateCode]);
+  }, [isOpen, onGenerateCode]);
 
   async function generateQRCode(code: string) {
     try {
@@ -62,15 +63,24 @@ export function DevicePairing({
       const url = `${window.location.origin}?pair=${code}&t=${timestamp}`;
       console.log('Generated QR code URL:', url);
       console.log('This URL should make the scanning device join room: pair-' + code);
+      
+      // Force a unique QR code generation with cache-busting
       const qrDataUrl = await QRCode.toDataURL(url, {
         width: 200,
         margin: 2,
         color: {
           dark: '#000000',
           light: '#ffffff'
-        }
+        },
+        // Add cache-busting to the QR code generation itself
+        errorCorrectionLevel: 'M',
+        type: 'image/png'
       });
-      setQrCodeUrl(qrDataUrl);
+      
+      // Add timestamp to the data URL to force image refresh
+      const timestampedQrUrl = qrDataUrl + '?t=' + timestamp;
+      console.log('QR code generated successfully for code:', code);
+      setQrCodeUrl(timestampedQrUrl);
     } catch (error) {
       console.error('QR Code generation failed:', error);
     }
@@ -148,8 +158,9 @@ export function DevicePairing({
                 {qrCodeUrl && (
                   <div className="mb-4">
                     <img 
+                      key={pairingCode} 
                       src={qrCodeUrl} 
-                      alt="QR Code" 
+                      alt={`QR Code for room pair-${pairingCode}`}
                       className="mx-auto rounded-lg shadow-sm"
                     />
                   </div>
