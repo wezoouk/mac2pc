@@ -125,22 +125,6 @@ export default function Home() {
     console.log('Initial sound state:', soundState);
     setSoundEnabled(soundState);
     NotificationManager.setSoundEnabled(soundState);
-    
-    // Check for pairing code in URL and store it for later processing
-    const urlParams = new URLSearchParams(window.location.search);
-    const pairCode = urlParams.get('pair');
-    if (pairCode) {
-      console.log('Found pairing code in URL:', pairCode);
-      console.log('Device ID when scanning QR code:', deviceId);
-      
-      // Store the pairing code to process after WebSocket connects
-      setPendingPairCode(pairCode);
-      
-      // Clean up URL immediately
-      window.history.replaceState({}, document.title, window.location.pathname);
-      
-      console.log('QR code scanned, will join room after WebSocket connects');
-    }
 
     // Listen for admin settings updates from admin panel
     const handleAdminMessage = (event: MessageEvent) => {
@@ -154,6 +138,36 @@ export default function Home() {
     window.addEventListener('message', handleAdminMessage);
     return () => window.removeEventListener('message', handleAdminMessage);
   }, []);
+
+  // Process URL parameters after device ID is set
+  useEffect(() => {
+    // Check for pairing code in URL and store it for later processing
+    const urlParams = new URLSearchParams(window.location.search);
+    const pairCode = urlParams.get('pair');
+    
+    console.log('URL processing effect running');
+    console.log('Current URL:', window.location.href);
+    console.log('URL search params:', window.location.search);
+    console.log('Parsed pair code:', pairCode);
+    console.log('Device ID available:', deviceId);
+    
+    if (pairCode && deviceId) {
+      console.log('Found pairing code in URL:', pairCode);
+      console.log('Device ID when scanning QR code:', deviceId);
+      
+      // Store the pairing code to process after WebSocket connects
+      setPendingPairCode(pairCode);
+      
+      // Clean up URL immediately
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      console.log('QR code scanned, stored pending pair code:', pairCode);
+    } else if (pairCode && !deviceId) {
+      console.log('Found pair code but device ID not ready yet');
+    } else {
+      console.log('No pairing code found in URL');
+    }
+  }, [deviceId]); // Run this when deviceId is available
 
   // Test devices for demo purposes
   const testDevices: Device[] = [
@@ -416,6 +430,8 @@ export default function Home() {
       // If we have a pending pairing code, join the room after WebSocket connects
       if (pendingPairCode) {
         console.log('WebSocket connected, now joining pairing room with code:', pendingPairCode);
+        console.log('Current device ID:', deviceId);
+        console.log('Current device name:', deviceName);
         setTimeout(() => {
           console.log('Processing pending pair code:', pendingPairCode);
           handlePairWithCode(pendingPairCode);
@@ -428,6 +444,8 @@ export default function Home() {
             duration: 3000,
           });
         }, 500); // Give WebSocket time to fully establish
+      } else {
+        console.log('No pending pair code to process');
       }
     },
     onDisconnect: () => {
