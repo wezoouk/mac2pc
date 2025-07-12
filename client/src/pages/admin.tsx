@@ -10,15 +10,17 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Settings, Plus, Trash2, Eye, EyeOff, Save, AlertTriangle, RefreshCw, TestTube, Lock, Users, Mail, Key, Shield, Check, X, UserPlus } from "lucide-react";
+import { Settings, Plus, Trash2, Eye, EyeOff, Save, AlertTriangle, RefreshCw, TestTube, Lock, Users, Mail, Key, Shield, Check, X, UserPlus, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { AdPlacement, InsertAdPlacement } from "@shared/schema";
 import { UserManagementTab, PasswordResetTab } from "@/components/admin-user-management";
+import { useLocation } from "wouter";
 
 export default function Admin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   const [newPlacement, setNewPlacement] = useState<Partial<InsertAdPlacement>>({
     name: "",
     position: "between-content",
@@ -328,7 +330,8 @@ export default function Admin() {
                 <p className="text-xs text-slate-500">Manage Google Ads, App Settings & Security</p>
               </div>
             </div>
-            <Button variant="outline" onClick={() => window.history.back()}>
+            <Button variant="outline" onClick={() => setLocation('/')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
               Back to App
             </Button>
           </div>

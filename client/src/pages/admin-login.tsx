@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Lock, Eye, EyeOff } from 'lucide-react';
+import { Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { useLocation } from 'wouter';
 
 export default function AdminLogin() {
@@ -50,7 +50,16 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+      <div className="w-full max-w-md">
+        <Button
+          variant="ghost"
+          className="mb-4 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+          onClick={() => setLocation('/')}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to App
+        </Button>
+        <Card className="w-full">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
             <Lock className="h-8 w-8 text-blue-600 dark:text-blue-400" />
@@ -117,12 +126,10 @@ export default function AdminLogin() {
               {isLoading ? 'Signing in...' : 'Sign in'}
             </Button>
           </form>
-          <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-            <p>Default credentials:</p>
-            <p className="font-mono text-xs">admin / admin123</p>
-          </div>
+
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }
