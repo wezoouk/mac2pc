@@ -1,75 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>QR Code Test Page</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
-        .test-box { background: white; padding: 20px; border-radius: 8px; margin: 10px 0; }
-        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
-        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
-        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
-        code { background: #f8f9fa; padding: 2px 4px; border-radius: 3px; font-family: monospace; }
-        .btn { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .btn:hover { background: #0056b3; }
-    </style>
+    <title>QR Code URL Test</title>
 </head>
 <body>
     <h1>QR Code URL Test</h1>
     
-    <div class="test-box info">
-        <h3>Current URL:</h3>
-        <p><strong>Full URL:</strong> <code id="fullUrl"></code></p>
-        <p><strong>Pair Code:</strong> <code id="pairCode"></code></p>
-        <p><strong>Status:</strong> <span id="status">Checking...</span></p>
+    <h2>Test Links:</h2>
+    <ul>
+        <li><a href="/qr-redirect.html?pair=123456">Test with pair=123456</a></li>
+        <li><a href="/qr-redirect.html?pair=789012&t=1234567890">Test with pair=789012 and timestamp</a></li>
+        <li><a href="/qr-redirect.html#pair=456789">Test with hash pair=456789</a></li>
+    </ul>
+    
+    <h2>QR Code Test URLs:</h2>
+    <div style="font-family: monospace; font-size: 12px;">
+        <p>https://e58a2dac-3287-48ba-a6b8-7951f9cb5e2d-00-1x0xqkrywgybh.riker.replit.dev/qr-redirect.html?pair=123456</p>
+        <p>https://e58a2dac-3287-48ba-a6b8-7951f9cb5e2d-00-1x0xqkrywgybh.riker.replit.dev/qr-redirect.html?pair=789012&t=1234567890</p>
     </div>
     
-    <div class="test-box" id="resultBox">
-        <h3>Test Result:</h3>
-        <p id="resultText">Processing...</p>
-    </div>
-    
-    <div class="test-box">
-        <h3>Quick Tests:</h3>
-        <button class="btn" onclick="testUrl('TEST123')">Test with CODE: TEST123</button>
-        <button class="btn" onclick="testUrl('978756')">Test with CODE: 978756</button>
-        <button class="btn" onclick="goToApp()">Go to Main App</button>
-    </div>
-    
-    <script>
-        function updateStatus() {
-            const url = window.location.href;
-            const params = new URLSearchParams(window.location.search);
-            const pairCode = params.get('pair');
-            
-            document.getElementById('fullUrl').textContent = url;
-            document.getElementById('pairCode').textContent = pairCode || 'None';
-            
-            const resultBox = document.getElementById('resultBox');
-            const resultText = document.getElementById('resultText');
-            const status = document.getElementById('status');
-            
-            if (pairCode) {
-                resultBox.className = 'test-box success';
-                resultText.innerHTML = `<strong>SUCCESS!</strong><br>QR Code detected: ${pairCode}<br>Room should be: pair-${pairCode}`;
-                status.textContent = 'QR Code Detected';
-            } else {
-                resultBox.className = 'test-box error';
-                resultText.innerHTML = '<strong>NO QR CODE</strong><br>No pair parameter found in URL';
-                status.textContent = 'No QR Code';
-            }
-        }
-        
-        function testUrl(code) {
-            const newUrl = `${window.location.origin}${window.location.pathname}?pair=${code}`;
-            window.location.href = newUrl;
-        }
-        
-        function goToApp() {
-            window.location.href = '/';
-        }
-        
-        updateStatus();
-    </script>
+    <p>Click the test links above to see if the redirect page detects the pairing codes correctly.</p>
 </body>
 </html>

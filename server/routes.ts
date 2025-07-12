@@ -38,6 +38,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.sendFile(path.resolve(process.cwd(), 'client', 'qr-redirect.html'));
   });
 
+  // Serve the test page
+  app.get('/test-qr-url.html', (req, res) => {
+    res.sendFile(path.resolve(process.cwd(), 'test-qr-url.html'));
+  });
+
   // Device management API
   app.post('/api/devices', async (req, res) => {
     try {
