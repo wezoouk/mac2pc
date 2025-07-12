@@ -289,6 +289,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/admin/change-password", requireAuth, async (req, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: 'Current password and new password are required' });
+      }
+      
+      // For now, we'll use the first admin (in a real app, you'd get admin from token)
+      const admins = await storage.getAllAdmins();
+      const admin = admins[0];
+      
+      if (!admin) {
+        return res.status(404).json({ error: 'Admin not found' });
+      }
+      
+      // Verify current password
+      const isValidCurrentPassword = await bcrypt.compare(currentPassword, admin.passwordHash);
+      if (!isValidCurrentPassword) {
+        return res.status(401).json({ error: 'Current password is incorrect' });
+      }
+      
+      // Hash new password
+      const newPasswordHash = await bcrypt.hash(newPassword, 10);
+      
+      // Update password
+      await storage.updateAdminAuth(admin.id, { 
+        passwordHash: newPasswordHash,
+        updatedAt: new Date()
+      });
+      
+      res.json({ success: true, message: 'Password changed successfully' });
+    } catch (error) {
+      console.error("Password change error:", error);
+      res.status(500).json({ error: 'Failed to change password' });
+    }
+  });
+
   // Trusted devices API routes
   app.get("/api/trusted-devices/:deviceId", async (req, res) => {
     try {

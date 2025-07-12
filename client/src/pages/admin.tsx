@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Settings, Plus, Trash2, Eye, EyeOff, Save, AlertTriangle, RefreshCw } from "lucide-react";
+import { Settings, Plus, Trash2, Eye, EyeOff, Save, AlertTriangle, RefreshCw, TestTube, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { AdPlacement, InsertAdPlacement } from "@shared/schema";
@@ -29,6 +29,13 @@ export default function Admin() {
   });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [placementToDelete, setPlacementToDelete] = useState<number | null>(null);
+  
+  // General settings state
+  const [demoMode, setDemoMode] = useState(false);
+  const [adsEnabled, setAdsEnabled] = useState(true);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   // Fetch ad placements
   const { data: adPlacements = [], isLoading: loadingPlacements } = useQuery({
@@ -169,6 +176,67 @@ export default function Admin() {
     }
   };
 
+  const handleSaveSettings = async () => {
+    try {
+      // Send settings to parent window (main app)
+      window.parent.postMessage({
+        type: 'admin-settings-update',
+        settings: {
+          demoMode,
+          adsEnabled
+        }
+      }, '*');
+      
+      toast({
+        title: "Settings saved",
+        description: "Application settings have been updated",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save settings",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      await apiRequest("/api/admin/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword
+        })
+      });
+      
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      
+      toast({
+        title: "Password changed",
+        description: "Your password has been updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to change password. Please check your current password.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="bg-slate-50 min-h-screen">
       {/* Header */}
@@ -181,7 +249,7 @@ export default function Admin() {
               </div>
               <div>
                 <h1 className="text-xl font-semibold text-slate-900">Admin Settings</h1>
-                <p className="text-xs text-slate-500">Manage Google Ads & Configuration</p>
+                <p className="text-xs text-slate-500">Manage Google Ads, App Settings & Security</p>
               </div>
             </div>
             <Button variant="outline" onClick={() => window.history.back()}>
@@ -195,7 +263,7 @@ export default function Admin() {
         <Tabs defaultValue="ads" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="ads">Google Ads</TabsTrigger>
-            <TabsTrigger value="settings">General Settings</TabsTrigger>
+            <TabsTrigger value="settings">App Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="ads" className="space-y-6">
@@ -385,13 +453,103 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-6">
+            {/* Demo Mode & Ads Controls */}
             <Card>
               <CardHeader>
-                <CardTitle>General Settings</CardTitle>
+                <CardTitle className="flex items-center space-x-2">
+                  <TestTube size={20} />
+                  <span>Application Controls</span>
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-slate-500">
-                  General settings coming soon...
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label className="text-base font-medium">Demo Mode</Label>
+                    <p className="text-sm text-slate-600">
+                      Enable demo mode to show test devices for demonstration purposes
+                    </p>
+                  </div>
+                  <Switch
+                    checked={demoMode}
+                    onCheckedChange={setDemoMode}
+                  />
+                </div>
+                
+                <Separator />
+                
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label className="text-base font-medium">Ads Display</Label>
+                    <p className="text-sm text-slate-600">
+                      Control whether Google Ads are displayed on the main application
+                    </p>
+                  </div>
+                  <Switch
+                    checked={adsEnabled}
+                    onCheckedChange={setAdsEnabled}
+                  />
+                </div>
+                
+                <div className="flex justify-end">
+                  <Button onClick={handleSaveSettings} className="w-full sm:w-auto">
+                    <Save size={16} className="mr-2" />
+                    Save Settings
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Password Change */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Lock size={20} />
+                  <span>Change Password</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="currentPassword">Current Password</Label>
+                    <Input
+                      id="currentPassword"
+                      type="password"
+                      placeholder="Enter current password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="newPassword">New Password</Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      placeholder="Enter new password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="Confirm new password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex justify-end">
+                  <Button 
+                    onClick={handleChangePassword}
+                    disabled={!currentPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword}
+                    className="w-full sm:w-auto"
+                  >
+                    <Lock size={16} className="mr-2" />
+                    Change Password
+                  </Button>
                 </div>
               </CardContent>
             </Card>

@@ -87,6 +87,18 @@ export default function Home() {
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
+
+    // Listen for admin settings updates from admin panel
+    const handleAdminMessage = (event: MessageEvent) => {
+      if (event.data.type === 'admin-settings-update') {
+        const { demoMode, adsEnabled } = event.data.settings;
+        setTestMode(demoMode);
+        setAdsEnabled(adsEnabled);
+      }
+    };
+
+    window.addEventListener('message', handleAdminMessage);
+    return () => window.removeEventListener('message', handleAdminMessage);
   }, []);
 
   // Test devices for demo purposes
@@ -669,30 +681,10 @@ export default function Home() {
                 variant="ghost"
                 size="sm"
                 className="px-2 sm:px-3"
-                onClick={toggleTestMode}
-              >
-                <TestTube size={16} className={testMode ? 'text-amber-600' : 'text-slate-600'} />
-                <span className="hidden sm:inline ml-2">{testMode ? 'Exit Demo' : 'Demo Mode'}</span>
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                className="px-2 sm:px-3"
                 onClick={fetchDevices}
               >
                 <RefreshCw size={14} />
                 <span className="hidden sm:inline">Refresh</span>
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                className="px-2 sm:px-3"
-                onClick={() => setAdsEnabled(!adsEnabled)}
-              >
-                {adsEnabled ? <Eye size={16} /> : <EyeOff size={16} />}
-                <span className="hidden sm:inline ml-2">Ads</span>
               </Button>
               
               <Button

@@ -98,6 +98,14 @@ The application is designed to work seamlessly in both development and productio
 
 ## Recent Changes (July 11, 2025)
 
+### Admin Security & Settings Management (NEW - July 11, 2025)
+- **Updated Admin Credentials**: Changed login to "dawez@gmail.com" with password "Weston99!!"
+- **Moved Controls to Admin**: Demo mode and ads controls relocated from main menu to admin panel
+- **Password Change System**: Added secure password change functionality with validation
+- **Settings Sync**: Admin settings changes are automatically applied to main app via postMessage
+- **Clean Main Interface**: Removed demo and ads buttons from header for cleaner user experience
+- **Enhanced Security**: Proper password hashing and current password verification for changes
+
 ### Device Pairing System (ENHANCED - July 11, 2025)
 - **Room-Based Pairing**: Device pairing works through temporary rooms using 6-digit codes
 - **QR Code Generation**: Automatic QR code generation for easy mobile device pairing
