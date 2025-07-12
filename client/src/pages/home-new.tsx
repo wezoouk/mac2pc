@@ -87,25 +87,18 @@ export default function Home() {
     setSoundEnabled(soundState);
     NotificationManager.setSoundEnabled(soundState);
     
-    // Check for pairing code in URL
+    // Check for pairing code in URL and clean it up
     const urlParams = new URLSearchParams(window.location.search);
     const pairCode = urlParams.get('pair');
     if (pairCode) {
       console.log('Found pairing code in URL:', pairCode);
-      console.log('Will join room: pair-' + pairCode);
       console.log('Device ID when scanning QR code:', deviceId);
       
-      // Add a small delay to ensure device ID is properly set
-      setTimeout(() => {
-        handlePairWithCode(pairCode);
-      }, 100);
-      
-      // Clean up URL
+      // Clean up URL immediately
       window.history.replaceState({}, document.title, window.location.pathname);
       
-      // Don't show pairing dialog when scanning QR code
-      // The room join will be confirmed via WebSocket messages
-      console.log('QR code scanned, joining room directly without showing pairing dialog');
+      // Room joining will be handled in WebSocket onConnect callback
+      console.log('QR code scanned, will join room after WebSocket connects');
     }
 
     // Listen for admin settings updates from admin panel
@@ -376,6 +369,16 @@ export default function Home() {
           network: 'local',
         }
       });
+      
+      // If we have a pairing code in the URL, try to join the room after WebSocket connects
+      const urlParams = new URLSearchParams(window.location.search);
+      const pairCode = urlParams.get('pair');
+      if (pairCode) {
+        console.log('WebSocket connected, now joining pairing room with code:', pairCode);
+        setTimeout(() => {
+          handlePairWithCode(pairCode);
+        }, 500); // Give WebSocket time to fully establish
+      }
     },
     onDisconnect: () => {
       console.log('WebSocket disconnected');
