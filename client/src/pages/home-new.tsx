@@ -51,6 +51,7 @@ export default function Home() {
   const [soundEnabled, setSoundEnabled] = useState(soundManager.isEnabled());
   const [isEditingName, setIsEditingName] = useState(false);
   const [newDeviceName, setNewDeviceName] = useState(deviceName);
+  const [pendingPairCode, setPendingPairCode] = useState<string | null>(null);
   const { toast } = useToast();
 
   function handlePairWithCode(code: string) {
@@ -123,17 +124,19 @@ export default function Home() {
     setSoundEnabled(soundState);
     NotificationManager.setSoundEnabled(soundState);
     
-    // Check for pairing code in URL and clean it up
+    // Check for pairing code in URL and store it for later processing
     const urlParams = new URLSearchParams(window.location.search);
     const pairCode = urlParams.get('pair');
     if (pairCode) {
       console.log('Found pairing code in URL:', pairCode);
       console.log('Device ID when scanning QR code:', deviceId);
       
+      // Store the pairing code to process after WebSocket connects
+      setPendingPairCode(pairCode);
+      
       // Clean up URL immediately
       window.history.replaceState({}, document.title, window.location.pathname);
       
-      // Room joining will be handled in WebSocket onConnect callback
       console.log('QR code scanned, will join room after WebSocket connects');
     }
 
@@ -406,13 +409,19 @@ export default function Home() {
         }
       });
       
-      // If we have a pairing code in the URL, try to join the room after WebSocket connects
-      const urlParams = new URLSearchParams(window.location.search);
-      const pairCode = urlParams.get('pair');
-      if (pairCode) {
-        console.log('WebSocket connected, now joining pairing room with code:', pairCode);
+      // If we have a pending pairing code, join the room after WebSocket connects
+      if (pendingPairCode) {
+        console.log('WebSocket connected, now joining pairing room with code:', pendingPairCode);
         setTimeout(() => {
-          handlePairWithCode(pairCode);
+          handlePairWithCode(pendingPairCode);
+          setPendingPairCode(null); // Clear the pending code after processing
+          
+          // Show toast notification
+          toast({
+            title: "Pairing successful",
+            description: "Joined pairing room via QR code scan",
+            duration: 3000,
+          });
         }, 500); // Give WebSocket time to fully establish
       }
     },

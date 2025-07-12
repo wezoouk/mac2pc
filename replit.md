@@ -98,6 +98,14 @@ The application is designed to work seamlessly in both development and productio
 
 ## Recent Changes (July 11, 2025)
 
+### QR Code Pairing Fix (CRITICAL FIX - July 12, 2025)
+- **Phone-to-Phone Pairing**: Fixed critical issue where QR code scanning showed homepage but didn't join pairing room
+- **URL Processing**: Fixed timing issue where pairing code was cleared before WebSocket connection established
+- **Pending Code Logic**: Added pendingPairCode state to store and process pairing codes after WebSocket connects
+- **Toast Notifications**: Added confirmation message when successfully joining via QR code scan
+- **Robust Flow**: QR code scanning now reliably joins the intended pairing room for cross-device transfers
+- **WebSocket Integration**: Pairing room joining now happens after WebSocket connection is fully established
+
 ### User-Editable Device Names (NEW - July 12, 2025)
 - **Call Sign Customization**: Users can now change their device name/call sign from Device Settings
 - **Real-time Updates**: Name changes instantly update across all connected devices
