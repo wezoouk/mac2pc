@@ -76,6 +76,8 @@ export default function Home() {
     setCurrentRoom(pairRoomId);
     setRoomName(pairRoomId);
     
+    console.log('Updated current room state to:', pairRoomId);
+    
     // Don't close the pairing dialog when joining via QR code
     // This allows the user to see the confirmation
   }
@@ -231,9 +233,11 @@ export default function Home() {
         break;
       case 'room-joined':
         console.log('Successfully joined room:', message.roomId);
+        console.log('Setting current room state to:', message.roomId);
         setCurrentRoom(message.roomId);
         setRoomName("");
         setRoomPassword("");
+        console.log('Current room state updated via room-joined message');
         break;
       case 'room-left':
         console.log('Successfully left room:', message.roomId);
@@ -413,6 +417,7 @@ export default function Home() {
       if (pendingPairCode) {
         console.log('WebSocket connected, now joining pairing room with code:', pendingPairCode);
         setTimeout(() => {
+          console.log('Processing pending pair code:', pendingPairCode);
           handlePairWithCode(pendingPairCode);
           setPendingPairCode(null); // Clear the pending code after processing
           
@@ -740,6 +745,11 @@ export default function Home() {
   useEffect(() => {
     setNewDeviceName(deviceName);
   }, [deviceName]);
+
+  // Debug current room state changes
+  useEffect(() => {
+    console.log('Current room state changed to:', currentRoom);
+  }, [currentRoom]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-indigo-900 overflow-x-hidden">
