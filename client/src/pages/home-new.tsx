@@ -208,7 +208,9 @@ export default function Home() {
         // Try to join room immediately if we have device ID
         if (deviceId) {
           console.log('Device ID available, processing pair code immediately');
-          handlePairWithCode(pairCode);
+          setTimeout(() => {
+            handlePairWithCode(pairCode);
+          }, 1000);
         }
       }
     };
@@ -223,6 +225,35 @@ export default function Home() {
     
     return () => timeouts.forEach(clearTimeout);
   }, []); // Run once on mount
+  
+  // Listen for page focus events to catch QR code detection on mobile
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log('Page focused, checking for QR code parameters');
+      const urlParams = new URLSearchParams(window.location.search);
+      const pairCode = urlParams.get('pair');
+      
+      if (pairCode && !pendingPairCode) {
+        console.log('Found pair code on focus:', pairCode);
+        setPendingPairCode(pairCode);
+        window.history.replaceState({}, document.title, window.location.pathname);
+        toast({
+          title: "QR Code Detected on Focus",
+          description: `Processing pairing code: ${pairCode}`,
+          duration: 5000,
+        });
+        
+        if (deviceId) {
+          setTimeout(() => {
+            handlePairWithCode(pairCode);
+          }, 1000);
+        }
+      }
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [pendingPairCode, deviceId]);
 
   // Test devices for demo purposes
   const testDevices: Device[] = [
@@ -1091,7 +1122,7 @@ export default function Home() {
               <button 
                 onClick={() => {
                   // Force simulate a pairing code
-                  const testCode = "ABC123";
+                  const testCode = "840652";
                   handlePairWithCode(testCode);
                   toast({
                     title: "Testing Pairing",
@@ -1101,7 +1132,27 @@ export default function Home() {
                 }}
                 className="px-3 py-1 bg-purple-100 text-purple-800 rounded text-xs hover:bg-purple-200"
               >
-                Test Pairing Logic
+                Test QR Code: 840652
+              </button>
+            </div>
+            <div className="mt-2 p-2 bg-blue-50 rounded text-xs">
+              <p className="text-blue-800 font-medium">QR Code Test URL:</p>
+              <code className="text-blue-600 text-xs block break-all">
+                {window.location.origin}?pair=840652
+              </code>
+              <button 
+                onClick={() => {
+                  const testUrl = `${window.location.origin}?pair=840652`;
+                  navigator.clipboard.writeText(testUrl);
+                  toast({
+                    title: "QR Test URL Copied",
+                    description: "Paste this URL in your phone browser to test QR code detection",
+                    duration: 3000,
+                  });
+                }}
+                className="mt-1 px-2 py-1 bg-blue-200 text-blue-800 rounded text-xs hover:bg-blue-300"
+              >
+                Copy QR Test URL
               </button>
             </div>
           </div>
