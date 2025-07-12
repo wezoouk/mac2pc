@@ -48,9 +48,15 @@ export function DevicePairing({
   }, [isOpen, currentRoom]);
 
   // Auto-join pairing room when code is generated (only if not already in a pairing room)
+  // But delay the joining to allow the QR code to be displayed first
   useEffect(() => {
     if (pairingCode && onGenerateCode && (!currentRoom || !currentRoom.startsWith('pair-'))) {
-      onGenerateCode(pairingCode);
+      // Delay joining the room to show QR code first
+      const timer = setTimeout(() => {
+        onGenerateCode(pairingCode);
+      }, 1000); // 1 second delay to show QR code
+      
+      return () => clearTimeout(timer);
     }
   }, [pairingCode, currentRoom]); // Only trigger when pairingCode changes, not when onGenerateCode changes
 
