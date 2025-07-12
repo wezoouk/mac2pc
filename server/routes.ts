@@ -214,7 +214,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Found admin:", admin ? admin.username : 'none');
       
       if (!admin || !admin.isActive) {
-        console.log("Admin not found or inactive");
+        console.log("Admin not found or inactive. Available admins:", await storage.getAllAdmins());
         return res.status(401).json({ error: 'Invalid credentials' });
       }
       
