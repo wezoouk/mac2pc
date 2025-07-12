@@ -241,23 +241,9 @@ export default function Home() {
           duration: 5000,
         });
         
-        // Force the pairing process if it's a redirect
-        if (isRedirect) {
-          console.log('Force processing redirect pair code immediately');
-          setTimeout(() => {
-            handlePairWithCode(pairCode);
-          }, 500);
-        }
+        // No need to force processing - WebSocket onConnect will handle it
         
-        // Try to join room immediately if we have device ID
-        if (deviceId) {
-          console.log('Device ID available, processing pair code immediately');
-          setTimeout(() => {
-            handlePairWithCode(pairCode);
-          }, 1000);
-        } else {
-          console.log('Device ID not available yet, will process when ready');
-        }
+        // WebSocket onConnect will handle the pairing when ready
       }
     };
     
@@ -624,18 +610,15 @@ export default function Home() {
         });
         console.log('Sent join-room message for:', roomName);
         
-        setTimeout(() => {
-          console.log('Processing pending pair code:', pendingPairCode);
-          handlePairWithCode(pendingPairCode);
-          setPendingPairCode(null); // Clear the pending code after processing
-          
-          // Show toast notification
-          toast({
-            title: "Pairing successful",
-            description: "Joined pairing room via QR code scan",
-            duration: 3000,
-          });
-        }, 500); // Give WebSocket time to fully establish
+        // Clear the pending code after processing
+        setPendingPairCode(null);
+        
+        // Show toast notification
+        toast({
+          title: "Pairing successful",
+          description: "Joined pairing room via QR code scan",
+          duration: 3000,
+        });
       } else {
         console.log('No pending pair code to process');
       }
@@ -1252,9 +1235,6 @@ export default function Home() {
           <div className="text-xs text-slate-500 mt-3 space-y-1 hidden sm:block">
             <div>You can be discovered by everyone on this network</div>
             <div>Traffic is routed through this server, if WebRTC is not available</div>
-            <div className="text-xs text-slate-400 mt-2">
-              Device ID: {deviceId.slice(-8)} • Device Name: {deviceName}
-            </div>
           </div>
           
           {/* Trust Device Button for Selected Device */}
