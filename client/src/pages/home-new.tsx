@@ -197,6 +197,9 @@ export default function Home() {
       case 'room-devices':
         console.log('Raw room devices from server:', message.devices);
         console.log('Current device ID:', deviceId);
+        console.log('Device IDs from server:', message.devices.map((d: Device) => d.id));
+        console.log('Filtering logic: removing devices with ID matching:', deviceId);
+        
         const roomDevices = message.devices.filter((d: Device) => d.id !== deviceId);
         console.log(`Room devices received: ${roomDevices.length} devices in room ${message.roomId}`);
         console.log('Room devices data:', roomDevices);
