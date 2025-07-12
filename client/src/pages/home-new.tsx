@@ -1021,12 +1021,25 @@ export default function Home() {
               <button 
                 onClick={() => {
                   const input = document.getElementById('testRoomInput') as HTMLInputElement;
-                  const roomName = input.value.trim();
-                  if (roomName) {
-                    handleJoinRoom(roomName, '');
+                  const testRoomName = input.value.trim();
+                  if (testRoomName) {
+                    setRoomName(testRoomName);
+                    setRoomPassword('');
+                    sendMessage({
+                      type: 'join-room',
+                      roomId: testRoomName,
+                      password: '',
+                      deviceId,
+                      data: {
+                        id: deviceId,
+                        name: deviceName,
+                        type: getDeviceType(),
+                        network: 'local',
+                      }
+                    });
                     toast({
                       title: "Joining Room",
-                      description: `Joining room: ${roomName}`,
+                      description: `Joining room: ${testRoomName}`,
                       duration: 2000,
                     });
                   }
@@ -1043,11 +1056,24 @@ export default function Home() {
               <button 
                 onClick={() => {
                   const testCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-                  const roomName = `test-${testCode}`;
-                  handleJoinRoom(roomName, '');
+                  const testRoomName = `test-${testCode}`;
+                  setRoomName(testRoomName);
+                  setRoomPassword('');
+                  sendMessage({
+                    type: 'join-room',
+                    roomId: testRoomName,
+                    password: '',
+                    deviceId,
+                    data: {
+                      id: deviceId,
+                      name: deviceName,
+                      type: getDeviceType(),
+                      network: 'local',
+                    }
+                  });
                   toast({
                     title: "Test Room Created",
-                    description: `Joined room: ${roomName}. Share this code: ${testCode}`,
+                    description: `Joined room: ${testRoomName}. Share this code: ${testCode}`,
                     duration: 5000,
                   });
                 }}
