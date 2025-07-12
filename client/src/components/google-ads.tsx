@@ -17,7 +17,7 @@ declare global {
 
 export function GoogleAds({ 
   adSlot = "1234567890", 
-  adClient = "ca-pub-1234567890123456",
+  adClient = "ca-pub-1630199465253721",
   adFormat = "auto",
   className = "",
   isEnabled = true 
@@ -129,6 +129,7 @@ export function DynamicAds({ position, isEnabled = true }: { position: string; i
     const positionMap: { [key: string]: string } = {
       'between-content': 'between-content',
       'footer': 'footer',
+      'top-banner': 'top-banner',
       'header': 'top-banner',
       'sidebar': 'sidebar'
     };

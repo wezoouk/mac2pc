@@ -780,7 +780,7 @@ export default function Home() {
         {/* Top Banner Ad */}
         {adsEnabled && (
           <div className="mb-6 w-full max-w-4xl">
-            <DynamicAds position="header" isEnabled={adsEnabled} />
+            <DynamicAds position="top-banner" isEnabled={adsEnabled} />
           </div>
         )}
 
@@ -983,6 +983,13 @@ export default function Home() {
             </CollapsibleContent>
           </Collapsible>
         </div>
+
+        {/* Footer Ad */}
+        {adsEnabled && (
+          <div className="mt-8 w-full max-w-4xl">
+            <DynamicAds position="footer" isEnabled={adsEnabled} />
+          </div>
+        )}
 
       </main>
 

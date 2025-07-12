@@ -138,7 +138,7 @@ export class MemStorage implements IStorage {
       {
         name: "Top Banner",
         position: "top-banner",
-        adClient: "ca-pub-0000000000000000",
+        adClient: "ca-pub-1630199465253721",
         adSlot: "1111111111",
         adFormat: "banner",
         isEnabled: true,
@@ -147,7 +147,7 @@ export class MemStorage implements IStorage {
       {
         name: "Sidebar Ad",
         position: "sidebar",
-        adClient: "ca-pub-0000000000000000", 
+        adClient: "ca-pub-1630199465253721", 
         adSlot: "2222222222",
         adFormat: "rectangle",
         isEnabled: true,
@@ -156,7 +156,7 @@ export class MemStorage implements IStorage {
       {
         name: "Main Banner",
         position: "between-content",
-        adClient: "ca-pub-0000000000000000",
+        adClient: "ca-pub-1630199465253721",
         adSlot: "3333333333",
         adFormat: "auto",
         isEnabled: true,
@@ -165,7 +165,7 @@ export class MemStorage implements IStorage {
       {
         name: "Footer Ad",
         position: "footer",
-        adClient: "ca-pub-0000000000000000",
+        adClient: "ca-pub-1630199465253721",
         adSlot: "4444444444", 
         adFormat: "banner",
         isEnabled: true,
