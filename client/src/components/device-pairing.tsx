@@ -47,18 +47,8 @@ export function DevicePairing({
     }
   }, [isOpen, currentRoom]);
 
-  // Auto-join pairing room when code is generated (only if not already in a pairing room)
-  // But delay the joining to allow the QR code to be displayed first
-  useEffect(() => {
-    if (pairingCode && onGenerateCode && (!currentRoom || !currentRoom.startsWith('pair-'))) {
-      // Delay joining the room to show QR code first
-      const timer = setTimeout(() => {
-        onGenerateCode(pairingCode);
-      }, 1000); // 1 second delay to show QR code
-      
-      return () => clearTimeout(timer);
-    }
-  }, [pairingCode, currentRoom]); // Only trigger when pairingCode changes, not when onGenerateCode changes
+  // Don't auto-join - let the device that generates the code share it first
+  // The generating device will only join when they manually click a "Join Room" button
 
   async function generateQRCode(code: string) {
     try {
@@ -141,8 +131,8 @@ export function DevicePairing({
             </Card>
           )}
           
-          {/* QR Code Section */}
-          {showQR && pairingCode && (
+          {/* QR Code Section - Only show if code is generated and not already in a room */}
+          {showQR && pairingCode && (!currentRoom || !currentRoom.startsWith('pair-')) && (
             <Card className="border-blue-200">
               <CardContent className="p-6 text-center">
                 {qrCodeUrl && (
@@ -161,11 +151,11 @@ export function DevicePairing({
                     {pairingCode.split('').join(' ')}
                   </div>
                   <p className="text-sm text-slate-600 mb-4">
-                    ✅ You're now in pairing room: <span className="font-mono">{pairingCode}</span><br />
-                    Share this code or scan the QR code on another device.
+                    📱 <strong>Share this code or scan the QR code on another device.</strong><br />
+                    Room will be created: <span className="font-mono">pair-{pairingCode}</span>
                   </p>
                   
-                  <div className="flex gap-2 justify-center">
+                  <div className="flex gap-2 justify-center mb-4">
                     <Button 
                       variant="outline" 
                       size="sm" 
@@ -185,6 +175,16 @@ export function DevicePairing({
                       Copy Link
                     </Button>
                   </div>
+                  
+                  <Button 
+                    onClick={() => {
+                      onPairWithCode(pairingCode);
+                      onClose();
+                    }}
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                  >
+                    Join This Room
+                  </Button>
                 </div>
               </CardContent>
             </Card>
