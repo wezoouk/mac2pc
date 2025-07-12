@@ -60,7 +60,7 @@ export function DevicePairing({
       
       // Add timestamp to prevent caching issues
       const timestamp = Date.now();
-      const url = `${window.location.origin}?pair=${code}&t=${timestamp}`;
+      const url = `${window.location.origin}/qr-redirect.html?pair=${code}&t=${timestamp}`;
       console.log('Generated QR code URL:', url);
       console.log('This URL should make the scanning device join room: pair-' + code);
       
@@ -102,7 +102,7 @@ export function DevicePairing({
   }
 
   function copyPairingLink() {
-    const url = `${window.location.origin}?pair=${pairingCode}`;
+    const url = `${window.location.origin}/qr-redirect.html?pair=${pairingCode}`;
     navigator.clipboard.writeText(url);
     toast({
       title: "Link copied",

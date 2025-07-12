@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Pairing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .loading {
+            font-size: 18px;
+            color: #666;
+            margin: 20px 0;
+        }
+        .code {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin: 10px 0;
+        }
+        .error {
+            color: #dc3545;
+            margin: 10px 0;
+        }
+        .success {
+            color: #28a745;
+            margin: 10px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>QR Code Pairing</h1>
+        <div class="loading" id="status">Detecting pairing code...</div>
+        <div class="code" id="pairCode"></div>
+        <div id="message"></div>
+        <button onclick="goToApp()" id="continueBtn" style="display: none;">Continue to App</button>
+        <button onclick="retry()" id="retryBtn" style="display: none;">Retry</button>
+    </div>
+
+    <script>
+        let detectedCode = null;
+        
+        function updateStatus(message, type = 'loading') {
+            const statusEl = document.getElementById('status');
+            const messageEl = document.getElementById('message');
+            
+            statusEl.textContent = message;
+            statusEl.className = type;
+            
+            if (type === 'error') {
+                document.getElementById('retryBtn').style.display = 'inline-block';
+            }
+        }
+        
+        function showPairCode(code) {
+            document.getElementById('pairCode').textContent = `Pair Code: ${code}`;
+            document.getElementById('continueBtn').style.display = 'inline-block';
+        }
+        
+        function detectPairCode() {
+            const url = window.location.href;
+            const urlObj = new URL(url);
+            const params = new URLSearchParams(urlObj.search);
+            const hash = urlObj.hash;
+            
+            // Method 1: URL parameters
+            let pairCode = params.get('pair');
+            
+            // Method 2: Hash parameters
+            if (!pairCode && hash) {
+                const hashParams = new URLSearchParams(hash.substring(1));
+                pairCode = hashParams.get('pair');
+            }
+            
+            // Method 3: Manual parsing
+            if (!pairCode) {
+                const pairMatch = url.match(/[?&#]pair=([^&#]+)/);
+                if (pairMatch) {
+                    pairCode = pairMatch[1];
+                }
+            }
+            
+            // Method 4: Any 6-digit code
+            if (!pairCode) {
+                const codeMatch = url.match(/[?&#](?:pair|code)=([A-Z0-9]{6})/i);
+                if (codeMatch) {
+                    pairCode = codeMatch[1];
+                }
+            }
+            
+            console.log('QR Redirect - Full URL:', url);
+            console.log('QR Redirect - Search params:', urlObj.search);
+            console.log('QR Redirect - Hash:', hash);
+            console.log('QR Redirect - Detected pair code:', pairCode);
+            
+            if (pairCode) {
+                detectedCode = pairCode;
+                updateStatus('QR Code detected successfully!', 'success');
+                showPairCode(pairCode);
+                
+                // Auto-redirect after 3 seconds
+                setTimeout(() => {
+                    goToApp();
+                }, 3000);
+            } else {
+                updateStatus('No pairing code found in URL', 'error');
+                document.getElementById('message').innerHTML = `
+                    <div class="error">
+                        <p>URL: ${url}</p>
+                        <p>Search: ${urlObj.search}</p>
+                        <p>Hash: ${hash}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function goToApp() {
+            if (detectedCode) {
+                const appUrl = `${window.location.origin}?pair=${detectedCode}`;
+                console.log('QR Redirect - Redirecting to app:', appUrl);
+                window.location.href = appUrl;
+            } else {
+                window.location.href = window.location.origin;
+            }
+        }
+        
+        function retry() {
+            window.location.reload();
+        }
+        
+        // Start detection
+        setTimeout(detectPairCode, 100);
+        setTimeout(detectPairCode, 500);
+        setTimeout(detectPairCode, 1000);
+    </script>
+</body>
+</html>
