@@ -88,8 +88,9 @@ export default function Home() {
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
       
-      // Show pairing dialog as confirmation for QR code scanning
-      setShowPairing(true);
+      // Don't show pairing dialog when scanning QR code
+      // The room join will be confirmed via WebSocket messages
+      console.log('QR code scanned, joining room directly without showing pairing dialog');
     }
 
     // Listen for admin settings updates from admin panel
