@@ -108,12 +108,14 @@ The application is designed to work seamlessly in both development and productio
 - **API Endpoints**: Complete REST API for admin operations (/api/admin/users, /api/admin/toggle-ads, /api/admin/request-reset)
 - **Login Credentials**: davwez@gmail.com / we5ton99!! for admin access (in-memory database resets on server restart)
 
-### Device Pairing System (ENHANCED - July 11, 2025)
-- **Room-Based Pairing**: Device pairing works through temporary rooms using 6-digit codes
-- **QR Code Generation**: Automatic QR code generation for easy mobile device pairing
-- **Pairing Process**: When devices use the same pairing code, they join room `pair-${code}` and can discover each other
-- **Cross-Network Sharing**: Pairing enables devices from different networks to connect securely
-- **Improved UI**: Updated pairing dialog with clearer explanations of how the system works
+### Device Pairing System (FIXED - July 12, 2025)
+- **Room-Based Pairing**: Fixed critical issue where devices couldn't see each other in pairing rooms
+- **WebSocket Broadcasting**: Enhanced server-side device broadcasting with detailed logging
+- **Simultaneous Room Joining**: Both devices now successfully join the same pairing room and see each other
+- **QR Code Generation**: Complete QR code flow works - generate, scan, both devices visible in radar
+- **Cross-Network Sharing**: Devices from different networks can now successfully pair and transfer files
+- **Server Logging**: Added comprehensive logging to track room device broadcasting and client connections
+- **Timing Issues Resolved**: Fixed race conditions in room joining that prevented device visibility
 - **Connection Lines**: Added animated connection lines from center device to selected devices in radar view
 - **Trust Device Integration**: Prominent "Trust Device" button appears when selecting devices from radar
 
