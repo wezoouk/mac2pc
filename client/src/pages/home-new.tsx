@@ -190,6 +190,7 @@ export default function Home() {
       
       // Try multiple ways to extract pair code
       let pairCode = null;
+      const isRedirect = params.get('redirect') === 'true';
       
       // Method 1: Standard URL parameter
       pairCode = params.get('pair');
@@ -230,10 +231,10 @@ export default function Home() {
         const cleanUrl = urlObj.origin + urlObj.pathname;
         window.history.replaceState({}, document.title, cleanUrl);
         
-        // Show toast
+        // Show toast with different message if it's from redirect
         toast({
-          title: "QR Code Detected!",
-          description: `Found pairing code: ${pairCode}`,
+          title: isRedirect ? "QR Code Scanned!" : "QR Code Detected!",
+          description: `${isRedirect ? 'Joining pairing room' : 'Found pairing code'}: ${pairCode}`,
           duration: 5000,
         });
         
@@ -1232,39 +1233,7 @@ export default function Home() {
                 Copy QR Test URL
               </button>
             </div>
-            <div className="mt-2 p-2 bg-orange-50 rounded text-xs">
-              <p className="text-orange-800 font-medium">Manual Room Join Test:</p>
-              <p className="text-orange-600 text-xs mb-1">Copy this exact room code to your phone:</p>
-              <code className="text-orange-700 font-mono bg-orange-100 px-1 rounded">pair-145827</code>
-              <p className="text-orange-600 text-xs mt-1">Then type it in the room input field and click "Join Room"</p>
-              <button 
-                onClick={() => {
-                  const roomCode = "pair-145827";
-                  setRoomName(roomCode);
-                  setRoomPassword('');
-                  sendMessage({
-                    type: 'join-room',
-                    roomId: roomCode,
-                    password: '',
-                    deviceId,
-                    data: {
-                      id: deviceId,
-                      name: deviceName,
-                      type: getDeviceType(),
-                      network: 'local',
-                    }
-                  });
-                  toast({
-                    title: "Rejoined Test Room",
-                    description: `Desktop back in room: ${roomCode}`,
-                    duration: 3000,
-                  });
-                }}
-                className="mt-1 px-2 py-1 bg-orange-200 text-orange-800 rounded text-xs hover:bg-orange-300"
-              >
-                Rejoin Desktop to pair-145827
-              </button>
-            </div>
+
           </div>
           
           <div className="text-xs text-slate-500 mt-3 space-y-1 hidden sm:block">

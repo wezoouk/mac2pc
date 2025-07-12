@@ -124,10 +124,10 @@
                 updateStatus('QR Code detected successfully!', 'success');
                 showPairCode(pairCode);
                 
-                // Auto-redirect after 3 seconds
+                // Auto-redirect after 1 second
                 setTimeout(() => {
                     goToApp();
-                }, 3000);
+                }, 1000);
             } else {
                 updateStatus('No pairing code found in URL', 'error');
                 document.getElementById('message').innerHTML = `
@@ -142,11 +142,12 @@
         
         function goToApp() {
             if (detectedCode) {
-                const appUrl = `${window.location.origin}?pair=${detectedCode}`;
+                const appUrl = `${window.location.origin}?pair=${detectedCode}&redirect=true`;
                 console.log('QR Redirect - Redirecting to app:', appUrl);
-                window.location.href = appUrl;
+                // Use replace to avoid going back to redirect page
+                window.location.replace(appUrl);
             } else {
-                window.location.href = window.location.origin;
+                window.location.replace(window.location.origin);
             }
         }
         
