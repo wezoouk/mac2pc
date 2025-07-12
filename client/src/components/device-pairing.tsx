@@ -34,8 +34,8 @@ export function DevicePairing({
 
   // Generate a 6-digit pairing code when dialog opens
   useEffect(() => {
-    if (isOpen) {
-      // Always generate a fresh code when dialog opens
+    if (isOpen && !pairingCode) {
+      // Only generate code if dialog is open and no code exists
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       console.log('Generating fresh pairing code:', code);
       
@@ -54,7 +54,7 @@ export function DevicePairing({
         onGenerateCode(code);
       }
     }
-  }, [isOpen, onGenerateCode]);
+  }, [isOpen, pairingCode]); // Remove onGenerateCode from dependencies to prevent loop
 
   async function generateQRCode(code: string) {
     try {
