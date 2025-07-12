@@ -36,13 +36,15 @@ export function DevicePairing({
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       setPairingCode(code);
       generateQRCode(code);
-      
-      // Automatically join the pairing room when generating the code
-      if (onGenerateCode) {
-        onGenerateCode(code);
-      }
     }
-  }, [isOpen, onGenerateCode]);
+  }, [isOpen]);
+
+  // Auto-join pairing room when code is generated
+  useEffect(() => {
+    if (pairingCode && onGenerateCode) {
+      onGenerateCode(pairingCode);
+    }
+  }, [pairingCode]); // Only trigger when pairingCode changes
 
   async function generateQRCode(code: string) {
     try {
@@ -90,6 +92,8 @@ export function DevicePairing({
 
   function handleClose() {
     setInputCode("");
+    setPairingCode("");
+    setQrCodeUrl("");
     onClose();
   }
 
