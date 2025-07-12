@@ -27,7 +27,9 @@ export default function Home() {
   const [deviceId] = useState(() => {
     // Create a completely unique device ID for each tab instance
     // Don't use sessionStorage to ensure each tab gets a fresh ID
-    return `${nanoid()}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const newId = `${nanoid()}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    console.log('Generated new device ID:', newId);
+    return newId;
   });
   const [deviceName, setDeviceName] = useState(() => {
     // Create a unique device name for each tab instance
@@ -91,7 +93,13 @@ export default function Home() {
     if (pairCode) {
       console.log('Found pairing code in URL:', pairCode);
       console.log('Will join room: pair-' + pairCode);
-      handlePairWithCode(pairCode);
+      console.log('Device ID when scanning QR code:', deviceId);
+      
+      // Add a small delay to ensure device ID is properly set
+      setTimeout(() => {
+        handlePairWithCode(pairCode);
+      }, 100);
+      
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
       
@@ -810,10 +818,22 @@ export default function Home() {
               <div>Your Device ID: {deviceId.slice(-8)}</div>
               {currentRoom && currentRoom.startsWith('pair-') && devices.length === 0 && (
                 <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-xs">
-                  <div className="font-medium">QR Code Pairing Instructions:</div>
-                  <div>1. Copy the QR code link and open it in a NEW BROWSER TAB</div>
-                  <div>2. Or use a different device (phone/tablet) to scan the QR code</div>
-                  <div>3. Each browser tab will get a unique device ID</div>
+                  <div className="font-medium">QR Code Pairing Test:</div>
+                  <div>1. **Right-click** the QR code link and select "Open in new tab"</div>
+                  <div>2. **OR** Hold Ctrl/Cmd and click the link</div>
+                  <div>3. Each new tab should show a different device ID</div>
+                  <div className="mt-2">
+                    <Button
+                      onClick={() => {
+                        const url = window.location.href.split('?')[0] + '?pair=' + (currentRoom?.replace('pair-', '') || '000000');
+                        window.open(url, '_blank');
+                      }}
+                      size="sm"
+                      className="text-xs h-6"
+                    >
+                      Test: Open QR Link in New Tab
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
