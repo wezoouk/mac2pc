@@ -76,7 +76,10 @@ export const trustedDevices = pgTable("trusted_devices", {
 export const adminAuth = pgTable("admin_auth", {
   id: serial("id").primaryKey(),
   username: varchar("username", { length: 50 }).unique().notNull(),
+  email: varchar("email", { length: 255 }).unique().notNull(),
   passwordHash: text("password_hash").notNull(),
+  resetToken: varchar("reset_token", { length: 255 }),
+  resetTokenExpiry: timestamp("reset_token_expiry"),
   isActive: boolean("is_active").default(true),
   lastLogin: timestamp("last_login"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -135,6 +138,7 @@ export const insertTrustedDeviceSchema = createInsertSchema(trustedDevices).pick
 
 export const insertAdminAuthSchema = createInsertSchema(adminAuth).pick({
   username: true,
+  email: true,
   passwordHash: true,
   isActive: true,
 });

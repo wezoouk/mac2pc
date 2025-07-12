@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,10 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Settings, Plus, Trash2, Eye, EyeOff, Save, AlertTriangle, RefreshCw, TestTube, Lock } from "lucide-react";
+import { Settings, Plus, Trash2, Eye, EyeOff, Save, AlertTriangle, RefreshCw, TestTube, Lock, Users, Mail, Key, Shield, Check, X, UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { AdPlacement, InsertAdPlacement } from "@shared/schema";
+import { UserManagementTab, PasswordResetTab } from "@/components/admin-user-management";
 
 export default function Admin() {
   const { toast } = useToast();
@@ -36,11 +37,60 @@ export default function Admin() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  
+  // User management state
+  const [newUser, setNewUser] = useState({ username: "", email: "", password: "", isActive: true });
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [userDialogOpen, setUserDialogOpen] = useState(false);
+  
+  // Password reset state
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetToken, setResetToken] = useState("");
+  const [resetNewPassword, setResetNewPassword] = useState("");
+  const [resetConfirmPassword, setResetConfirmPassword] = useState("");
+  const [resetStep, setResetStep] = useState<'email' | 'token'>('email');
+  
+  // Global ads toggle mutation
+  const toggleAdsMutation = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      return await apiRequest("/api/admin/toggle-ads", {
+        method: "POST",
+        body: JSON.stringify({ enabled }),
+      });
+    },
+    onSuccess: (data, enabled) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/ad-placements"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/ad-placements/enabled"] });
+      setAdsEnabled(enabled);
+      toast({
+        title: "Ads updated",
+        description: `Ads have been ${enabled ? 'enabled' : 'disabled'} globally.`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update ads. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Fetch ad placements
   const { data: adPlacements = [], isLoading: loadingPlacements } = useQuery({
     queryKey: ["/api/admin/ad-placements"],
   });
+
+  // Fetch admin users
+  const { data: adminUsers = [], isLoading: loadingUsers } = useQuery({
+    queryKey: ["/api/admin/users"],
+  });
+
+  // Initialize ads state based on placement data
+  useEffect(() => {
+    const hasEnabledAds = adPlacements.some((placement: any) => placement.isEnabled);
+    setAdsEnabled(hasEnabledAds);
+  }, [adPlacements]);
 
   // Create ad placement mutation
   const createPlacementMutation = useMutation({
@@ -260,11 +310,17 @@ export default function Admin() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs defaultValue="ads" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs defaultValue="users" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="users">User Management</TabsTrigger>
             <TabsTrigger value="ads">Google Ads</TabsTrigger>
             <TabsTrigger value="settings">App Settings</TabsTrigger>
+            <TabsTrigger value="reset">Password Reset</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="users" className="space-y-6">
+            <UserManagementTab />
+          </TabsContent>
 
           <TabsContent value="ads" className="space-y-6">
             {/* Create New Ad Placement */}
@@ -486,7 +542,10 @@ export default function Admin() {
                   </div>
                   <Switch
                     checked={adsEnabled}
-                    onCheckedChange={setAdsEnabled}
+                    onCheckedChange={(checked) => {
+                      toggleAdsMutation.mutate(checked);
+                    }}
+                    disabled={toggleAdsMutation.isPending}
                   />
                 </div>
                 
@@ -553,6 +612,10 @@ export default function Admin() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="reset" className="space-y-6">
+            <PasswordResetTab />
           </TabsContent>
         </Tabs>
       </main>

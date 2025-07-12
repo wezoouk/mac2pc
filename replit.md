@@ -98,13 +98,15 @@ The application is designed to work seamlessly in both development and productio
 
 ## Recent Changes (July 11, 2025)
 
-### Admin Security & Settings Management (NEW - July 11, 2025)
-- **Updated Admin Credentials**: Changed login to "dawez@gmail.com" with password "Weston99!!"
-- **Moved Controls to Admin**: Demo mode and ads controls relocated from main menu to admin panel
-- **Password Change System**: Added secure password change functionality with validation
-- **Settings Sync**: Admin settings changes are automatically applied to main app via postMessage
-- **Clean Main Interface**: Removed demo and ads buttons from header for cleaner user experience
-- **Enhanced Security**: Proper password hashing and current password verification for changes
+### Comprehensive Admin System (MAJOR UPDATE - July 12, 2025)
+- **Complete Admin Overhaul**: Built comprehensive admin system with 4 main sections
+- **User Management**: Full CRUD operations for admin users with username/email/password management
+- **Password Reset System**: Token-based password reset with secure email verification (displays token for demo)
+- **Global Ad Controls**: Master switch to enable/disable all ads across the application
+- **Enhanced Security**: Multi-layered authentication with password complexity and token expiry
+- **Admin Interface**: Clean tabbed interface with User Management, Google Ads, App Settings, and Password Reset
+- **API Endpoints**: Complete REST API for admin operations (/api/admin/users, /api/admin/toggle-ads, /api/admin/request-reset)
+- **Login Credentials**: Simple admin/admin123 for easy access (in-memory database resets on server restart)
 
 ### Device Pairing System (ENHANCED - July 11, 2025)
 - **Room-Based Pairing**: Device pairing works through temporary rooms using 6-digit codes

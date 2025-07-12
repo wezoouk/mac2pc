@@ -72,8 +72,11 @@ export interface IStorage {
   // Admin authentication operations
   createAdminAuth(admin: InsertAdminAuth): Promise<AdminAuth>;
   getAdminByUsername(username: string): Promise<AdminAuth | undefined>;
+  getAdminByEmail(email: string): Promise<AdminAuth | undefined>;
   updateAdminAuth(id: number, updates: Partial<AdminAuth>): Promise<AdminAuth | undefined>;
   getAllAdmins(): Promise<AdminAuth[]>;
+  generatePasswordResetToken(email: string): Promise<string | null>;
+  resetPasswordWithToken(token: string, newPassword: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -115,7 +118,10 @@ export class MemStorage implements IStorage {
     const defaultAdmin: AdminAuth = {
       id: this.currentAdminAuthId++,
       username: "admin",
+      email: "admin@example.com",
       passwordHash: passwordHash,
+      resetToken: null,
+      resetTokenExpiry: null,
       isActive: true,
       lastLogin: null,
       createdAt: new Date(),
@@ -436,7 +442,10 @@ export class MemStorage implements IStorage {
     const admin: AdminAuth = {
       id,
       username: insertAdmin.username,
+      email: insertAdmin.email,
       passwordHash: insertAdmin.passwordHash,
+      resetToken: null,
+      resetTokenExpiry: null,
       isActive: insertAdmin.isActive ?? true,
       lastLogin: null,
       createdAt: new Date(),
@@ -451,6 +460,11 @@ export class MemStorage implements IStorage {
       .find(admin => admin.username === username);
   }
 
+  async getAdminByEmail(email: string): Promise<AdminAuth | undefined> {
+    return Array.from(this.adminAuth.values())
+      .find(admin => admin.email === email);
+  }
+
   async updateAdminAuth(id: number, updates: Partial<AdminAuth>): Promise<AdminAuth | undefined> {
     const admin = this.adminAuth.get(id);
     if (!admin) return undefined;
@@ -462,6 +476,41 @@ export class MemStorage implements IStorage {
 
   async getAllAdmins(): Promise<AdminAuth[]> {
     return Array.from(this.adminAuth.values());
+  }
+
+  async generatePasswordResetToken(email: string): Promise<string | null> {
+    const admin = await this.getAdminByEmail(email);
+    if (!admin || !admin.isActive) return null;
+    
+    // Generate a secure random token
+    const crypto = await import('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiry = new Date(Date.now() + 3600000); // 1 hour from now
+    
+    await this.updateAdminAuth(admin.id, {
+      resetToken: token,
+      resetTokenExpiry: expiry,
+    });
+    
+    return token;
+  }
+
+  async resetPasswordWithToken(token: string, newPassword: string): Promise<boolean> {
+    const admin = Array.from(this.adminAuth.values())
+      .find(a => a.resetToken === token && a.resetTokenExpiry && a.resetTokenExpiry > new Date());
+    
+    if (!admin) return false;
+    
+    const bcrypt = await import('bcrypt');
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    
+    await this.updateAdminAuth(admin.id, {
+      passwordHash,
+      resetToken: null,
+      resetTokenExpiry: null,
+    });
+    
+    return true;
   }
 }
 

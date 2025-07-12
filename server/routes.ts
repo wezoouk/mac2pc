@@ -296,17 +296,142 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin user management endpoints
+  app.get("/api/admin/users", requireAuth, async (req, res) => {
+    try {
+      const admins = await storage.getAllAdmins();
+      const safeAdmins = admins.map(admin => ({
+        id: admin.id,
+        username: admin.username,
+        email: admin.email,
+        isActive: admin.isActive,
+        lastLogin: admin.lastLogin,
+        createdAt: admin.createdAt,
+        updatedAt: admin.updatedAt
+      }));
+      res.json(safeAdmins);
+    } catch (error) {
+      console.error("Error fetching admin users:", error);
+      res.status(500).json({ error: 'Failed to fetch admin users' });
+    }
+  });
+
+  app.post("/api/admin/users", requireAuth, async (req, res) => {
+    try {
+      const { username, email, password, isActive } = req.body;
+      
+      if (!username || !email || !password) {
+        return res.status(400).json({ error: 'Username, email, and password are required' });
+      }
+      
+      // Check if username or email already exists
+      const existingByUsername = await storage.getAdminByUsername(username);
+      const existingByEmail = await storage.getAdminByEmail(email);
+      
+      if (existingByUsername) {
+        return res.status(400).json({ error: 'Username already exists' });
+      }
+      
+      if (existingByEmail) {
+        return res.status(400).json({ error: 'Email already exists' });
+      }
+      
+      // Hash password
+      const passwordHash = await bcrypt.hash(password, 10);
+      
+      // Create new admin
+      const newAdmin = await storage.createAdminAuth({
+        username,
+        email,
+        passwordHash,
+        isActive: isActive !== undefined ? isActive : true
+      });
+      
+      // Return safe admin data
+      const safeAdmin = {
+        id: newAdmin.id,
+        username: newAdmin.username,
+        email: newAdmin.email,
+        isActive: newAdmin.isActive,
+        lastLogin: newAdmin.lastLogin,
+        createdAt: newAdmin.createdAt,
+        updatedAt: newAdmin.updatedAt
+      };
+      
+      res.json(safeAdmin);
+    } catch (error) {
+      console.error("Error creating admin user:", error);
+      res.status(500).json({ error: 'Failed to create admin user' });
+    }
+  });
+
+  app.put("/api/admin/users/:id", requireAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { username, email, isActive } = req.body;
+      
+      if (!username || !email) {
+        return res.status(400).json({ error: 'Username and email are required' });
+      }
+      
+      // Check if username or email already exists (excluding current user)
+      const existingByUsername = await storage.getAdminByUsername(username);
+      const existingByEmail = await storage.getAdminByEmail(email);
+      
+      if (existingByUsername && existingByUsername.id !== id) {
+        return res.status(400).json({ error: 'Username already exists' });
+      }
+      
+      if (existingByEmail && existingByEmail.id !== id) {
+        return res.status(400).json({ error: 'Email already exists' });
+      }
+      
+      // Update admin
+      const updatedAdmin = await storage.updateAdminAuth(id, {
+        username,
+        email,
+        isActive: isActive !== undefined ? isActive : true
+      });
+      
+      if (!updatedAdmin) {
+        return res.status(404).json({ error: 'Admin user not found' });
+      }
+      
+      // Return safe admin data
+      const safeAdmin = {
+        id: updatedAdmin.id,
+        username: updatedAdmin.username,
+        email: updatedAdmin.email,
+        isActive: updatedAdmin.isActive,
+        lastLogin: updatedAdmin.lastLogin,
+        createdAt: updatedAdmin.createdAt,
+        updatedAt: updatedAdmin.updatedAt
+      };
+      
+      res.json(safeAdmin);
+    } catch (error) {
+      console.error("Error updating admin user:", error);
+      res.status(500).json({ error: 'Failed to update admin user' });
+    }
+  });
+
   app.post("/api/admin/change-password", requireAuth, async (req, res) => {
     try {
-      const { currentPassword, newPassword } = req.body;
+      const { adminId, currentPassword, newPassword } = req.body;
       
       if (!currentPassword || !newPassword) {
         return res.status(400).json({ error: 'Current password and new password are required' });
       }
       
-      // For now, we'll use the first admin (in a real app, you'd get admin from token)
-      const admins = await storage.getAllAdmins();
-      const admin = admins[0];
+      // Get admin by ID or use first admin if no ID provided
+      let admin;
+      if (adminId) {
+        const admins = await storage.getAllAdmins();
+        admin = admins.find(a => a.id === adminId);
+      } else {
+        const admins = await storage.getAllAdmins();
+        admin = admins[0];
+      }
       
       if (!admin) {
         return res.status(404).json({ error: 'Admin not found' });
@@ -331,6 +456,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Password change error:", error);
       res.status(500).json({ error: 'Failed to change password' });
+    }
+  });
+
+  // Password reset functionality
+  app.post("/api/admin/request-reset", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+      }
+      
+      const token = await storage.generatePasswordResetToken(email);
+      
+      if (!token) {
+        // Don't reveal if email exists or not for security
+        return res.json({ success: true, message: 'If the email exists, a reset token has been generated' });
+      }
+      
+      // In a real app, you'd send this token via email
+      // For now, we'll just return it (insecure but functional for demo)
+      res.json({ 
+        success: true, 
+        message: 'Password reset token generated',
+        token: token // Remove this in production
+      });
+    } catch (error) {
+      console.error("Password reset request error:", error);
+      res.status(500).json({ error: 'Failed to process password reset request' });
+    }
+  });
+
+  app.post("/api/admin/reset-password", async (req, res) => {
+    try {
+      const { token, newPassword } = req.body;
+      
+      if (!token || !newPassword) {
+        return res.status(400).json({ error: 'Token and new password are required' });
+      }
+      
+      const success = await storage.resetPasswordWithToken(token, newPassword);
+      
+      if (!success) {
+        return res.status(400).json({ error: 'Invalid or expired reset token' });
+      }
+      
+      res.json({ success: true, message: 'Password reset successfully' });
+    } catch (error) {
+      console.error("Password reset error:", error);
+      res.status(500).json({ error: 'Failed to reset password' });
+    }
+  });
+
+  // Global ads control endpoint
+  app.post("/api/admin/toggle-ads", requireAuth, async (req, res) => {
+    try {
+      const { enabled } = req.body;
+      
+      if (typeof enabled !== 'boolean') {
+        return res.status(400).json({ error: 'Enabled must be a boolean' });
+      }
+      
+      // Update all ad placements
+      const allPlacements = await storage.getAllAdPlacements();
+      const updatePromises = allPlacements.map(placement => 
+        storage.updateAdPlacement(placement.id, { isEnabled: enabled })
+      );
+      
+      await Promise.all(updatePromises);
+      
+      res.json({ success: true, message: `Ads ${enabled ? 'enabled' : 'disabled'} globally` });
+    } catch (error) {
+      console.error("Error toggling ads:", error);
+      res.status(500).json({ error: 'Failed to toggle ads' });
     }
   });
 
