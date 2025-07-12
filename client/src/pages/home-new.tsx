@@ -754,24 +754,7 @@ export default function Home() {
                 <span className="hidden sm:inline ml-2">Pair</span>
               </Button>
               
-              <Button
-                variant="ghost"
-                size="sm"
-                className="px-2 sm:px-3 text-purple-600"
-                onClick={() => {
-                  const testRoomId = 'pair-TEST';
-                  handlePairWithCode('TEST');
-                  toast({
-                    title: "Test Room",
-                    description: `Joined test room: ${testRoomId}`,
-                    duration: 3000,
-                  });
-                }}
-              >
-                <TestTube size={16} />
-                <span className="hidden sm:inline ml-2">Test</span>
-              </Button>
-              
+
               <Button
                 variant="ghost"
                 size="sm"
