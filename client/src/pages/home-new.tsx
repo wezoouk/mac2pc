@@ -821,22 +821,10 @@ export default function Home() {
               <div>Your Device ID: {deviceId.slice(-8)}</div>
               {currentRoom && currentRoom.startsWith('pair-') && devices.length === 0 && (
                 <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-xs">
-                  <div className="font-medium">QR Code Pairing Test:</div>
-                  <div>1. **Right-click** the QR code link and select "Open in new tab"</div>
-                  <div>2. **OR** Hold Ctrl/Cmd and click the link</div>
-                  <div>3. Each new tab should show a different device ID</div>
-                  <div className="mt-2">
-                    <Button
-                      onClick={() => {
-                        const url = window.location.href.split('?')[0] + '?pair=' + (currentRoom?.replace('pair-', '') || '000000');
-                        window.open(url, '_blank');
-                      }}
-                      size="sm"
-                      className="text-xs h-6"
-                    >
-                      Test: Open QR Link in New Tab
-                    </Button>
-                  </div>
+                  <div className="font-medium">QR Code Pairing Instructions:</div>
+                  <div>1. Use a different device (phone/tablet) to scan the QR code</div>
+                  <div>2. Or open the link in a different browser (Chrome, Firefox, etc.)</div>
+                  <div>3. Each device will get a unique ID and appear in the radar</div>
                 </div>
               )}
             </div>
