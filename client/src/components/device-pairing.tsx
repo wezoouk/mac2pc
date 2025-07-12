@@ -13,6 +13,7 @@ interface DevicePairingProps {
   deviceId: string;
   deviceName: string;
   onPairWithCode: (code: string) => void;
+  onGenerateCode?: (code: string) => void;
 }
 
 export function DevicePairing({ 
@@ -20,7 +21,8 @@ export function DevicePairing({
   onClose, 
   deviceId, 
   deviceName, 
-  onPairWithCode 
+  onPairWithCode,
+  onGenerateCode 
 }: DevicePairingProps) {
   const [pairingCode, setPairingCode] = useState("");
   const [qrCodeUrl, setQrCodeUrl] = useState("");
@@ -34,8 +36,13 @@ export function DevicePairing({
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       setPairingCode(code);
       generateQRCode(code);
+      
+      // Automatically join the pairing room when generating the code
+      if (onGenerateCode) {
+        onGenerateCode(code);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, onGenerateCode]);
 
   async function generateQRCode(code: string) {
     try {
@@ -114,8 +121,8 @@ export function DevicePairing({
                     {pairingCode.split('').join(' ')}
                   </div>
                   <p className="text-sm text-slate-600 mb-4">
-                    Both devices will join the same pairing room<br />
-                    Share this code or scan the QR-Code on another device.
+                    ✅ You're now in pairing room: <span className="font-mono">{pairingCode}</span><br />
+                    Share this code or scan the QR code on another device.
                   </p>
                   
                   <div className="flex gap-2 justify-center">

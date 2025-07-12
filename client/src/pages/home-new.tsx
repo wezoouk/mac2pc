@@ -46,6 +46,8 @@ export default function Home() {
     // Join a special pairing room using the code
     const pairRoomId = `pair-${code}`;
     
+    console.log('Joining pairing room:', pairRoomId, 'with device:', deviceId);
+    
     sendMessage({
       type: 'join-room',
       roomId: pairRoomId,
@@ -932,6 +934,7 @@ export default function Home() {
         deviceId={deviceId}
         deviceName={deviceName}
         onPairWithCode={handlePairWithCode}
+        onGenerateCode={handlePairWithCode}
       />
     </div>
   );
