@@ -123,6 +123,7 @@ export class MemStorage implements IStorage {
     };
     
     this.adminAuth.set(defaultAdmin.id, defaultAdmin);
+    console.log("Created default admin:", defaultAdmin.username, "with ID:", defaultAdmin.id);
   }
   
   private async initializeDefaultAdPlacements() {

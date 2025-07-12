@@ -204,16 +204,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { username, password } = req.body;
       
+      console.log("Login attempt with username:", username, "password:", password);
+      
       if (!username || !password) {
         return res.status(400).json({ error: 'Username and password required' });
       }
       
       const admin = await storage.getAdminByUsername(username);
+      console.log("Found admin:", admin ? admin.username : 'none');
+      
       if (!admin || !admin.isActive) {
+        console.log("Admin not found or inactive");
         return res.status(401).json({ error: 'Invalid credentials' });
       }
       
       const isValid = await bcrypt.compare(password, admin.passwordHash);
+      console.log("Password valid:", isValid);
+      
       if (!isValid) {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
