@@ -1,36 +1,75 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>QR Code URL Test</title>
+    <title>QR Code Test Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .test-box { background: white; padding: 20px; border-radius: 8px; margin: 10px 0; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        code { background: #f8f9fa; padding: 2px 4px; border-radius: 3px; font-family: monospace; }
+        .btn { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+    </style>
 </head>
 <body>
     <h1>QR Code URL Test</h1>
-    <p>This page tests if the QR code URL processing works correctly.</p>
     
-    <h2>Test URLs:</h2>
-    <p><a href="/?pair=596679&t=1752345550530" target="_blank">Test QR URL: ?pair=596679&t=1752345550530</a></p>
-    <p><a href="/?pair=123456" target="_blank">Simple Test URL: ?pair=123456</a></p>
+    <div class="test-box info">
+        <h3>Current URL:</h3>
+        <p><strong>Full URL:</strong> <code id="fullUrl"></code></p>
+        <p><strong>Pair Code:</strong> <code id="pairCode"></code></p>
+        <p><strong>Status:</strong> <span id="status">Checking...</span></p>
+    </div>
     
-    <h2>Manual Test:</h2>
-    <p>Copy this URL to test: <code>https://e58a2dac-3287-48ba-a6b8-7951f9cb5e2d-00-1x0xqkrywgybh.riker.replit.dev?pair=596679&t=1752345550530</code></p>
+    <div class="test-box" id="resultBox">
+        <h3>Test Result:</h3>
+        <p id="resultText">Processing...</p>
+    </div>
+    
+    <div class="test-box">
+        <h3>Quick Tests:</h3>
+        <button class="btn" onclick="testUrl('TEST123')">Test with CODE: TEST123</button>
+        <button class="btn" onclick="testUrl('978756')">Test with CODE: 978756</button>
+        <button class="btn" onclick="goToApp()">Go to Main App</button>
+    </div>
     
     <script>
-        // Test URL parameter parsing
-        const urlParams = new URLSearchParams(window.location.search);
-        const pairCode = urlParams.get('pair');
-        
-        if (pairCode) {
-            document.body.innerHTML += `<div style="background: yellow; padding: 10px; margin: 20px 0;">
-                <h3>SUCCESS: Found pair code in URL!</h3>
-                <p>Pair code: ${pairCode}</p>
-                <p>Full URL: ${window.location.href}</p>
-            </div>`;
-        } else {
-            document.body.innerHTML += `<div style="background: lightgray; padding: 10px; margin: 20px 0;">
-                <h3>No pair code found in URL</h3>
-                <p>Current URL: ${window.location.href}</p>
-            </div>`;
+        function updateStatus() {
+            const url = window.location.href;
+            const params = new URLSearchParams(window.location.search);
+            const pairCode = params.get('pair');
+            
+            document.getElementById('fullUrl').textContent = url;
+            document.getElementById('pairCode').textContent = pairCode || 'None';
+            
+            const resultBox = document.getElementById('resultBox');
+            const resultText = document.getElementById('resultText');
+            const status = document.getElementById('status');
+            
+            if (pairCode) {
+                resultBox.className = 'test-box success';
+                resultText.innerHTML = `<strong>SUCCESS!</strong><br>QR Code detected: ${pairCode}<br>Room should be: pair-${pairCode}`;
+                status.textContent = 'QR Code Detected';
+            } else {
+                resultBox.className = 'test-box error';
+                resultText.innerHTML = '<strong>NO QR CODE</strong><br>No pair parameter found in URL';
+                status.textContent = 'No QR Code';
+            }
         }
+        
+        function testUrl(code) {
+            const newUrl = `${window.location.origin}${window.location.pathname}?pair=${code}`;
+            window.location.href = newUrl;
+        }
+        
+        function goToApp() {
+            window.location.href = '/';
+        }
+        
+        updateStatus();
     </script>
 </body>
 </html>

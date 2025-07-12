@@ -198,16 +198,10 @@ export default function Home() {
           duration: 5000,
         });
         
-        // Try to join room immediately if WebSocket is ready
-        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN && deviceId) {
-          console.log('WebSocket ready, joining room immediately');
-          const roomName = `pair-${pairCode}`;
-          wsRef.current.send(JSON.stringify({
-            type: 'join-room',
-            roomId: roomName,
-            deviceId: deviceId,
-            password: '',
-          }));
+        // Try to join room immediately if we have device ID
+        if (deviceId) {
+          console.log('Device ID available, processing pair code immediately');
+          handlePairWithCode(pairCode);
         }
       }
     };
@@ -491,16 +485,15 @@ export default function Home() {
         const roomName = `pair-${pendingPairCode}`;
         console.log('Joining room:', roomName);
         
-        // Send join room message
-        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-          wsRef.current.send(JSON.stringify({
-            type: 'join-room',
-            roomId: roomName,
-            deviceId: deviceId,
-            password: '', // No password for pairing rooms
-          }));
-          console.log('Sent join-room message for:', roomName);
-        }
+        // Send join room message using sendMessage function
+        console.log('Sending join-room message via sendMessage function');
+        sendMessage({
+          type: 'join-room',
+          roomId: roomName,
+          deviceId: deviceId,
+          password: '', // No password for pairing rooms
+        });
+        console.log('Sent join-room message for:', roomName);
         
         setTimeout(() => {
           console.log('Processing pending pair code:', pendingPairCode);
@@ -1039,7 +1032,7 @@ export default function Home() {
               </button>
               <button 
                 onClick={() => {
-                  window.open(`${window.location.origin}/debug-url.html?pair=978756`, '_blank');
+                  window.open(`${window.location.origin}/test-qr-url.html?pair=978756`, '_blank');
                 }}
                 className="px-3 py-1 bg-green-100 text-green-800 rounded text-xs hover:bg-green-200"
               >
