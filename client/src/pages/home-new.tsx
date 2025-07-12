@@ -1007,36 +1007,68 @@ export default function Home() {
             </div>
           )}
           
-          {/* Test URL for manual testing */}
+          {/* Simple Room Test */}
           <div className="mt-4 p-3 bg-gray-50 rounded-lg text-xs">
-            <h4 className="font-medium text-gray-800 mb-2">Test QR Code URL (copy to phone):</h4>
-            <code className="bg-gray-100 px-2 py-1 rounded text-xs block break-all">
-              {window.location.origin}?pair=978756
-            </code>
-            <p className="text-gray-600 mt-1">
-              Copy this URL and paste it in your phone's browser to test QR code processing
-            </p>
-            <div className="flex gap-2 mt-2">
+            <h4 className="font-medium text-gray-800 mb-2">Quick Room Test:</h4>
+            <p className="text-gray-600 mb-2">Join the same room from both devices to test pairing</p>
+            <div className="flex gap-2 items-center">
+              <input 
+                type="text" 
+                placeholder="Enter test room (e.g., test123)" 
+                className="px-2 py-1 border rounded text-xs flex-1"
+                id="testRoomInput"
+              />
               <button 
                 onClick={() => {
-                  navigator.clipboard.writeText(`${window.location.origin}?pair=978756`);
-                  toast({
-                    title: "URL Copied",
-                    description: "Test URL copied to clipboard",
-                    duration: 2000,
-                  });
+                  const input = document.getElementById('testRoomInput') as HTMLInputElement;
+                  const roomName = input.value.trim();
+                  if (roomName) {
+                    handleJoinRoom(roomName, '');
+                    toast({
+                      title: "Joining Room",
+                      description: `Joining room: ${roomName}`,
+                      duration: 2000,
+                    });
+                  }
                 }}
                 className="px-3 py-1 bg-blue-100 text-blue-800 rounded text-xs hover:bg-blue-200"
               >
-                Copy URL
+                Join Room
               </button>
+            </div>
+            <p className="text-gray-500 mt-1">
+              Enter the same room name on both devices. No QR code needed!
+            </p>
+            <div className="mt-2 flex gap-2">
               <button 
                 onClick={() => {
-                  window.open(`${window.location.origin}/test-qr-url.html?pair=978756`, '_blank');
+                  const testCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+                  const roomName = `test-${testCode}`;
+                  handleJoinRoom(roomName, '');
+                  toast({
+                    title: "Test Room Created",
+                    description: `Joined room: ${roomName}. Share this code: ${testCode}`,
+                    duration: 5000,
+                  });
                 }}
                 className="px-3 py-1 bg-green-100 text-green-800 rounded text-xs hover:bg-green-200"
               >
-                Open Debug Page
+                Create Test Room
+              </button>
+              <button 
+                onClick={() => {
+                  // Force simulate a pairing code
+                  const testCode = "ABC123";
+                  handlePairWithCode(testCode);
+                  toast({
+                    title: "Testing Pairing",
+                    description: `Simulating QR code with test code: ${testCode}`,
+                    duration: 3000,
+                  });
+                }}
+                className="px-3 py-1 bg-purple-100 text-purple-800 rounded text-xs hover:bg-purple-200"
+              >
+                Test Pairing Logic
               </button>
             </div>
           </div>
