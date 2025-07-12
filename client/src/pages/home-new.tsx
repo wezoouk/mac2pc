@@ -222,6 +222,9 @@ export default function Home() {
       console.log('- Search params:', urlObj.search);
       console.log('- Hash:', hash);
       console.log('- Detected pair code:', pairCode);
+      console.log('- Is redirect:', isRedirect);
+      console.log('- Device ID:', deviceId);
+      console.log('- Pending pair code:', pendingPairCode);
       
       if (pairCode && !pendingPairCode) {
         console.log('🎯 QR Code detected via enhanced method:', pairCode);
@@ -238,12 +241,22 @@ export default function Home() {
           duration: 5000,
         });
         
+        // Force the pairing process if it's a redirect
+        if (isRedirect) {
+          console.log('Force processing redirect pair code immediately');
+          setTimeout(() => {
+            handlePairWithCode(pairCode);
+          }, 500);
+        }
+        
         // Try to join room immediately if we have device ID
         if (deviceId) {
           console.log('Device ID available, processing pair code immediately');
           setTimeout(() => {
             handlePairWithCode(pairCode);
           }, 1000);
+        } else {
+          console.log('Device ID not available yet, will process when ready');
         }
       }
     };

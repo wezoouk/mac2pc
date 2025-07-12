@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test QR Redirect</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-link { display: block; margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px; }
+        .code { font-family: monospace; background: #e0e0e0; padding: 5px; }
+    </style>
+</head>
+<body>
+    <h2>QR Code Redirect Test</h2>
+    
+    <p>Test these URLs to see if the redirect system works:</p>
+    
+    <div class="test-link">
+        <strong>Test 1: Direct redirect with code 424050</strong><br>
+        <a href="/qr-redirect.html?pair=424050" target="_blank">
+            /qr-redirect.html?pair=424050
+        </a>
+    </div>
+    
+    <div class="test-link">
+        <strong>Test 2: Direct app URL with code 424050</strong><br>
+        <a href="/?pair=424050&redirect=true" target="_blank">
+            /?pair=424050&redirect=true
+        </a>
+    </div>
+    
+    <div class="test-link">
+        <strong>Test 3: Generate new QR code</strong><br>
+        <button onclick="generateQR()">Generate QR Code</button>
+        <div id="qr-info"></div>
+    </div>
+    
+    <script>
+        function generateQR() {
+            const code = Math.floor(Math.random() * 900000) + 100000;
+            const url = `/qr-redirect.html?pair=${code}`;
+            const fullUrl = window.location.origin + url;
+            
+            document.getElementById('qr-info').innerHTML = `
+                <div class="code">Code: ${code}</div>
+                <div class="code">URL: ${fullUrl}</div>
+                <a href="${url}" target="_blank">Test this URL</a>
+            `;
+        }
+    </script>
+</body>
+</html>
