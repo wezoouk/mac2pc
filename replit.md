@@ -106,7 +106,7 @@ The application is designed to work seamlessly in both development and productio
 - **Enhanced Security**: Multi-layered authentication with password complexity and token expiry
 - **Admin Interface**: Clean tabbed interface with User Management, Google Ads, App Settings, and Password Reset
 - **API Endpoints**: Complete REST API for admin operations (/api/admin/users, /api/admin/toggle-ads, /api/admin/request-reset)
-- **Login Credentials**: Simple admin/admin123 for easy access (in-memory database resets on server restart)
+- **Login Credentials**: davwez@gmail.com / we5ton99!! for admin access (in-memory database resets on server restart)
 
 ### Device Pairing System (ENHANCED - July 11, 2025)
 - **Room-Based Pairing**: Device pairing works through temporary rooms using 6-digit codes

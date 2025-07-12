@@ -111,14 +111,14 @@ export class MemStorage implements IStorage {
   }
   
   private async initializeDefaultAdmin() {
-    // Create default admin account with username "admin" and password "admin123"
+    // Create default admin account with email "davwez@gmail.com" and password "we5ton99!!"
     const bcrypt = await import('bcrypt');
-    const passwordHash = await bcrypt.hash('admin123', 10);
+    const passwordHash = await bcrypt.hash('we5ton99!!', 10);
     
     const defaultAdmin: AdminAuth = {
       id: this.currentAdminAuthId++,
-      username: "admin",
-      email: "admin@example.com",
+      username: "davwez",
+      email: "davwez@gmail.com",
       passwordHash: passwordHash,
       resetToken: null,
       resetTokenExpiry: null,
