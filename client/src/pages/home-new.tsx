@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "wouter";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useWebRTC } from "@/hooks/use-webrtc";
 import { useToast } from "@/hooks/use-toast";
@@ -1015,8 +1016,8 @@ export default function Home() {
                 <Share2 className="text-white" size={18} />
               </div>
               <div>
-                <h1 className="text-lg sm:text-xl font-semibold text-slate-900">ShareLink</h1>
-                <p className="text-xs text-slate-500 hidden sm:block">Secure P2P File Transfer</p>
+                <h1 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">Mac2PC</h1>
+                <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Free Peer-to-Peer File Transfer</p>
               </div>
             </div>
             
@@ -1101,14 +1102,21 @@ export default function Home() {
           </div>
         )}
 
-        {/* Header Message */}
-        <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-light text-slate-700 mb-3">
-            Open ShareLink on other devices to send files
+        {/* Site Description */}
+        <div className="text-center mb-8 sm:mb-12 max-w-4xl mx-auto">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-light text-slate-700 dark:text-slate-300 mb-3">
+            Transfer Files Instantly Between Your Devices
           </h2>
-          <p className="text-sm text-slate-500 hidden sm:block">
-            Pair devices to be discoverable on other networks
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 mb-4">
+            Secure peer-to-peer file sharing between Mac, PC, iPhone, iPad, and any device on your network. 
+            No accounts required, no file size limits, completely free.
           </p>
+          <div className="flex flex-wrap justify-center gap-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">✓ End-to-End Encrypted</span>
+            <span className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded">✓ No Data Storage</span>
+            <span className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-2 py-1 rounded">✓ Cross-Platform</span>
+            <span className="bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 px-2 py-1 rounded">✓ QR Code Pairing</span>
+          </div>
         </div>
 
         {/* Large Radar View */}
@@ -1355,6 +1363,26 @@ export default function Home() {
         )}
 
       </main>
+
+      {/* Footer */}
+      <footer className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-t border-slate-200 dark:border-gray-700 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="text-center">
+            <div className="flex justify-center space-x-6 mb-4">
+              <Link href="/terms" className="text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">
+                Terms & Conditions
+              </Link>
+              <Link href="/privacy" className="text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">
+                Privacy Policy
+              </Link>
+            </div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="mb-2">Mac2PC - Free peer-to-peer file transfer between devices</p>
+              <p>© 2025 Mac2PC. All transfers are end-to-end encrypted and never stored on our servers.</p>
+            </div>
+          </div>
+        </div>
+      </footer>
 
       {/* Modals */}
       <TransferModal

@@ -98,6 +98,15 @@ The application is designed to work seamlessly in both development and productio
 
 ## Recent Changes (July 13, 2025)
 
+### Google AdSense Compliance Updates (NEW - July 13, 2025)
+- **Complete SEO Overhaul**: Added comprehensive meta tags, Open Graph, and Twitter Card support
+- **Mac2PC Branding**: Updated site title and branding from ShareLink to Mac2PC throughout
+- **Legal Compliance**: Added Terms & Conditions and Privacy Policy pages with proper legal language
+- **Content Quality**: Enhanced site description with feature highlights and value proposition
+- **Footer Integration**: Added proper footer with legal page links and copyright information
+- **Page Structure**: Improved semantic HTML structure with proper headings and descriptions
+- **Mobile Responsive**: All new content works seamlessly across desktop and mobile devices
+
 ### QR Code Pairing Fix (CRITICAL FIX - July 13, 2025)
 - **Simplified QR Code Flow**: Removed complex redirect page system, QR codes now point directly to main app
 - **Fixed Race Conditions**: Consolidated pairing logic to eliminate duplicate room joining attempts
