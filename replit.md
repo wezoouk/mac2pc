@@ -115,11 +115,14 @@ The application is designed to work seamlessly in both development and productio
 - **Removed Timeouts**: Eliminated artificial delays that caused timing issues
 - **Clean URL Detection**: Enhanced URL parameter detection without redirect complexity
 
-### Radar View Circle Fix (NEW - July 13, 2025)
+### Radar View Circle Fix & Shadow Enhancement (NEW - July 13, 2025)
 - **Perfect Circle Aspect Ratio**: Fixed radar view distortion when browser window is resized
 - **Aspect Ratio Enforcement**: Added `aspectRatio: '1/1'` CSS property to maintain perfect circle
 - **Responsive Circle**: Radar remains circular at all screen sizes and browser window dimensions
 - **Container Constraints**: Fixed width/height constraints to prevent oval distortion
+- **Enhanced Drop Shadow**: Added multi-layered shadow with blue glow effect to prevent cut-off
+- **Shadow Container**: Added 30px padding around radar and increased outer padding to p-16/p-20
+- **Center Device Fix**: Corrected center device positioning to account for shadow padding
 
 ### User-Editable Device Names (NEW - July 12, 2025)
 - **Call Sign Customization**: Users can now change their device name/call sign from Device Settings

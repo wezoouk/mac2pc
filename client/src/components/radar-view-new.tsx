@@ -93,8 +93,9 @@ export function RadarView({
   // Even larger base sizes to use more screen space
   const baseRadarSize = windowWidth >= 1440 ? 1000 : windowWidth >= 1024 ? 750 : windowWidth >= 768 ? 550 : 400;
   const radarSize = Math.max(400, Math.min(baseRadarSize, maxRadarSize)); // Minimum 400px, maximum viewport-constrained
-  const centerX = radarSize / 2;
-  const centerY = radarSize / 2;
+  // Account for the 30px padding around the radar circle
+  const centerX = (radarSize + 60) / 2;
+  const centerY = (radarSize + 60) / 2;
 
   return (
     <div className="flex flex-col items-center space-y-6 w-full min-h-0">
