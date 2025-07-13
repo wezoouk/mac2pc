@@ -987,20 +987,6 @@ export default function Home() {
               currentDeviceName={deviceName}
               currentDeviceType={getDeviceType()}
               isConnected={isConnected}
-              currentRoom={currentRoom}
-              onCreateRoom={async (roomName: string) => {
-                sendMessage({
-                  type: 'join-room',
-                  roomId: roomName,
-                  deviceId,
-                  data: {
-                    id: deviceId,
-                    name: deviceName,
-                    type: getDeviceType(),
-                    network: 'local',
-                  }
-                });
-              }}
             />
           </div>
         </div>
