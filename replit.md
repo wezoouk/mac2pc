@@ -98,6 +98,17 @@ The application is designed to work seamlessly in both development and productio
 
 ## Recent Changes (July 13, 2025)
 
+### iPhone WebSocket Connection Stability Fix (RESOLVED - July 13, 2025)
+- **Mobile WebSocket Persistence**: Successfully resolved iPhone device disappearing issues with comprehensive mobile-specific connection handling
+- **Heartbeat Mechanism**: Implemented ping/pong every 30 seconds to maintain mobile connections alive
+- **Visibility Change Detection**: Added mobile app backgrounding/foregrounding detection for Safari
+- **Network Change Handling**: Automatic reconnection when mobile network comes back online
+- **Server-Side Grace Period**: 10-second timeout before marking mobile devices offline
+- **Faster Mobile Reconnection**: Reduced retry intervals for mobile devices (500ms vs 1s base delay)
+- **Connection Replacement**: Immediate client connection replacement for mobile device reconnections
+- **QR Code Pairing**: iPhone devices now consistently appear on Mac radar after QR code scanning
+- **Stable Cross-Platform**: Mac and iPhone devices maintain persistent connections in pairing rooms
+
 ### Google AdSense Compliance Updates (NEW - July 13, 2025)
 - **Complete SEO Overhaul**: Added comprehensive meta tags, Open Graph, and Twitter Card support
 - **Mac2PC Branding**: Updated site title and branding from ShareLink to Mac2PC throughout

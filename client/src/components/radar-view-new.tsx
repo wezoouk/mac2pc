@@ -27,9 +27,6 @@ export function RadarView({
   const [windowHeight, setWindowHeight] = useState(typeof window !== 'undefined' ? window.innerHeight : 768);
 
   useEffect(() => {
-    console.log('Radar view received devices:', devices);
-    console.log('Device types:', devices.map(d => ({ id: d.id, name: d.name, type: d.type })));
-    
     // Animate devices appearing
     const timer = setTimeout(() => {
       setAnimatedDevices(devices);
