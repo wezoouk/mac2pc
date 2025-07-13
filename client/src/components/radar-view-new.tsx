@@ -83,26 +83,40 @@ export function RadarView({
     return 'bg-blue-500'; // Local devices
   }
 
-  // Responsive radar size that fits within viewport
-  const maxRadarSize = Math.min(windowWidth - 80, windowHeight - 200); // Leave space for UI elements
-  const baseRadarSize = windowWidth >= 1024 ? 600 : windowWidth >= 768 ? 500 : 300;
-  const radarSize = Math.min(baseRadarSize, maxRadarSize); // Ensure it fits within viewport
+  // Responsive radar size that always fits within viewport
+  const containerPadding = 40; // Total horizontal padding
+  const headerFooterSpace = 300; // Space for header, stats, and other UI elements
+  const maxWidthSize = windowWidth - containerPadding;
+  const maxHeightSize = windowHeight - headerFooterSpace;
+  const maxRadarSize = Math.min(maxWidthSize, maxHeightSize);
+  
+  // Base sizes but constrained by viewport
+  const baseRadarSize = windowWidth >= 1024 ? 500 : windowWidth >= 768 ? 400 : 280;
+  const radarSize = Math.max(280, Math.min(baseRadarSize, maxRadarSize)); // Minimum 280px, maximum viewport-constrained
   const centerX = radarSize / 2;
   const centerY = radarSize / 2;
 
   return (
     <div className="flex flex-col items-center space-y-6 w-full min-h-0">
-      {/* Radar Display - Perfect Square Container with CSS Grid */}
+      {/* Radar Container - Viewport-Constrained Wrapper */}
       <div 
-        className="relative mx-auto grid place-items-center"
+        className="w-full flex justify-center items-center overflow-hidden"
         style={{ 
-          width: `${radarSize}px`, 
-          height: `${radarSize}px`, 
-          aspectRatio: '1/1',
-          gridTemplateColumns: '1fr',
-          gridTemplateRows: '1fr'
+          maxWidth: '100vw',
+          maxHeight: `${windowHeight - 200}px`
         }}
       >
+        {/* Radar Display - Perfect Square Container with CSS Grid */}
+        <div 
+          className="relative grid place-items-center overflow-hidden flex-shrink-0"
+          style={{ 
+            width: `${radarSize}px`, 
+            height: `${radarSize}px`, 
+            aspectRatio: '1/1',
+            gridTemplateColumns: '1fr',
+            gridTemplateRows: '1fr'
+          }}
+        >
         {/* Radar Background - Perfect Circle */}
         <div 
           className="col-start-1 row-start-1 bg-gradient-to-br from-slate-700 via-blue-700 to-slate-700 shadow-2xl border-2 border-blue-400/50 dark:from-gray-700 dark:via-blue-600 dark:to-gray-700"
@@ -305,6 +319,7 @@ export function RadarView({
             </div>
           );
         })}
+        </div>
       </div>
 
       {/* Radar Stats */}
