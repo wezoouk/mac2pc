@@ -88,12 +88,17 @@ export function RadarView({
 
   return (
     <div className="flex flex-col items-center space-y-6 w-full">
-      {/* Radar Display */}
-      <div className="relative mx-auto" style={{ width: radarSize, height: radarSize, maxWidth: '100%' }}>
-        {/* Radar Background - True Circle */}
+      {/* Radar Display - Fixed Aspect Ratio Container */}
+      <div className="relative mx-auto" style={{ width: radarSize, height: radarSize, maxWidth: '100%', aspectRatio: '1/1' }}>
+        {/* Radar Background - Perfect Circle */}
         <div 
           className="absolute inset-0 bg-gradient-to-br from-slate-700 via-blue-700 to-slate-700 shadow-2xl border-2 border-blue-400/50 dark:from-gray-700 dark:via-blue-600 dark:to-gray-700"
-          style={{ borderRadius: '50%' }}
+          style={{ 
+            borderRadius: '50%',
+            width: '100%',
+            height: '100%',
+            aspectRatio: '1/1'
+          }}
         >
           {/* Static Radar Rings with Better Contrast */}
           <div 

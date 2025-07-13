@@ -218,7 +218,6 @@ export default function Home() {
       
       // Try multiple ways to extract pair code
       let pairCode = null;
-      const isRedirect = params.get('redirect') === 'true';
       
       // Method 1: Standard URL parameter
       pairCode = params.get('pair');
@@ -254,14 +253,12 @@ export default function Home() {
         const cleanUrl = urlObj.origin + urlObj.pathname;
         window.history.replaceState({}, document.title, cleanUrl);
         
-        // Show toast with different message if it's from redirect
+        // Show toast notification
         toast({
-          title: isRedirect ? "QR Code Scanned!" : "QR Code Detected!",
-          description: `${isRedirect ? 'Joining pairing room' : 'Found pairing code'}: ${pairCode}`,
+          title: "QR Code Detected!",
+          description: `Found pairing code: ${pairCode}`,
           duration: 5000,
         });
-        
-        // No need to force processing - WebSocket onConnect will handle it
         
         // WebSocket onConnect will handle the pairing when ready
       }

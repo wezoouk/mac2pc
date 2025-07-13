@@ -96,16 +96,21 @@ Device naming: Fun random names with animals and adjectives (e.g., "wombat-mac",
 
 The application is designed to work seamlessly in both development and production environments, with the server automatically detecting the mode and configuring itself accordingly.
 
-## Recent Changes (July 11, 2025)
+## Recent Changes (July 13, 2025)
 
-### QR Code Pairing Fix (CRITICAL FIX - July 12, 2025)
-- **Redirect Page Solution**: Created dedicated `/qr-redirect.html` page to handle mobile browser URL parameter detection issues
-- **Enhanced Detection**: Implemented multiple QR code detection methods - URL params, hash params, manual parsing, pattern matching
-- **Mobile Compatibility**: QR codes now point to redirect page first, then automatically redirect to main app with pair code
-- **Aggressive Detection**: Added event listeners for focus, visibility change, page show, hash change events
-- **Robust Flow**: QR code scanning now uses two-stage process - detect on redirect page, then transfer to main app
-- **WebSocket Integration**: Pairing room joining happens after WebSocket connection is fully established
-- **Testing Infrastructure**: Added test pages and comprehensive logging for QR code debugging
+### QR Code Pairing Fix (CRITICAL FIX - July 13, 2025)
+- **Simplified QR Code Flow**: Removed complex redirect page system, QR codes now point directly to main app
+- **Fixed Race Conditions**: Consolidated pairing logic to eliminate duplicate room joining attempts
+- **Direct URL Approach**: QR codes now generate `/?pair=CODE` instead of redirect page URLs
+- **Unified Processing**: Single `processPairCode()` function handles all pairing logic after WebSocket connection
+- **Removed Timeouts**: Eliminated artificial delays that caused timing issues
+- **Clean URL Detection**: Enhanced URL parameter detection without redirect complexity
+
+### Radar View Circle Fix (NEW - July 13, 2025)
+- **Perfect Circle Aspect Ratio**: Fixed radar view distortion when browser window is resized
+- **Aspect Ratio Enforcement**: Added `aspectRatio: '1/1'` CSS property to maintain perfect circle
+- **Responsive Circle**: Radar remains circular at all screen sizes and browser window dimensions
+- **Container Constraints**: Fixed width/height constraints to prevent oval distortion
 
 ### User-Editable Device Names (NEW - July 12, 2025)
 - **Call Sign Customization**: Users can now change their device name/call sign from Device Settings
