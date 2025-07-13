@@ -58,10 +58,10 @@ export function DevicePairing({
     try {
       console.log('Starting QR code generation for code:', code);
       
-      // Direct URL to main app - no redirect needed
-      const url = `${window.location.origin}/?pair=${code}`;
+      // Direct URL to main app with room parameter pre-filled
+      const url = `${window.location.origin}/?room=pair-${code}`;
       console.log('Generated QR code URL:', url);
-      console.log('This URL should make the scanning device join room: pair-' + code);
+      console.log('This URL should pre-fill room input with: pair-' + code);
       
       // Force a unique QR code generation with cache-busting
       const qrDataUrl = await QRCode.toDataURL(url, {
@@ -101,7 +101,7 @@ export function DevicePairing({
   }
 
   function copyPairingLink() {
-    const url = `${window.location.origin}/?pair=${pairingCode}`;
+    const url = `${window.location.origin}/?room=pair-${pairingCode}`;
     navigator.clipboard.writeText(url);
     toast({
       title: "Link copied",

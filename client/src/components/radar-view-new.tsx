@@ -24,6 +24,7 @@ export function RadarView({
 }: RadarViewProps) {
   const [animatedDevices, setAnimatedDevices] = useState<Device[]>([]);
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  const [windowHeight, setWindowHeight] = useState(typeof window !== 'undefined' ? window.innerHeight : 768);
 
   useEffect(() => {
     // Animate devices appearing
@@ -34,9 +35,10 @@ export function RadarView({
   }, [devices]);
 
   useEffect(() => {
-    // Update window width on resize
+    // Update window dimensions on resize
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
+      setWindowHeight(window.innerHeight);
     };
     
     window.addEventListener('resize', handleResize);
@@ -81,9 +83,10 @@ export function RadarView({
     return 'bg-blue-500'; // Local devices
   }
 
-  // Much larger radar size - responsive and contained
-  const baseRadarSize = windowWidth >= 1024 ? 800 : windowWidth >= 768 ? 600 : Math.min(windowWidth - 40, 320);
-  const radarSize = Math.min(baseRadarSize, windowWidth - 40); // Ensure it fits within viewport
+  // Responsive radar size that fits within viewport
+  const maxRadarSize = Math.min(windowWidth - 80, windowHeight - 200); // Leave space for UI elements
+  const baseRadarSize = windowWidth >= 1024 ? 600 : windowWidth >= 768 ? 500 : 300;
+  const radarSize = Math.min(baseRadarSize, maxRadarSize); // Ensure it fits within viewport
   const centerX = radarSize / 2;
   const centerY = radarSize / 2;
 

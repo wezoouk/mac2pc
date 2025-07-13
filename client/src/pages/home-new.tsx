@@ -216,16 +216,19 @@ export default function Home() {
       const params = new URLSearchParams(urlObj.search);
       const hash = urlObj.hash;
       
-      // Try multiple ways to extract pair code
+      // Try multiple ways to extract pair code or room parameter
       let pairCode = null;
+      let roomName = null;
       
-      // Method 1: Standard URL parameter
+      // Method 1: Standard URL parameters
       pairCode = params.get('pair');
+      roomName = params.get('room');
       
       // Method 2: Hash parameter (some mobile browsers)
-      if (!pairCode && hash) {
+      if (!pairCode && !roomName && hash) {
         const hashParams = new URLSearchParams(hash.substring(1));
         pairCode = hashParams.get('pair');
+        roomName = hashParams.get('room');
       }
       
       // Method 3: Manual parsing of URL string
@@ -236,11 +239,33 @@ export default function Home() {
         }
       }
       
+      if (!roomName) {
+        const roomMatch = url.match(/[?&#]room=([^&#]+)/);
+        if (roomMatch) {
+          roomName = roomMatch[1];
+        }
+      }
+      
       // Method 4: Check for any 6-digit code pattern
       if (!pairCode) {
         const codeMatch = url.match(/[?&#](?:pair|code)=([A-Z0-9]{6})/i);
         if (codeMatch) {
           pairCode = codeMatch[1];
+        }
+      }
+      
+      // If we found a room parameter, extract pair code or use room name directly
+      if (roomName) {
+        if (roomName.startsWith('pair-')) {
+          pairCode = roomName.substring(5); // Remove 'pair-' prefix
+        } else {
+          // Pre-fill room join form with room name
+          console.log('Pre-filling room join form with:', roomName);
+          // This would require passing the room name to the join room form
+          // For now, we'll handle pairing rooms only
+          if (roomName.match(/^[A-Z0-9]{6}$/i)) {
+            pairCode = roomName;
+          }
         }
       }
 
