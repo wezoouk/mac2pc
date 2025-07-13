@@ -241,11 +241,11 @@ The application is designed to work seamlessly in both development and productio
 - **Download All feature**: Added bulk download functionality for multiple files
 - **Queue indicators**: Shows file count and "Download All" button in transfer modal
 
-### Device Naming System
-- **Random fun names**: Replaced generic "Windows PC-1234" with creative names like "wombat-mac", "sleepy-otter-laptop"
-- **Name generator**: 32 adjectives + 30 animals + 16 device types creating diverse combinations
-- **Format variety**: Names can be "animal-device" or "adjective-animal-device" format
-- **Demo mode names**: Updated test devices to also use fun random names
+### Device Naming System (UPDATED - July 13, 2025)
+- **Shorter device names**: Simplified to single word + device type format (e.g., "wombat-mac", "clever-pc", "bouncy-iphone")
+- **Standardized endings**: Device types now use lowercase endings: -mac, -pc, -iphone, -ipad, -android, -linux, -chromebook, -tablet, -mobile, -desktop
+- **Word pool**: 32 adjectives + 30 animals = 62 possible first words combined with device type detection
+- **Consistent format**: All names follow "word-devicetype" pattern for cleaner, more readable device identification
 
 ### Multi-Device Testing
 - **Multi-tab simulation**: Each browser tab acts as a separate device with unique random name

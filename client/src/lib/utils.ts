@@ -41,21 +41,21 @@ export function getDetailedDeviceType(): string {
   const userAgent = navigator.userAgent;
   
   // Mobile devices
-  if (/iPhone/.test(userAgent)) return 'iPhone';
-  if (/Android.*Mobile/.test(userAgent)) return 'Android';
-  if (/Mobile/.test(userAgent)) return 'Mobile';
+  if (/iPhone/.test(userAgent)) return 'iphone';
+  if (/Android.*Mobile/.test(userAgent)) return 'android';
+  if (/Mobile/.test(userAgent)) return 'mobile';
   
   // Tablets
-  if (/iPad/.test(userAgent)) return 'iPad';
-  if (/Android/.test(userAgent)) return 'Tablet';
+  if (/iPad/.test(userAgent)) return 'ipad';
+  if (/Android/.test(userAgent)) return 'tablet';
   
   // Desktop/Laptop
-  if (/Mac/.test(userAgent)) return 'Mac';
-  if (/Windows/.test(userAgent)) return 'PC';
-  if (/Linux/.test(userAgent)) return 'Linux';
-  if (/CrOS/.test(userAgent)) return 'Chromebook';
+  if (/Mac/.test(userAgent)) return 'mac';
+  if (/Windows/.test(userAgent)) return 'pc';
+  if (/Linux/.test(userAgent)) return 'linux';
+  if (/CrOS/.test(userAgent)) return 'chromebook';
   
-  return 'Desktop';
+  return 'desktop';
 }
 
 export function generateRandomDeviceName(): string {
@@ -73,16 +73,11 @@ export function generateRandomDeviceName(): string {
     'hamster', 'ferret', 'rabbit', 'fox', 'wolf', 'bear', 'lion', 'tiger', 'cat'
   ];
   
-  const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-  const animal = animals[Math.floor(Math.random() * animals.length)];
+  const words = [...adjectives, ...animals];
+  const randomWord = words[Math.floor(Math.random() * words.length)];
   const deviceType = getDetailedDeviceType();
   
-  // Sometimes use adjective-animal-device, sometimes just animal-device
-  if (Math.random() > 0.5) {
-    return `${adjective}-${animal}-${deviceType}`;
-  } else {
-    return `${animal}-${deviceType}`;
-  }
+  return `${randomWord}-${deviceType}`;
 }
 
 export function getDeviceIcon(deviceName: string): {
@@ -93,53 +88,70 @@ export function getDeviceIcon(deviceName: string): {
   const name = deviceName.toLowerCase();
   
   // Apple devices
-  if (name.includes('mac') || name.includes('imac') || name.includes('macbook')) {
+  if (name.includes('-mac') || name.includes('imac') || name.includes('macbook')) {
     return { icon: '🍎', color: 'text-slate-600', description: 'Apple Mac' };
   }
   
   // iPhone/iOS
-  if (name.includes('iphone') || name.includes('ios')) {
+  if (name.includes('-iphone') || name.includes('ios')) {
     return { icon: '📱', color: 'text-blue-600', description: 'iPhone' };
   }
   
   // iPad
-  if (name.includes('ipad') || name.includes('tablet')) {
-    return { icon: '📱', color: 'text-purple-600', description: 'Tablet' };
+  if (name.includes('-ipad') || name.includes('tablet')) {
+    return { icon: '📱', color: 'text-purple-600', description: 'iPad' };
+  }
+  
+  // Android devices
+  if (name.includes('-android')) {
+    return { icon: '📱', color: 'text-green-600', description: 'Android' };
   }
   
   // Windows devices
-  if (name.includes('pc') || name.includes('windows') || name.includes('dell') || 
+  if (name.includes('-pc') || name.includes('windows') || name.includes('dell') || 
       name.includes('hp') || name.includes('asus') || name.includes('lenovo') ||
       name.includes('thinkpad')) {
     return { icon: '💻', color: 'text-blue-500', description: 'Windows PC' };
   }
   
-  // Surface
+  // Linux devices
+  if (name.includes('-linux')) {
+    return { icon: '💻', color: 'text-orange-500', description: 'Linux' };
+  }
+  
+  // Chromebook
+  if (name.includes('-chromebook') || name.includes('chrome')) {
+    return { icon: '💻', color: 'text-green-500', description: 'Chromebook' };
+  }
+  
+  // Generic tablets
+  if (name.includes('-tablet')) {
+    return { icon: '📱', color: 'text-purple-600', description: 'Tablet' };
+  }
+  
+  // Generic mobile
+  if (name.includes('-mobile')) {
+    return { icon: '📱', color: 'text-green-600', description: 'Mobile' };
+  }
+  
+  // Desktop
+  if (name.includes('-desktop')) {
+    return { icon: '🖥️', color: 'text-gray-600', description: 'Desktop' };
+  }
+  
+  // Legacy support for older names
   if (name.includes('surface')) {
     return { icon: '💻', color: 'text-blue-400', description: 'Microsoft Surface' };
   }
   
-  // Chromebook
-  if (name.includes('chromebook') || name.includes('chrome')) {
-    return { icon: '💻', color: 'text-green-500', description: 'Chromebook' };
-  }
-  
-  // Workstation
   if (name.includes('workstation')) {
     return { icon: '🖥️', color: 'text-gray-700', description: 'Workstation' };
   }
   
-  // Desktop
-  if (name.includes('desktop')) {
-    return { icon: '🖥️', color: 'text-gray-600', description: 'Desktop' };
-  }
-  
-  // Laptop (generic)
   if (name.includes('laptop')) {
     return { icon: '💻', color: 'text-gray-500', description: 'Laptop' };
   }
   
-  // Phone (generic)
   if (name.includes('phone')) {
     return { icon: '📱', color: 'text-green-600', description: 'Phone' };
   }
