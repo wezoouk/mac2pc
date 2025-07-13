@@ -98,13 +98,6 @@ The application is designed to work seamlessly in both development and productio
 
 ## Recent Changes (July 13, 2025)
 
-### Trust Device System Fix (RESOLVED - July 13, 2025)
-- **Cache Invalidation**: Fixed trust device functionality by adding proper query cache invalidation
-- **Immediate UI Updates**: Trusted devices list now refreshes instantly after adding new devices
-- **One-Click Trust**: Trust device button works correctly from radar view device selection
-- **API Integration**: Complete trusted device CRUD operations with proper error handling
-- **Real-time Feedback**: Toast notifications confirm successful device trusting actions
-
 ### iPhone WebSocket Connection Stability Fix (RESOLVED - July 13, 2025)
 - **Mobile WebSocket Persistence**: Successfully resolved iPhone device disappearing issues with comprehensive mobile-specific connection handling
 - **Heartbeat Mechanism**: Implemented ping/pong every 30 seconds to maintain mobile connections alive

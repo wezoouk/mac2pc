@@ -716,8 +716,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     ws.on('close', async () => {
       if (ws.deviceId) {
-        console.log(`WebSocket closed for device: ${ws.deviceId}`);
-        
         // Don't immediately mark mobile devices as offline - give them time to reconnect
         const device = await storage.getDevice(ws.deviceId);
         const isMobile = device?.type === 'mobile';
@@ -727,7 +725,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           setTimeout(async () => {
             const currentClient = clients.get(ws.deviceId!);
             if (!currentClient || currentClient.readyState !== WebSocket.OPEN) {
-              console.log(`Marking mobile device ${ws.deviceId} as offline after grace period`);
               await storage.updateDevice(ws.deviceId!, { isOnline: false });
               clients.delete(ws.deviceId!);
               await broadcastDeviceUpdate(ws.deviceId!, ws.roomId);
@@ -735,7 +732,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }, 10000);
         } else {
           // For desktop devices, mark offline immediately
-          console.log(`Marking desktop device ${ws.deviceId} as offline immediately`);
           await storage.updateDevice(ws.deviceId, { isOnline: false });
           clients.delete(ws.deviceId);
           await broadcastDeviceUpdate(ws.deviceId, ws.roomId);
