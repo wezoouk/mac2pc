@@ -318,6 +318,8 @@ export default function Home() {
         if (!currentRoom || !currentRoom.startsWith('pair-')) {
           setDevices([]);
           setTimeout(() => fetchDevices(), 100);
+        } else {
+          console.log('In pairing room, ignoring device-list-update');
         }
         break;
       case 'room-joined':
@@ -355,6 +357,8 @@ export default function Home() {
             description: `Found ${roomDevices.length} device(s) in room ${message.roomId}`,
             duration: 3000,
           });
+        } else {
+          console.log('No other devices found in room after filtering');
         }
         break;
       case 'direct-message':
@@ -804,6 +808,12 @@ export default function Home() {
   useEffect(() => {
     console.log('Current room state changed to:', currentRoom);
   }, [currentRoom]);
+
+  // Debug devices state changes
+  useEffect(() => {
+    console.log('Devices state updated:', devices.length, 'devices');
+    console.log('Current devices:', devices.map(d => ({ id: d.id, name: d.name })));
+  }, [devices]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-indigo-900 overflow-x-hidden">
