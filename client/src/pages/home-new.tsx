@@ -22,6 +22,7 @@ import { soundManager } from "@/lib/sound-manager";
 import { nanoid } from "nanoid";
 import { generateRandomDeviceName, getDetailedDeviceType, getDeviceType } from '@/lib/utils';
 import { NotificationManager } from '@/lib/notifications';
+import { queryClient } from '@/lib/queryClient';
 import type { Device, Transfer } from "@shared/schema";
 
 export default function Home() {
@@ -611,6 +612,10 @@ export default function Home() {
       if (response.ok) {
         const result = await response.json();
         console.log('Trust device success:', result);
+        
+        // Invalidate the trusted devices cache to refresh the list
+        queryClient.invalidateQueries({ queryKey: [`/api/trusted-devices/${deviceId}`] });
+        
         toast({
           title: "Device trusted",
           description: `${device.name} has been added to your trusted devices`,
