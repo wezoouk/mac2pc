@@ -100,32 +100,34 @@ export function RadarView({
     <div className="flex flex-col items-center space-y-6 w-full min-h-0">
       {/* Radar Container - Maximized Wrapper with Shadow Space */}
       <div 
-        className="w-full flex justify-center items-center overflow-visible p-8 sm:p-12"
+        className="w-full flex justify-center items-center overflow-visible p-16 sm:p-20"
         style={{ 
           maxWidth: '100vw',
           maxHeight: `${windowHeight - 150}px`
         }}
       >
-        {/* Radar Display - Perfect Square Container with CSS Grid */}
+        {/* Radar Display - Perfect Square Container with CSS Grid and Extra Padding for Shadow */}
         <div 
-          className="relative grid place-items-center overflow-hidden flex-shrink-0"
+          className="relative grid place-items-center overflow-visible flex-shrink-0"
           style={{ 
-            width: `${radarSize}px`, 
-            height: `${radarSize}px`, 
+            width: `${radarSize + 60}px`, 
+            height: `${radarSize + 60}px`, 
             aspectRatio: '1/1',
             gridTemplateColumns: '1fr',
-            gridTemplateRows: '1fr'
+            gridTemplateRows: '1fr',
+            padding: '30px'
           }}
         >
         {/* Radar Background - Perfect Circle */}
         <div 
-          className="col-start-1 row-start-1 bg-gradient-to-br from-slate-700 via-blue-700 to-slate-700 shadow-2xl border-2 border-blue-400/50 dark:from-gray-700 dark:via-blue-600 dark:to-gray-700"
+          className="col-start-1 row-start-1 bg-gradient-to-br from-slate-700 via-blue-700 to-slate-700 border-2 border-blue-400/50 dark:from-gray-700 dark:via-blue-600 dark:to-gray-700"
           style={{ 
             borderRadius: '50%',
             width: `${radarSize}px`,
             height: `${radarSize}px`,
             aspectRatio: '1/1',
-            position: 'relative'
+            position: 'relative',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(59, 130, 246, 0.2), 0 0 20px rgba(59, 130, 246, 0.3)'
           }}
         >
           {/* Static Radar Rings with Better Contrast */}
