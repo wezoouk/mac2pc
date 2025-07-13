@@ -1121,21 +1121,23 @@ export default function Home() {
 
         {/* Large Radar View */}
         <div className="w-full max-w-none px-1 sm:px-2 lg:px-4 mb-4 sm:mb-6">
-          <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-3xl p-1 sm:p-2 lg:p-3 shadow-2xl border border-white/20 dark:border-gray-700/30 overflow-hidden" style={{ minHeight: '75vh' }}>
-            {/* Status Info */}
-            <div className="mb-4 text-xs text-gray-500 text-center space-y-1">
+          <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-3xl p-1 sm:p-2 lg:p-3 shadow-2xl border border-white/20 dark:border-gray-700/30 overflow-visible relative" style={{ minHeight: '75vh' }}>
+            {/* Status Info - Overlaid on Radar */}
+            <div className="absolute top-4 left-4 z-10 bg-black/50 backdrop-blur-sm rounded-lg p-2 text-xs text-white space-y-1">
               <div>Devices Found: {devices.length}</div>
               <div>Current Room: {currentRoom || 'None'}</div>
               <div>Your Device ID: {deviceId.slice(-8)}</div>
-              {currentRoom && currentRoom.startsWith('pair-') && devices.length === 0 && (
-                <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-xs">
-                  <div className="font-medium">QR Code Pairing Instructions:</div>
-                  <div>1. Use a different device (phone/tablet) to scan the QR code</div>
-                  <div>2. Or open the link in a different browser (Chrome, Firefox, etc.)</div>
-                  <div>3. Each device will get a unique ID and appear in the radar</div>
-                </div>
-              )}
             </div>
+            
+            {/* QR Code Instructions - Overlaid when needed */}
+            {currentRoom && currentRoom.startsWith('pair-') && devices.length === 0 && (
+              <div className="absolute top-4 right-4 z-10 max-w-xs p-3 bg-yellow-900/80 backdrop-blur-sm border border-yellow-600/50 rounded-lg text-yellow-100 text-xs">
+                <div className="font-medium mb-1">QR Code Pairing Instructions:</div>
+                <div>1. Use a different device (phone/tablet) to scan the QR code</div>
+                <div>2. Or open the link in a different browser (Chrome, Firefox, etc.)</div>
+                <div>3. Each device will get a unique ID and appear in the radar</div>
+              </div>
+            )}
             
             <RadarView
               devices={testMode ? devices.concat(testDevices) : devices}

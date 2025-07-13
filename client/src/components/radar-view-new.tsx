@@ -47,7 +47,7 @@ export function RadarView({
 
   function getDeviceIconComponent(type: string, isCenter = false) {
     // Larger icon sizes for bigger radar
-    const size = isCenter ? (radarSize >= 800 ? 72 : radarSize >= 600 ? 56 : 40) : (radarSize >= 800 ? 48 : radarSize >= 600 ? 36 : 28);
+    const size = isCenter ? (radarSize >= 1000 ? 96 : radarSize >= 800 ? 80 : radarSize >= 600 ? 64 : 48) : (radarSize >= 1000 ? 64 : radarSize >= 800 ? 56 : radarSize >= 600 ? 48 : 36);
     const iconProps = { size, className: "text-white drop-shadow-lg" };
     
     switch (type) {
@@ -65,10 +65,10 @@ export function RadarView({
     
     const angle = (2 * Math.PI * index) / total;
     // Adjust radius based on radar size - keep devices well within bounds
-    const margin = radarSize >= 800 ? 140 : radarSize >= 600 ? 120 : radarSize >= 450 ? 100 : 80;
+    const margin = radarSize >= 1000 ? 180 : radarSize >= 800 ? 160 : radarSize >= 600 ? 140 : radarSize >= 450 ? 120 : 100;
     const maxRadius = (radarSize / 2) - margin;
-    const baseRadius = radarSize >= 800 ? 280 : radarSize >= 600 ? 220 : radarSize >= 450 ? 160 : 100;
-    const radius = Math.min(maxRadius, baseRadius + total * 12);
+    const baseRadius = radarSize >= 1000 ? 350 : radarSize >= 800 ? 300 : radarSize >= 600 ? 240 : radarSize >= 450 ? 180 : 120;
+    const radius = Math.min(maxRadius, baseRadius + total * 10);
     
     return {
       x: Math.cos(angle) * radius,
@@ -84,23 +84,23 @@ export function RadarView({
   }
 
   // Maximize radar size based on available screen space
-  const containerPadding = 32; // Reduced padding
-  const headerFooterSpace = 200; // Reduced space for header and other UI
+  const containerPadding = 16; // Minimal padding since we have overlay text
+  const headerFooterSpace = 180; // Reduced space for header and other UI
   const maxWidthSize = windowWidth - containerPadding;
   const maxHeightSize = windowHeight - headerFooterSpace;
   const maxRadarSize = Math.min(maxWidthSize, maxHeightSize);
   
-  // Much larger base sizes to use more screen space
-  const baseRadarSize = windowWidth >= 1440 ? 800 : windowWidth >= 1024 ? 600 : windowWidth >= 768 ? 450 : 320;
-  const radarSize = Math.max(320, Math.min(baseRadarSize, maxRadarSize)); // Minimum 320px, maximum viewport-constrained
+  // Even larger base sizes to use more screen space
+  const baseRadarSize = windowWidth >= 1440 ? 1000 : windowWidth >= 1024 ? 750 : windowWidth >= 768 ? 550 : 400;
+  const radarSize = Math.max(400, Math.min(baseRadarSize, maxRadarSize)); // Minimum 400px, maximum viewport-constrained
   const centerX = radarSize / 2;
   const centerY = radarSize / 2;
 
   return (
     <div className="flex flex-col items-center space-y-6 w-full min-h-0">
-      {/* Radar Container - Maximized Wrapper */}
+      {/* Radar Container - Maximized Wrapper with Shadow Space */}
       <div 
-        className="w-full flex justify-center items-center overflow-visible p-2 sm:p-4"
+        className="w-full flex justify-center items-center overflow-visible p-8 sm:p-12"
         style={{ 
           maxWidth: '100vw',
           maxHeight: `${windowHeight - 150}px`
