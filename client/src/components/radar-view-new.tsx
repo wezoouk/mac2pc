@@ -98,9 +98,9 @@ export function RadarView({
 
   return (
     <div className="flex flex-col items-center space-y-6 w-full min-h-0">
-      {/* Radar Container - Viewport-Constrained Wrapper */}
+      {/* Radar Container - Viewport-Constrained Wrapper with Shadow Padding */}
       <div 
-        className="w-full flex justify-center items-center overflow-hidden"
+        className="w-full flex justify-center items-center overflow-visible p-8"
         style={{ 
           maxWidth: '100vw',
           maxHeight: `${windowHeight - 200}px`

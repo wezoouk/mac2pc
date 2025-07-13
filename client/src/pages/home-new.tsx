@@ -52,6 +52,7 @@ export default function Home() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [newDeviceName, setNewDeviceName] = useState(deviceName);
   const [pendingPairCode, setPendingPairCode] = useState<string | null>(null);
+  const [pendingRoomName, setPendingRoomName] = useState<string | null>(null);
   const { toast } = useToast();
 
   function handlePairWithCode(code: string) {
@@ -259,13 +260,9 @@ export default function Home() {
         if (roomName.startsWith('pair-')) {
           pairCode = roomName.substring(5); // Remove 'pair-' prefix
         } else {
-          // Pre-fill room join form with room name
-          console.log('Pre-filling room join form with:', roomName);
-          // This would require passing the room name to the join room form
-          // For now, we'll handle pairing rooms only
-          if (roomName.match(/^[A-Z0-9]{6}$/i)) {
-            pairCode = roomName;
-          }
+          // Set pending room name for auto-join
+          console.log('Setting pending room name for auto-join:', roomName);
+          setPendingRoomName(roomName);
         }
       }
 
@@ -286,6 +283,23 @@ export default function Home() {
         });
         
         // WebSocket onConnect will handle the pairing when ready
+      }
+      
+      // If we found a room name, auto-join when WebSocket is ready
+      if (roomName && !pendingRoomName) {
+        console.log('🎯 Room parameter detected:', roomName);
+        setPendingRoomName(roomName);
+        
+        // Clean up URL immediately
+        const cleanUrl = urlObj.origin + urlObj.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+        
+        // Show toast notification
+        toast({
+          title: "Room Link Detected!",
+          description: `Will join room: ${roomName}`,
+          duration: 5000,
+        });
       }
     };
     
@@ -637,6 +651,36 @@ export default function Home() {
         processPairCode(pendingPairCode);
       } else {
         console.log('No pending pair code to process');
+      }
+      
+      // If we have a pending room name, auto-join it now
+      if (pendingRoomName) {
+        console.log('WebSocket connected, auto-joining room:', pendingRoomName);
+        setRoomName(pendingRoomName);
+        setRoomPassword('');
+        
+        // Auto-join the room
+        sendMessage({
+          type: 'join-room',
+          roomId: pendingRoomName,
+          password: '',
+          deviceId,
+          data: {
+            id: deviceId,
+            name: deviceName,
+            type: getDeviceType(),
+            network: 'local',
+          }
+        });
+        
+        // Clear pending room name
+        setPendingRoomName(null);
+        
+        toast({
+          title: "Auto-joining Room",
+          description: `Joining room: ${pendingRoomName}`,
+          duration: 3000,
+        });
       }
     },
     onDisconnect: () => {
