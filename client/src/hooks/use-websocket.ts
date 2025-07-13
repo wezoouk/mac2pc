@@ -14,6 +14,7 @@ export function useWebSocket({ onMessage, onConnect, onDisconnect }: UseWebSocke
   const reconnectAttempts = useRef<number>(0);
   const maxReconnectAttempts = 10; // Increased for mobile devices
   const isConnectingRef = useRef(false);
+  const visibilityChangeRef = useRef<() => void | null>(null);
 
   const startHeartbeat = useCallback(() => {
     if (heartbeatTimeoutRef.current) {
@@ -101,8 +102,11 @@ export function useWebSocket({ onMessage, onConnect, onDisconnect }: UseWebSocke
         // Only attempt to reconnect if it wasn't a manual close and we haven't exceeded max attempts
         if (event.code !== 1000 && reconnectAttempts.current < maxReconnectAttempts) {
           reconnectAttempts.current++;
-          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 10000); // Reduced max delay for mobile
-          console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttempts.current}/${maxReconnectAttempts})`);
+          // More aggressive reconnection for mobile devices
+          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+          const baseDelay = isMobile ? 500 : 1000;
+          const delay = Math.min(baseDelay * Math.pow(1.5, reconnectAttempts.current), isMobile ? 3000 : 10000);
+          console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttempts.current}/${maxReconnectAttempts}) - Mobile: ${isMobile}`);
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
           }, delay);
@@ -148,9 +152,49 @@ export function useWebSocket({ onMessage, onConnect, onDisconnect }: UseWebSocke
       connect();
     }, 1000); // Delay initial connection by 1 second to allow server to start
 
+    // Handle mobile app backgrounding/foregrounding
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // App is backgrounded - keep connection alive but reduce activity
+        console.log('App backgrounded, maintaining WebSocket connection');
+      } else {
+        // App is foregrounded - ensure connection is active
+        console.log('App foregrounded, checking WebSocket connection');
+        if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+          console.log('Reconnecting WebSocket after app foreground');
+          connect();
+        }
+      }
+    };
+    
+    // Handle mobile network changes
+    const handleOnline = () => {
+      console.log('Network back online, reconnecting WebSocket');
+      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+        setTimeout(() => connect(), 500); // Small delay to ensure network is stable
+      }
+    };
+    
+    const handleOffline = () => {
+      console.log('Network offline detected');
+    };
+    
+    // Add mobile-specific event listeners
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    // Store reference for cleanup
+    visibilityChangeRef.current = handleVisibilityChange;
+
     return () => {
       clearTimeout(timer);
       disconnect();
+      
+      // Clean up mobile event listeners
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 

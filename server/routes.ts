@@ -716,9 +716,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     ws.on('close', async () => {
       if (ws.deviceId) {
-        await storage.updateDevice(ws.deviceId, { isOnline: false });
-        clients.delete(ws.deviceId);
-        await broadcastDeviceUpdate(ws.deviceId, ws.roomId);
+        // Don't immediately mark mobile devices as offline - give them time to reconnect
+        const device = await storage.getDevice(ws.deviceId);
+        const isMobile = device?.type === 'mobile';
+        
+        if (isMobile) {
+          // For mobile devices, wait 10 seconds before marking offline
+          setTimeout(async () => {
+            const currentClient = clients.get(ws.deviceId!);
+            if (!currentClient || currentClient.readyState !== WebSocket.OPEN) {
+              await storage.updateDevice(ws.deviceId!, { isOnline: false });
+              clients.delete(ws.deviceId!);
+              await broadcastDeviceUpdate(ws.deviceId!, ws.roomId);
+            }
+          }, 10000);
+        } else {
+          // For desktop devices, mark offline immediately
+          await storage.updateDevice(ws.deviceId, { isOnline: false });
+          clients.delete(ws.deviceId);
+          await broadcastDeviceUpdate(ws.deviceId, ws.roomId);
+        }
       }
     });
   });
@@ -864,6 +881,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!data.deviceId) return;
 
     ws.deviceId = data.deviceId;
+    
+    // For mobile devices, immediately replace any existing client connection
+    const existingClient = clients.get(data.deviceId);
+    if (existingClient && existingClient !== ws) {
+      console.log(`Replacing existing client for device ${data.deviceId} (mobile reconnection)`);
+      existingClient.close();
+    }
     clients.set(data.deviceId, ws);
 
     // Create or update device
