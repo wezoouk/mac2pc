@@ -335,8 +335,15 @@ export default function Home() {
       const response = await fetch('/api/devices/network/local');
       if (response.ok) {
         const allDevices = await response.json();
-        const filteredDevices = allDevices.filter((d: Device) => d.id !== deviceId);
+        const filteredDevices = allDevices.filter((d: Device) => d.id !== deviceId && d.isOnline);
         console.log(`Fetched ${allDevices.length} devices, showing ${filteredDevices.length} after filtering`);
+        
+        // Clear selected device if it's no longer in the list
+        if (selectedDevice && !filteredDevices.find(d => d.id === selectedDevice.id)) {
+          console.log('Selected device no longer available, clearing selection');
+          setSelectedDevice(null);
+        }
+        
         setDevices(filteredDevices);
       } else {
         console.error('Failed to fetch devices:', response.statusText);
@@ -355,7 +362,12 @@ export default function Home() {
       case 'device-list-update':
         // Only fetch devices if we're not in a pairing room
         if (!currentRoom || !currentRoom.startsWith('pair-')) {
+          // Clear devices first to avoid showing stale data
           setDevices([]);
+          // Clear selected device if it's no longer valid
+          if (selectedDevice && selectedDevice.id === message.deviceId) {
+            setSelectedDevice(null);
+          }
           setTimeout(() => fetchDevices(), 100);
         } else {
           console.log('In pairing room, ignoring device-list-update');
@@ -373,6 +385,7 @@ export default function Home() {
         console.log('Successfully left room:', message.roomId);
         updateCurrentRoom(null);
         setDevices([]);
+        setSelectedDevice(null); // Clear selected device when leaving room
         setTimeout(() => fetchDevices(), 100);
         break;
       case 'room-devices':
