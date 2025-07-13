@@ -724,9 +724,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await handleLeaveRoom(ws, { ...data, roomId: ws.roomId });
     }
 
+    // Set device and room IDs first
     ws.deviceId = data.deviceId;
     ws.roomId = data.roomId;
     clients.set(data.deviceId, ws);
+    
+    console.log(`Device ${data.deviceId} attempting to join room ${data.roomId}`);
 
     // Create or get room
     let room = await storage.getRoomByName(data.roomId);
@@ -772,10 +775,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     // Send current room devices to the new joiner
     const roomDevices = await storage.getDevicesByRoom(data.roomId);
+    const filteredDevices = roomDevices.filter(d => d.id !== data.deviceId);
+    
+    console.log(`Sending room devices to ${data.deviceId}:`, filteredDevices.map(d => ({ id: d.id, name: d.name })));
+    
     ws.send(JSON.stringify({
       type: 'room-devices',
       roomId: data.roomId,
-      devices: roomDevices.filter(d => d.id !== data.deviceId)
+      devices: filteredDevices
     }));
 
     // Send welcome message

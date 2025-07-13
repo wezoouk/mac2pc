@@ -105,7 +105,10 @@ export default function Home() {
   }
 
   function processPairCode(code: string) {
-    if (!code || !isConnected) return;
+    if (!code || !isConnected) {
+      console.log('❌ Cannot process pair code - missing code or not connected');
+      return;
+    }
     
     const pairRoomId = `pair-${code}`;
     console.log('🎯 Joining pairing room:', pairRoomId);
@@ -240,7 +243,10 @@ export default function Home() {
   useEffect(() => {
     if (isConnected && pendingPairCode) {
       console.log('🔗 WebSocket connected, processing pending pair code:', pendingPairCode);
-      processPairCode(pendingPairCode);
+      // Add a small delay to ensure WebSocket is fully ready
+      setTimeout(() => {
+        processPairCode(pendingPairCode);
+      }, 100);
     }
   }, [isConnected, pendingPairCode]);
 
