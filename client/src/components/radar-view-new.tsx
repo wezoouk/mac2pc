@@ -65,10 +65,10 @@ export function RadarView({
     
     const angle = (2 * Math.PI * index) / total;
     // Adjust radius based on radar size - keep devices well within bounds
-    const margin = radarSize >= 800 ? 120 : radarSize >= 600 ? 100 : 60;
+    const margin = radarSize >= 800 ? 140 : radarSize >= 600 ? 120 : radarSize >= 450 ? 100 : 80;
     const maxRadius = (radarSize / 2) - margin;
-    const baseRadius = radarSize >= 800 ? 220 : radarSize >= 600 ? 180 : 80;
-    const radius = Math.min(maxRadius, baseRadius + total * 15);
+    const baseRadius = radarSize >= 800 ? 280 : radarSize >= 600 ? 220 : radarSize >= 450 ? 160 : 100;
+    const radius = Math.min(maxRadius, baseRadius + total * 12);
     
     return {
       x: Math.cos(angle) * radius,
@@ -83,27 +83,27 @@ export function RadarView({
     return 'bg-blue-500'; // Local devices
   }
 
-  // Responsive radar size that always fits within viewport
-  const containerPadding = 40; // Total horizontal padding
-  const headerFooterSpace = 300; // Space for header, stats, and other UI elements
+  // Maximize radar size based on available screen space
+  const containerPadding = 32; // Reduced padding
+  const headerFooterSpace = 200; // Reduced space for header and other UI
   const maxWidthSize = windowWidth - containerPadding;
   const maxHeightSize = windowHeight - headerFooterSpace;
   const maxRadarSize = Math.min(maxWidthSize, maxHeightSize);
   
-  // Base sizes but constrained by viewport
-  const baseRadarSize = windowWidth >= 1024 ? 500 : windowWidth >= 768 ? 400 : 280;
-  const radarSize = Math.max(280, Math.min(baseRadarSize, maxRadarSize)); // Minimum 280px, maximum viewport-constrained
+  // Much larger base sizes to use more screen space
+  const baseRadarSize = windowWidth >= 1440 ? 800 : windowWidth >= 1024 ? 600 : windowWidth >= 768 ? 450 : 320;
+  const radarSize = Math.max(320, Math.min(baseRadarSize, maxRadarSize)); // Minimum 320px, maximum viewport-constrained
   const centerX = radarSize / 2;
   const centerY = radarSize / 2;
 
   return (
     <div className="flex flex-col items-center space-y-6 w-full min-h-0">
-      {/* Radar Container - Viewport-Constrained Wrapper with Shadow Padding */}
+      {/* Radar Container - Maximized Wrapper */}
       <div 
-        className="w-full flex justify-center items-center overflow-visible p-8"
+        className="w-full flex justify-center items-center overflow-visible p-2 sm:p-4"
         style={{ 
           maxWidth: '100vw',
-          maxHeight: `${windowHeight - 200}px`
+          maxHeight: `${windowHeight - 150}px`
         }}
       >
         {/* Radar Display - Perfect Square Container with CSS Grid */}

@@ -1094,7 +1094,7 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="flex flex-col items-center justify-center min-h-screen px-2 sm:px-4 py-8 w-full overflow-x-hidden">
+      <main className="flex flex-col items-center justify-start min-h-screen px-1 sm:px-2 py-4 w-full overflow-x-hidden">
         {/* Top Banner Ad */}
         {adsEnabled && (
           <div className="mb-6 w-full max-w-4xl">
@@ -1103,7 +1103,7 @@ export default function Home() {
         )}
 
         {/* Site Description */}
-        <div className="text-center mb-8 sm:mb-12 max-w-4xl mx-auto">
+        <div className="text-center mb-4 sm:mb-6 max-w-6xl mx-auto px-2">
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-light text-slate-700 dark:text-slate-300 mb-3">
             Transfer Files Instantly Between Your Devices
           </h2>
@@ -1120,8 +1120,8 @@ export default function Home() {
         </div>
 
         {/* Large Radar View */}
-        <div className="w-full max-w-sm sm:max-w-lg lg:max-w-6xl mb-8 sm:mb-12 px-2 sm:px-0">
-          <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-3xl p-4 sm:p-8 lg:p-12 shadow-2xl border border-white/20 dark:border-gray-700/30 overflow-hidden">
+        <div className="w-full max-w-none px-1 sm:px-2 lg:px-4 mb-4 sm:mb-6">
+          <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-3xl p-1 sm:p-2 lg:p-3 shadow-2xl border border-white/20 dark:border-gray-700/30 overflow-hidden" style={{ minHeight: '75vh' }}>
             {/* Status Info */}
             <div className="mb-4 text-xs text-gray-500 text-center space-y-1">
               <div>Devices Found: {devices.length}</div>
