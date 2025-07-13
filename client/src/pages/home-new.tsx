@@ -585,13 +585,6 @@ export default function Home() {
 
   async function addToTrustedDevices(device: Device) {
     try {
-      console.log('Adding trusted device:', {
-        deviceId: deviceId,
-        trustedDeviceId: device.id,
-        deviceName: deviceName,
-        trustedDeviceName: device.name,
-      });
-      
       const response = await fetch('/api/trusted-devices', {
         method: 'POST',
         headers: {
@@ -607,12 +600,7 @@ export default function Home() {
         }),
       });
 
-      console.log('Trust device response status:', response.status);
-      
       if (response.ok) {
-        const result = await response.json();
-        console.log('Trust device success:', result);
-        
         // Invalidate the trusted devices cache to refresh the list
         queryClient.invalidateQueries({ queryKey: [`/api/trusted-devices/${deviceId}`] });
         
@@ -623,7 +611,6 @@ export default function Home() {
         });
       } else {
         const error = await response.text();
-        console.error('Trust device error response:', error);
         throw new Error(error);
       }
     } catch (error) {
