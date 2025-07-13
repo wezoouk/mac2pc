@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Smartphone, Monitor, Tablet, Wifi, Signal } from "lucide-react";
+import { Smartphone, Monitor, Tablet, Wifi, Signal, Users, Copy, Check } from "lucide-react";
 import { getDeviceIcon } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 import type { Device } from "@shared/schema";
 
 interface RadarViewProps {
@@ -11,6 +12,8 @@ interface RadarViewProps {
   currentDeviceName: string;
   currentDeviceType: string;
   isConnected: boolean;
+  currentRoom?: string | null;
+  onCreateRoom?: (roomName: string) => void;
 }
 
 export function RadarView({
@@ -20,11 +23,21 @@ export function RadarView({
   currentDeviceId,
   currentDeviceName,
   currentDeviceType,
-  isConnected
+  isConnected,
+  currentRoom,
+  onCreateRoom
 }: RadarViewProps) {
   const [animatedDevices, setAnimatedDevices] = useState<Device[]>([]);
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
   const [windowHeight, setWindowHeight] = useState(typeof window !== 'undefined' ? window.innerHeight : 768);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    device: Device;
+  } | null>(null);
+  const [inviteCode, setInviteCode] = useState<string>('');
+  const [isInviteCodeCopied, setIsInviteCodeCopied] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Animate devices appearing
@@ -41,8 +54,17 @@ export function RadarView({
       setWindowHeight(window.innerHeight);
     };
     
+    // Close context menu on click outside
+    const handleClickOutside = () => {
+      setContextMenu(null);
+    };
+    
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('click', handleClickOutside);
+    };
   }, []);
 
   function getDeviceIconComponent(type: string, isCenter = false) {
@@ -81,6 +103,64 @@ export function RadarView({
       return 'bg-amber-500'; // Remote devices
     }
     return 'bg-blue-500'; // Local devices
+  }
+
+  function handleRightClick(e: React.MouseEvent, device: Device) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      device
+    });
+  }
+
+  function generateInviteCode() {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setInviteCode(code);
+    return code;
+  }
+
+  function handleInviteToRoom() {
+    if (!contextMenu) return;
+    
+    const code = generateInviteCode();
+    const roomName = `pair-${code}`;
+    
+    // Create room if callback provided
+    if (onCreateRoom) {
+      onCreateRoom(roomName);
+    }
+    
+    // Copy invite code to clipboard
+    navigator.clipboard.writeText(code).then(() => {
+      setIsInviteCodeCopied(true);
+      setTimeout(() => setIsInviteCodeCopied(false), 2000);
+      
+      toast({
+        title: "Invite Code Copied",
+        description: `Share code "${code}" with ${contextMenu.device.name} to connect`,
+        variant: "default"
+      });
+    });
+    
+    setContextMenu(null);
+  }
+
+  function handleCopyDeviceInfo() {
+    if (!contextMenu) return;
+    
+    const deviceInfo = `${contextMenu.device.name} (${contextMenu.device.type})`;
+    navigator.clipboard.writeText(deviceInfo).then(() => {
+      toast({
+        title: "Device Info Copied",
+        description: `Copied: ${deviceInfo}`,
+        variant: "default"
+      });
+    });
+    
+    setContextMenu(null);
   }
 
   // Maximize radar size based on available screen space
@@ -296,6 +376,7 @@ export function RadarView({
                 animationDelay: `${index * 100}ms`
               }}
               onClick={() => onDeviceSelect(device)}
+              onContextMenu={(e) => handleRightClick(e, device)}
             >
               <div className="relative">
                 <div className={`rounded-full ${getDeviceColor(device)} flex items-center justify-center shadow-lg border-4 border-white transition-all duration-200 ${
@@ -331,6 +412,45 @@ export function RadarView({
           {devices.length} device{devices.length !== 1 ? 's' : ''} nearby
         </div>
       </div>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <div
+          className="fixed z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-2 min-w-[200px]"
+          style={{
+            left: contextMenu.x,
+            top: contextMenu.y,
+            transform: contextMenu.x > window.innerWidth - 220 ? 'translateX(-100%)' : 'none'
+          }}
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          <div className="px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-600">
+            {contextMenu.device.name}
+          </div>
+          
+          <button
+            onClick={handleInviteToRoom}
+            className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+          >
+            <Users size={16} />
+            Invite to Room
+          </button>
+          
+          <button
+            onClick={handleCopyDeviceInfo}
+            className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+          >
+            {isInviteCodeCopied ? <Check size={16} /> : <Copy size={16} />}
+            Copy Device Info
+          </button>
+          
+          {currentRoom && (
+            <div className="px-3 py-1 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-600">
+              Current room: {currentRoom.replace('pair-', '')}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
