@@ -38,7 +38,10 @@ export default function Home() {
   });
   const [roomName, setRoomName] = useState("");
   const [roomPassword, setRoomPassword] = useState("");
-  const [currentRoom, setCurrentRoom] = useState<string | null>(null);
+  const [currentRoom, setCurrentRoom] = useState<string | null>(() => {
+    // Load room from localStorage on startup
+    return localStorage.getItem('currentRoom') || null;
+  });
   const [adsEnabled, setAdsEnabled] = useState(true);
   const [devices, setDevices] = useState<Device[]>([]);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
@@ -56,6 +59,16 @@ export default function Home() {
   const [pendingRoomName, setPendingRoomName] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Helper function to update current room and persist to localStorage
+  const updateCurrentRoom = (room: string | null) => {
+    setCurrentRoom(room);
+    if (room) {
+      localStorage.setItem('currentRoom', room);
+    } else {
+      localStorage.removeItem('currentRoom');
+    }
+  };
+
   // WebSocket hook must be defined before functions that use isConnected
   const { isConnected, sendMessage } = useWebSocket({
     onMessage: (message: any) => {
@@ -64,16 +77,35 @@ export default function Home() {
     },
     onConnect: () => {
       console.log('WebSocket connected successfully');
-      sendMessage({
-        type: 'device-update',
-        deviceId,
-        data: {
-          id: deviceId,
-          name: deviceName,
-          type: getDeviceType(),
-          network: 'local',
-        }
-      });
+      
+      // If we were in a room before disconnect, rejoin it
+      if (currentRoom) {
+        console.log('Rejoining room after WebSocket reconnection:', currentRoom);
+        sendMessage({
+          type: 'join-room',
+          roomId: currentRoom,
+          password: '', // We'll store password if needed
+          deviceId,
+          data: {
+            id: deviceId,
+            name: deviceName,
+            type: getDeviceType(),
+            network: 'remote',
+          }
+        });
+      } else {
+        // Normal device update for local network
+        sendMessage({
+          type: 'device-update',
+          deviceId,
+          data: {
+            id: deviceId,
+            name: deviceName,
+            type: getDeviceType(),
+            network: 'local',
+          }
+        });
+      }
       
       // Process pending actions after WebSocket connects
       if (pendingPairCode) {
@@ -137,7 +169,7 @@ export default function Home() {
     });
     
     // Update local state
-    setCurrentRoom(pairRoomId);
+    updateCurrentRoom(pairRoomId);
     setRoomName('');
     setRoomPassword('');
     
@@ -331,14 +363,14 @@ export default function Home() {
       case 'room-joined':
         console.log('Successfully joined room:', message.roomId);
         console.log('Setting current room state to:', message.roomId);
-        setCurrentRoom(message.roomId);
+        updateCurrentRoom(message.roomId);
         setRoomName("");
         setRoomPassword("");
         console.log('Current room state updated via room-joined message');
         break;
       case 'room-left':
         console.log('Successfully left room:', message.roomId);
-        setCurrentRoom(null);
+        updateCurrentRoom(null);
         setDevices([]);
         setTimeout(() => fetchDevices(), 100);
         break;
@@ -945,15 +977,7 @@ export default function Home() {
               <div>Your Device ID: {deviceId.slice(-8)}</div>
             </div>
             
-            {/* QR Code Instructions - Overlaid when needed */}
-            {currentRoom && currentRoom.startsWith('pair-') && devices.length === 0 && (
-              <div className="absolute top-4 right-4 z-10 max-w-xs p-3 bg-yellow-900/80 backdrop-blur-sm border border-yellow-600/50 rounded-lg text-yellow-100 text-xs">
-                <div className="font-medium mb-1">QR Code Pairing Instructions:</div>
-                <div>1. Use a different device (phone/tablet) to scan the QR code</div>
-                <div>2. Or open the link in a different browser (Chrome, Firefox, etc.)</div>
-                <div>3. Each device will get a unique ID and appear in the radar</div>
-              </div>
-            )}
+
             
             <RadarView
               devices={testMode ? devices.concat(testDevices) : devices}

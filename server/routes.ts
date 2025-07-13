@@ -14,7 +14,7 @@ interface WebSocketClient extends WebSocket {
 }
 
 interface SignalingMessage {
-  type: 'offer' | 'answer' | 'ice-candidate' | 'join-room' | 'leave-room' | 'device-update' | 'transfer-request' | 'transfer-response' | 'transfer-progress';
+  type: 'offer' | 'answer' | 'ice-candidate' | 'join-room' | 'leave-room' | 'device-update' | 'transfer-request' | 'transfer-response' | 'transfer-progress' | 'ping' | 'pong';
   from?: string;
   to?: string;
   data?: any;
@@ -700,6 +700,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             break;
           case 'direct-file':
             await handleDirectFile(ws, data);
+            break;
+          case 'ping':
+            // Respond to ping with pong to keep connection alive
+            ws.send(JSON.stringify({ type: 'pong' }));
+            break;
+          case 'pong':
+            // Received pong response, connection is alive
             break;
         }
       } catch (error) {

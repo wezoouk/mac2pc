@@ -10,9 +10,23 @@ export function useWebSocket({ onMessage, onConnect, onDisconnect }: UseWebSocke
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const heartbeatTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttempts = useRef<number>(0);
-  const maxReconnectAttempts = 5;
+  const maxReconnectAttempts = 10; // Increased for mobile devices
   const isConnectingRef = useRef(false);
+
+  const startHeartbeat = useCallback(() => {
+    if (heartbeatTimeoutRef.current) {
+      clearTimeout(heartbeatTimeoutRef.current);
+    }
+    
+    heartbeatTimeoutRef.current = setTimeout(() => {
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: 'ping' }));
+        startHeartbeat(); // Schedule next heartbeat
+      }
+    }, 30000); // Send ping every 30 seconds
+  }, []);
 
   const connect = useCallback(() => {
     // Prevent multiple concurrent connection attempts
@@ -55,6 +69,10 @@ export function useWebSocket({ onMessage, onConnect, onDisconnect }: UseWebSocke
         setIsConnected(true);
         reconnectAttempts.current = 0; // Reset attempts on successful connection
         isConnectingRef.current = false;
+        
+        // Start heartbeat to keep connection alive
+        startHeartbeat();
+        
         onConnect?.();
       };
 
@@ -71,12 +89,19 @@ export function useWebSocket({ onMessage, onConnect, onDisconnect }: UseWebSocke
         console.log('WebSocket connection closed:', event.code, event.reason);
         setIsConnected(false);
         isConnectingRef.current = false;
+        
+        // Clear heartbeat
+        if (heartbeatTimeoutRef.current) {
+          clearTimeout(heartbeatTimeoutRef.current);
+          heartbeatTimeoutRef.current = null;
+        }
+        
         onDisconnect?.();
         
         // Only attempt to reconnect if it wasn't a manual close and we haven't exceeded max attempts
         if (event.code !== 1000 && reconnectAttempts.current < maxReconnectAttempts) {
           reconnectAttempts.current++;
-          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 10000); // Reduced max delay for mobile
           console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttempts.current}/${maxReconnectAttempts})`);
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
@@ -106,6 +131,10 @@ export function useWebSocket({ onMessage, onConnect, onDisconnect }: UseWebSocke
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
+    }
+    if (heartbeatTimeoutRef.current) {
+      clearTimeout(heartbeatTimeoutRef.current);
+      heartbeatTimeoutRef.current = null;
     }
     if (wsRef.current) {
       wsRef.current.close(1000, 'Manual disconnect');
