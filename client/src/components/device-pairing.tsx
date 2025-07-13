@@ -35,35 +35,27 @@ export function DevicePairing({
   // Generate a 6-digit pairing code when dialog opens
   useEffect(() => {
     if (isOpen && !pairingCode) {
-      // Only generate code if dialog is open and no code exists
       const code = Math.floor(100000 + Math.random() * 900000).toString();
-      console.log('Generating fresh pairing code:', code);
+      console.log('📱 Generating pairing code:', code);
       
-      // Force clear any existing state
-      setQrCodeUrl("");
       setPairingCode(code);
-      
-      // Generate QR code immediately
       generateQRCode(code);
       
-      // Auto-join the room when generating the code
-      // This ensures the generating device is in the room when someone scans the QR code
+      // Auto-join the pairing room so the generating device is ready
       if (onGenerateCode) {
         onGenerateCode(code);
       }
     }
-  }, [isOpen, pairingCode]); // Remove onGenerateCode from dependencies to prevent loop
+  }, [isOpen, pairingCode]);
 
   async function generateQRCode(code: string) {
     try {
-      console.log('Starting QR code generation for code:', code);
+      console.log('🔍 Generating QR code for pairing code:', code);
       
-      // Direct URL to main app with pair parameter for QR code processing
+      // Simple URL with pair parameter
       const url = `${window.location.origin}/?pair=${code}`;
-      console.log('Generated QR code URL:', url);
-      console.log('This URL should trigger pairing with code:', code);
+      console.log('📱 QR code URL:', url);
       
-      // Force a unique QR code generation with cache-busting
       const qrDataUrl = await QRCode.toDataURL(url, {
         width: 200,
         margin: 2,
@@ -71,23 +63,13 @@ export function DevicePairing({
           dark: '#000000',
           light: '#ffffff'
         },
-        // Add cache-busting to the QR code generation itself
-        errorCorrectionLevel: 'M',
-        type: 'image/png'
+        errorCorrectionLevel: 'M'
       });
       
-      console.log('QR code data URL generated, length:', qrDataUrl.length);
-      console.log('QR code starts with:', qrDataUrl.substring(0, 50));
-      
-      // Set the QR code data URL directly (data URLs don't need timestamps)
-      console.log('Setting QR code URL in state');
       setQrCodeUrl(qrDataUrl);
-      
-      console.log('QR code generated successfully for code:', code);
-      console.log('QR code URL contains:', url);
-      console.log('Current pairing code state:', pairingCode);
+      console.log('✅ QR code generated successfully');
     } catch (error) {
-      console.error('QR Code generation failed:', error);
+      console.error('❌ QR code generation failed:', error);
     }
   }
 

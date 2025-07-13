@@ -56,38 +56,70 @@ export default function Home() {
   const [pendingRoomName, setPendingRoomName] = useState<string | null>(null);
   const { toast } = useToast();
 
-  function handlePairWithCode(code: string) {
-    console.log('🔗 handlePairWithCode called with code:', code);
-    
-    // Instead of joining immediately, set the pending code for WebSocket connection handler
-    if (!pendingPairCode) {
-      console.log('Setting pending pair code for WebSocket processing:', code);
-      setPendingPairCode(code);
+  // WebSocket hook must be defined before functions that use isConnected
+  const { isConnected, sendMessage } = useWebSocket({
+    onMessage: (message: any) => {
+      // Handle WebSocket messages
+      handleWebSocketMessage(message);
+    },
+    onConnect: () => {
+      console.log('WebSocket connected successfully');
+      sendMessage({
+        type: 'device-update',
+        deviceId,
+        data: {
+          id: deviceId,
+          name: deviceName,
+          type: getDeviceType(),
+          network: 'local',
+        }
+      });
       
-      // If WebSocket is already connected, process immediately
-      if (isConnected) {
-        console.log('WebSocket already connected, processing pair code immediately');
-        processPairCode(code);
-      } else {
-        console.log('WebSocket not connected yet, will process when connected');
-        toast({
-          title: "QR Code Detected",
-          description: `Will join pairing room when connected: ${code}`,
-          duration: 3000,
-        });
+      // Process pending actions after WebSocket connects
+      if (pendingPairCode) {
+        console.log('🔗 WebSocket connected, processing pending pair code:', pendingPairCode);
+        processPairCode(pendingPairCode);
       }
-    } else {
-      console.log('Pending pair code already exists, ignoring duplicate');
+    },
+    onDisconnect: () => {
+      console.log('WebSocket disconnected');
     }
+  });
+
+  function handlePairWithCode(code: string) {
+    console.log('🔗 QR Code scanned, processing code:', code);
+    
+    if (!isConnected) {
+      console.log('WebSocket not connected, storing for later processing');
+      setPendingPairCode(code);
+      toast({
+        title: "QR Code Detected",
+        description: `Connecting to join room: pair-${code}`,
+        duration: 3000,
+      });
+      return;
+    }
+    
+    // Process immediately if connected
+    processPairCode(code);
   }
 
   function processPairCode(code: string) {
+    if (!code || !isConnected) return;
+    
     const pairRoomId = `pair-${code}`;
+    console.log('🎯 Joining pairing room:', pairRoomId);
     
-    console.log('🎯 Processing pair code:', code);
-    console.log('Joining pairing room:', pairRoomId, 'with device:', deviceId);
+    // Clear any existing room first
+    if (currentRoom) {
+      sendMessage({
+        type: 'leave-room',
+        roomId: currentRoom,
+        deviceId
+      });
+    }
     
-    // Send the join-room message
+    // Join the pairing room
     sendMessage({
       type: 'join-room',
       roomId: pairRoomId,
@@ -97,24 +129,21 @@ export default function Home() {
         id: deviceId,
         name: deviceName,
         type: getDeviceType(),
-        network: 'local',
+        network: 'remote',
       }
     });
     
     // Update local state
-    setRoomName(pairRoomId);
-    setRoomPassword('');
     setCurrentRoom(pairRoomId);
-    
-    console.log('Updated current room state to:', pairRoomId);
+    setRoomName('');
+    setRoomPassword('');
     
     // Clear pending code
     setPendingPairCode(null);
     
-    // Show success message
     toast({
-      title: "QR Code Successful",
-      description: `Joined pairing room: ${pairRoomId}`,
+      title: "Joining Room",
+      description: `Connecting to pairing room: ${pairRoomId}`,
       duration: 3000,
     });
   }
@@ -176,217 +205,44 @@ export default function Home() {
     return () => window.removeEventListener('message', handleAdminMessage);
   }, []);
 
-  // Process URL parameters - run immediately and also when deviceId changes
+  // Simple URL parameter detection for QR codes
   useEffect(() => {
-    // Check for pairing code in URL and store it for later processing
-    const urlParams = new URLSearchParams(window.location.search);
-    const pairCode = urlParams.get('pair');
-    
-    console.log('URL processing effect running');
-    console.log('Current URL:', window.location.href);
-    console.log('URL search params:', window.location.search);
-    console.log('Parsed pair code:', pairCode);
-    console.log('Device ID available:', deviceId);
-    
-    if (pairCode) {
-      console.log('Found pairing code in URL:', pairCode);
+    function detectQRCode() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pairCode = urlParams.get('pair');
       
-      // Store the pairing code to process after WebSocket connects
-      setPendingPairCode(pairCode);
-      
-      // Clean up URL immediately
-      window.history.replaceState({}, document.title, window.location.pathname);
-      
-      console.log('QR code scanned, stored pending pair code:', pairCode);
-      
-      // Show visual indicator on page that QR code was scanned
-      toast({
-        title: "QR Code Detected",
-        description: `Processing pairing code: ${pairCode}`,
-        duration: 5000,
-      });
-    } else {
-      console.log('No pairing code found in URL');
-    }
-  }, [deviceId]); // Run this when deviceId is available
-  
-  // Enhanced QR code detection with multiple methods
-  useEffect(() => {
-    const checkUrlParams = () => {
-      const url = window.location.href;
-      const urlObj = new URL(url);
-      const params = new URLSearchParams(urlObj.search);
-      const hash = urlObj.hash;
-      
-      // Try multiple ways to extract pair code or room parameter
-      let pairCode = null;
-      let roomName = null;
-      
-      // Method 1: Standard URL parameters
-      pairCode = params.get('pair');
-      roomName = params.get('room');
-      
-      // Method 2: Hash parameter (some mobile browsers)
-      if (!pairCode && !roomName && hash) {
-        const hashParams = new URLSearchParams(hash.substring(1));
-        pairCode = hashParams.get('pair');
-        roomName = hashParams.get('room');
-      }
-      
-      // Method 3: Manual parsing of URL string
-      if (!pairCode) {
-        const pairMatch = url.match(/[?&#]pair=([^&#]+)/);
-        if (pairMatch) {
-          pairCode = pairMatch[1];
-        }
-      }
-      
-      if (!roomName) {
-        const roomMatch = url.match(/[?&#]room=([^&#]+)/);
-        if (roomMatch) {
-          roomName = roomMatch[1];
-        }
-      }
-      
-      // Method 4: Check for any 6-digit code pattern
-      if (!pairCode) {
-        const codeMatch = url.match(/[?&#](?:pair|code)=([A-Z0-9]{6})/i);
-        if (codeMatch) {
-          pairCode = codeMatch[1];
-        }
-      }
-      
-      // If we found a room parameter, extract pair code or use room name directly
-      if (roomName) {
-        if (roomName.startsWith('pair-')) {
-          pairCode = roomName.substring(5); // Remove 'pair-' prefix
-        } else {
-          // Set pending room name for auto-join
-          console.log('Setting pending room name for auto-join:', roomName);
-          setPendingRoomName(roomName);
-        }
-      }
-
+      console.log('Checking URL for QR code:', window.location.href);
+      console.log('Detected pair code:', pairCode);
       
       if (pairCode && !pendingPairCode) {
-        console.log('🎯 QR Code detected via enhanced method:', pairCode);
-        setPendingPairCode(pairCode);
+        console.log('🎯 QR Code found in URL:', pairCode);
         
-        // Clean up URL immediately
-        const cleanUrl = urlObj.origin + urlObj.pathname;
-        window.history.replaceState({}, document.title, cleanUrl);
+        // Clean URL immediately
+        window.history.replaceState({}, document.title, window.location.pathname);
         
-        // Show toast notification
-        toast({
-          title: "QR Code Detected!",
-          description: `Found pairing code: ${pairCode}`,
-          duration: 5000,
-        });
-        
-        // WebSocket onConnect will handle the pairing when ready
+        // Process the pairing code
+        handlePairWithCode(pairCode);
       }
-      
-      // If we found a room name, auto-join when WebSocket is ready
-      if (roomName && !pendingRoomName) {
-        console.log('🎯 Room parameter detected:', roomName);
-        setPendingRoomName(roomName);
-        
-        // Clean up URL immediately
-        const cleanUrl = urlObj.origin + urlObj.pathname;
-        window.history.replaceState({}, document.title, cleanUrl);
-        
-        // Show toast notification
-        toast({
-          title: "Room Link Detected!",
-          description: `Will join room: ${roomName}`,
-          duration: 5000,
-        });
-      }
-    };
+    }
     
     // Check immediately
-    checkUrlParams();
+    detectQRCode();
     
-    // Check again after delays for mobile devices
-    const timeouts = [100, 300, 500, 1000, 2000, 3000].map(delay => 
-      setTimeout(checkUrlParams, delay)
-    );
-    
-    return () => timeouts.forEach(clearTimeout);
-  }, []); // Run once on mount
-  
-  // Listen for page events to catch QR code detection on mobile
-  useEffect(() => {
-    const handlePageEvent = (eventName: string) => {
-      console.log(`Page event: ${eventName}, checking for QR code parameters`);
-      const url = window.location.href;
-      const urlObj = new URL(url);
-      const params = new URLSearchParams(urlObj.search);
-      const hash = urlObj.hash;
-      
-      // Try multiple detection methods
-      let pairCode = params.get('pair');
-      
-      // Check hash parameters
-      if (!pairCode && hash) {
-        const hashParams = new URLSearchParams(hash.substring(1));
-        pairCode = hashParams.get('pair');
-      }
-      
-      // Manual parsing
-      if (!pairCode) {
-        const pairMatch = url.match(/[?&#]pair=([^&#]+)/);
-        if (pairMatch) {
-          pairCode = pairMatch[1];
-        }
-      }
-      
-      console.log(`${eventName} - URL:`, url);
-      console.log(`${eventName} - Detected pair code:`, pairCode);
-      
-      if (pairCode && !pendingPairCode) {
-        console.log(`🎯 QR Code detected on ${eventName}:`, pairCode);
-        setPendingPairCode(pairCode);
-        
-        // Clean up URL
-        const cleanUrl = urlObj.origin + urlObj.pathname;
-        window.history.replaceState({}, document.title, cleanUrl);
-        
-        toast({
-          title: "QR Code Detected!",
-          description: `Found pairing code: ${pairCode} (via ${eventName})`,
-          duration: 5000,
-        });
-        
-        if (deviceId) {
-          // Process immediately instead of using timeout
-          handlePairWithCode(pairCode);
-        }
-      }
-    };
-    
-    // Listen for multiple events
-    const events = ['focus', 'visibilitychange', 'pageshow', 'DOMContentLoaded'];
-    
-    events.forEach(event => {
-      const handler = () => handlePageEvent(event);
-      window.addEventListener(event, handler);
-      document.addEventListener(event, handler);
-    });
-    
-    // Also check on hash change
-    const hashHandler = () => handlePageEvent('hashchange');
-    window.addEventListener('hashchange', hashHandler);
+    // Listen for URL changes
+    window.addEventListener('popstate', detectQRCode);
     
     return () => {
-      events.forEach(event => {
-        const handler = () => handlePageEvent(event);
-        window.removeEventListener(event, handler);
-        document.removeEventListener(event, handler);
-      });
-      window.removeEventListener('hashchange', hashHandler);
+      window.removeEventListener('popstate', detectQRCode);
     };
-  }, [pendingPairCode, deviceId]);
+  }, [deviceId, pendingPairCode, isConnected]); // Dependencies for proper timing
+  
+  // Process pending pair code when WebSocket connects
+  useEffect(() => {
+    if (isConnected && pendingPairCode) {
+      console.log('🔗 WebSocket connected, processing pending pair code:', pendingPairCode);
+      processPairCode(pendingPairCode);
+    }
+  }, [isConnected, pendingPairCode]);
 
   // Test devices for demo purposes
   const testDevices: Device[] = [
@@ -631,63 +487,7 @@ export default function Home() {
     setIncomingTransfer(request);
   }
 
-  const { isConnected, sendMessage } = useWebSocket({
-    onMessage: handleWebSocketMessage,
-    onConnect: () => {
-      console.log('WebSocket connected successfully');
-      sendMessage({
-        type: 'device-update',
-        deviceId,
-        data: {
-          id: deviceId,
-          name: deviceName,
-          type: getDeviceType(),
-          network: 'local',
-        }
-      });
-      
-      // If we have a pending pairing code, process it now that WebSocket is connected
-      if (pendingPairCode) {
-        console.log('WebSocket connected, now processing pending pair code:', pendingPairCode);
-        processPairCode(pendingPairCode);
-      } else {
-        console.log('No pending pair code to process');
-      }
-      
-      // If we have a pending room name, auto-join it now
-      if (pendingRoomName) {
-        console.log('WebSocket connected, auto-joining room:', pendingRoomName);
-        setRoomName(pendingRoomName);
-        setRoomPassword('');
-        
-        // Auto-join the room
-        sendMessage({
-          type: 'join-room',
-          roomId: pendingRoomName,
-          password: '',
-          deviceId,
-          data: {
-            id: deviceId,
-            name: deviceName,
-            type: getDeviceType(),
-            network: 'local',
-          }
-        });
-        
-        // Clear pending room name
-        setPendingRoomName(null);
-        
-        toast({
-          title: "Auto-joining Room",
-          description: `Joining room: ${pendingRoomName}`,
-          duration: 3000,
-        });
-      }
-    },
-    onDisconnect: () => {
-      console.log('WebSocket disconnected');
-    }
-  });
+
 
   const { 
     createOffer, 
