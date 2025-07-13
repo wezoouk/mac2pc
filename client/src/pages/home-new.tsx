@@ -9,7 +9,7 @@ import { MessagePanel } from "@/components/message-panel";
 import { TransferHistory } from "@/components/transfer-history";
 import { TransferModal } from "@/components/transfer-modal";
 import { ProgressModal } from "@/components/progress-modal";
-import { DevicePairing } from "@/components/device-pairing";
+
 import { DynamicAds } from "@/components/google-ads";
 import { TrustedDevicesManager } from "@/components/trusted-devices-manager";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -48,7 +48,7 @@ export default function Home() {
   const [transferQueue, setTransferQueue] = useState<File[]>([]);
   const [fileQueue, setFileQueue] = useState<any[]>([]);
   const [testMode, setTestMode] = useState(false);
-  const [showPairing, setShowPairing] = useState(false);
+
   const [soundEnabled, setSoundEnabled] = useState(soundManager.isEnabled());
   const [isEditingName, setIsEditingName] = useState(false);
   const [newDeviceName, setNewDeviceName] = useState(deviceName);
@@ -102,6 +102,70 @@ export default function Home() {
     
     // Process immediately if connected
     processPairCode(code);
+  }
+
+  async function generateQRCode() {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log('📱 Generating pairing code:', code);
+    
+    const url = `${window.location.origin}/?pair=${code}`;
+    console.log('📱 QR code URL:', url);
+    
+    try {
+      const QRCode = await import('qrcode');
+      const qrDataUrl = await QRCode.toDataURL(url, {
+        width: 300,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#ffffff'
+        },
+        errorCorrectionLevel: 'M'
+      });
+      
+      // Create a new window with the QR code
+      const qrWindow = window.open('', '_blank', 'width=400,height=500');
+      if (qrWindow) {
+        qrWindow.document.write(`
+          <html>
+            <head>
+              <title>QR Code - Room pair-${code}</title>
+              <style>
+                body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+                .code { font-size: 24px; font-weight: bold; margin: 20px 0; }
+                .url { font-size: 12px; color: #666; margin: 10px 0; }
+                button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+              </style>
+            </head>
+            <body>
+              <h1>Scan QR Code to Join Room</h1>
+              <img src="${qrDataUrl}" alt="QR Code" style="border: 1px solid #ccc; border-radius: 8px;" />
+              <div class="code">Code: ${code}</div>
+              <div class="url">URL: ${url}</div>
+              <button onclick="navigator.clipboard.writeText('${code}')">Copy Code</button>
+              <button onclick="navigator.clipboard.writeText('${url}')">Copy URL</button>
+            </body>
+          </html>
+        `);
+      }
+      
+      // Auto-join the room
+      handlePairWithCode(code);
+      
+      toast({
+        title: "QR Code Generated",
+        description: `Room pair-${code} created. Share the QR code with other devices.`,
+        duration: 5000,
+      });
+    } catch (error) {
+      console.error('QR code generation failed:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate QR code",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   }
 
   function processPairCode(code: string) {
@@ -883,10 +947,10 @@ export default function Home() {
                 variant="ghost"
                 size="sm"
                 className="px-2 sm:px-3"
-                onClick={() => setShowPairing(true)}
+                onClick={generateQRCode}
               >
                 <Link2 size={16} />
-                <span className="hidden sm:inline ml-2">Pair</span>
+                <span className="hidden sm:inline ml-2">QR</span>
               </Button>
               
               <Button
@@ -1216,15 +1280,7 @@ export default function Home() {
         onCancel={() => setActiveTransfer(null)}
       />
       
-      <DevicePairing
-        isOpen={showPairing}
-        onClose={() => setShowPairing(false)}
-        deviceId={deviceId}
-        deviceName={deviceName}
-        onPairWithCode={handlePairWithCode}
-        onGenerateCode={handlePairWithCode}
-        currentRoom={currentRoom}
-      />
+
     </div>
   );
 }
