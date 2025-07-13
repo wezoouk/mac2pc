@@ -55,14 +55,37 @@ export default function Home() {
   const { toast } = useToast();
 
   function handlePairWithCode(code: string) {
-    // Join a special pairing room using the code
+    console.log('🔗 handlePairWithCode called with code:', code);
+    
+    // Instead of joining immediately, set the pending code for WebSocket connection handler
+    if (!pendingPairCode) {
+      console.log('Setting pending pair code for WebSocket processing:', code);
+      setPendingPairCode(code);
+      
+      // If WebSocket is already connected, process immediately
+      if (isConnected) {
+        console.log('WebSocket already connected, processing pair code immediately');
+        processPairCode(code);
+      } else {
+        console.log('WebSocket not connected yet, will process when connected');
+        toast({
+          title: "QR Code Detected",
+          description: `Will join pairing room when connected: ${code}`,
+          duration: 3000,
+        });
+      }
+    } else {
+      console.log('Pending pair code already exists, ignoring duplicate');
+    }
+  }
+
+  function processPairCode(code: string) {
     const pairRoomId = `pair-${code}`;
     
+    console.log('🎯 Processing pair code:', code);
     console.log('Joining pairing room:', pairRoomId, 'with device:', deviceId);
     
-    // Use the same room joining logic that works for test rooms
-    setRoomName(pairRoomId);
-    setRoomPassword('');
+    // Send the join-room message
     sendMessage({
       type: 'join-room',
       roomId: pairRoomId,
@@ -76,10 +99,15 @@ export default function Home() {
       }
     });
     
-    // Update current room to show we're in a pairing room
+    // Update local state
+    setRoomName(pairRoomId);
+    setRoomPassword('');
     setCurrentRoom(pairRoomId);
     
     console.log('Updated current room state to:', pairRoomId);
+    
+    // Clear pending code
+    setPendingPairCode(null);
     
     // Show success message
     toast({
@@ -294,9 +322,8 @@ export default function Home() {
         });
         
         if (deviceId) {
-          setTimeout(() => {
-            handlePairWithCode(pairCode);
-          }, 1000);
+          // Process immediately instead of using timeout
+          handlePairWithCode(pairCode);
         }
       }
     };
@@ -582,35 +609,10 @@ export default function Home() {
         }
       });
       
-      // If we have a pending pairing code, join the room after WebSocket connects
+      // If we have a pending pairing code, process it now that WebSocket is connected
       if (pendingPairCode) {
-        console.log('WebSocket connected, now joining pairing room with code:', pendingPairCode);
-        console.log('Current device ID:', deviceId);
-        console.log('Current device name:', deviceName);
-        
-        // Join the room immediately
-        const roomName = `pair-${pendingPairCode}`;
-        console.log('Joining room:', roomName);
-        
-        // Send join room message using sendMessage function
-        console.log('Sending join-room message via sendMessage function');
-        sendMessage({
-          type: 'join-room',
-          roomId: roomName,
-          deviceId: deviceId,
-          password: '', // No password for pairing rooms
-        });
-        console.log('Sent join-room message for:', roomName);
-        
-        // Clear the pending code after processing
-        setPendingPairCode(null);
-        
-        // Show toast notification
-        toast({
-          title: "Pairing successful",
-          description: "Joined pairing room via QR code scan",
-          duration: 3000,
-        });
+        console.log('WebSocket connected, now processing pending pair code:', pendingPairCode);
+        processPairCode(pendingPairCode);
       } else {
         console.log('No pending pair code to process');
       }
@@ -1004,22 +1006,6 @@ export default function Home() {
                 <span className="hidden sm:inline ml-2">Pair</span>
               </Button>
               
-              {/* Test QR URL Button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="px-2 sm:px-3 text-xs"
-                onClick={() => {
-                  const testUrl = `${window.location.origin}?pair=TEST123&t=${Date.now()}`;
-                  console.log('Opening test URL:', testUrl);
-                  window.open(testUrl, '_blank');
-                }}
-              >
-                <span className="hidden sm:inline">Test QR</span>
-                <span className="sm:hidden">🔍</span>
-              </Button>
-              
-
               <Button
                 variant="ghost"
                 size="sm"
