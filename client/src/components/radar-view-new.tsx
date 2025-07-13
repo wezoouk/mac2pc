@@ -82,22 +82,33 @@ export function RadarView({
   }
 
   // Much larger radar size - responsive and contained
-  const radarSize = windowWidth >= 1024 ? 800 : windowWidth >= 768 ? 600 : Math.min(windowWidth - 40, 320);
+  const baseRadarSize = windowWidth >= 1024 ? 800 : windowWidth >= 768 ? 600 : Math.min(windowWidth - 40, 320);
+  const radarSize = Math.min(baseRadarSize, windowWidth - 40); // Ensure it fits within viewport
   const centerX = radarSize / 2;
   const centerY = radarSize / 2;
 
   return (
-    <div className="flex flex-col items-center space-y-6 w-full">
-      {/* Radar Display - Fixed Aspect Ratio Container */}
-      <div className="relative mx-auto" style={{ width: radarSize, height: radarSize, maxWidth: '100%', aspectRatio: '1/1' }}>
+    <div className="flex flex-col items-center space-y-6 w-full min-h-0">
+      {/* Radar Display - Perfect Square Container with CSS Grid */}
+      <div 
+        className="relative mx-auto grid place-items-center"
+        style={{ 
+          width: `${radarSize}px`, 
+          height: `${radarSize}px`, 
+          aspectRatio: '1/1',
+          gridTemplateColumns: '1fr',
+          gridTemplateRows: '1fr'
+        }}
+      >
         {/* Radar Background - Perfect Circle */}
         <div 
-          className="absolute inset-0 bg-gradient-to-br from-slate-700 via-blue-700 to-slate-700 shadow-2xl border-2 border-blue-400/50 dark:from-gray-700 dark:via-blue-600 dark:to-gray-700"
+          className="col-start-1 row-start-1 bg-gradient-to-br from-slate-700 via-blue-700 to-slate-700 shadow-2xl border-2 border-blue-400/50 dark:from-gray-700 dark:via-blue-600 dark:to-gray-700"
           style={{ 
             borderRadius: '50%',
-            width: '100%',
-            height: '100%',
-            aspectRatio: '1/1'
+            width: `${radarSize}px`,
+            height: `${radarSize}px`,
+            aspectRatio: '1/1',
+            position: 'relative'
           }}
         >
           {/* Static Radar Rings with Better Contrast */}
