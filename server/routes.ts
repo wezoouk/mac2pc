@@ -27,12 +27,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
   // WebSocket server for signaling
-  const wss = new WebSocketServer({ server: httpServer });
+  const wss = new WebSocketServer({ 
+    server: httpServer,
+    path: "/ws",
+    perMessageDeflate: false,
+    clientTracking: true
+  });
   const clients = new Map<string, WebSocketClient>();
   
   // Track the first IP that connects to establish the "local network" baseline
   let firstLocalIP: string | null = null;
 
+  // Handle WebSocket upgrade requests properly for AWS ALB
+  httpServer.on('upgrade', (request, socket, head) => {
+    if (request.url === '/ws') {
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+      });
+    } else {
+      socket.destroy();
+    }
+  });
   // Serve the QR redirect page
   app.get('/qr-redirect.html', (req, res) => {
     res.sendFile(path.resolve(process.cwd(), 'client', 'qr-redirect.html'));
@@ -662,8 +677,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // WebSocket connection handling
   wss.on('connection', (ws: WebSocketClient, req) => {
-    // Get client IP for network detection
-    const clientIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress;
+    // Get client IP for network detection (AWS ALB compatible)
+    const clientIP = req.headers['x-forwarded-for'] || 
+                     req.headers['x-real-ip'] || 
+                     req.connection.remoteAddress || 
+                     req.socket.remoteAddress;
     ws.clientIP = clientIP;
     console.log('New WebSocket connection from:', clientIP);
 
@@ -850,27 +868,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   function determineNetworkType(clientIP: string): 'local' | 'remote' {
-    // Extract the main external IP (first IP in the chain)
-    const ipArray = Array.isArray(clientIP) ? clientIP[0] : clientIP;
-    const cleanIP = typeof ipArray === 'string' ? ipArray.split(',')[0].trim() : String(ipArray);
+    // Handle AWS ALB forwarded IPs properly
+    let cleanIP: string;
+    if (Array.isArray(clientIP)) {
+      cleanIP = clientIP[0];
+    } else if (typeof clientIP === 'string') {
+      // AWS ALB forwards multiple IPs in X-Forwarded-For header
+      // Format: client-ip, load-balancer-ip, ...
+      cleanIP = clientIP.split(',')[0].trim();
+    } else {
+      cleanIP = String(clientIP);
+    }
     
     // Always treat localhost/127.0.0.1 as local for development
     if (cleanIP === '127.0.0.1' || cleanIP === '::1' || cleanIP === 'localhost') {
       return 'local';
     }
     
+    // For AWS deployment, treat all connections as potentially local by default
+    // since ALB may mask the real client IPs
+    if (process.env.AWS_REGION || process.env.NODE_ENV === 'production') {
+      // In production/AWS, be more permissive with local detection
+      return 'local';
+    }
+    
     // Track the first IP that connects - consider it the "local network base"
     if (!firstLocalIP) {
-      const baseIP = cleanIP.split(',')[0].trim();
-      firstLocalIP = baseIP;
+      firstLocalIP = cleanIP;
       console.log(`Setting base local IP: ${firstLocalIP}`);
     }
     
-    const currentIP = cleanIP.split(',')[0].trim();
-    console.log(`Checking network type for IP: ${currentIP} vs base: ${firstLocalIP}`);
+    console.log(`Checking network type for IP: ${cleanIP} vs base: ${firstLocalIP}`);
     
     // Consider devices from the same external IP as local (same home/office network)
-    if (currentIP === firstLocalIP) {
+    if (cleanIP === firstLocalIP) {
       return 'local';
     }
     

@@ -6,6 +6,18 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// AWS health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
+// AWS ALB health check
+app.get('/', (req, res, next) => {
+  if (req.headers['user-agent']?.includes('ELB-HealthChecker')) {
+    return res.status(200).send('OK');
+  }
+  next();
+});
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -48,11 +60,11 @@ app.use((req, res, next) => {
   });
 
   // In production, serve static files
-  if (app.get("env") !== "development") {
+  if (process.env.NODE_ENV === "production") {
     serveStatic(app);
   }
 
-  const port = 5000;
+  const port = process.env.PORT || 5000;
   server.listen({
     port,
     host: "0.0.0.0",

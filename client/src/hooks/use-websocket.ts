@@ -60,9 +60,20 @@ export function useWebSocket({ onMessage, onConnect, onDisconnect }: UseWebSocke
         wsRef.current.close();
       }
 
+      // AWS-compatible WebSocket URL
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const wsUrl = `${protocol}//${window.location.hostname}:5000/ws`;
+      const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
       
+      let wsUrl;
+      if (isProduction) {
+        // For AWS deployment, use same host and port as the web server
+        wsUrl = `${protocol}//${window.location.host}/ws`;
+      } else {
+        // For local development
+        wsUrl = `${protocol}//${window.location.hostname}:5000/ws`;
+      }
+      
+      console.log('Connecting to WebSocket:', wsUrl);
       wsRef.current = new WebSocket(wsUrl);
 
       wsRef.current.onopen = () => {
