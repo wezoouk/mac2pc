@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { insertDeviceSchema, insertRoomSchema, insertTransferSchema, insertTrustedDeviceSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
 import path from "path";
@@ -27,7 +27,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
   // WebSocket server for signaling
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  const wss = new WebSocketServer({ server: httpServer });
   const clients = new Map<string, WebSocketClient>();
   
   // Track the first IP that connects to establish the "local network" baseline
