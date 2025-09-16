@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareLink - Peer-to-Peer File & Text Sharing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-50 font-sans">
+    <!-- @COMPONENT: Header -->
+    <header class="bg-white shadow-sm border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-share-alt text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-semibold text-slate-900">ShareLink</h1>
+                        <p class="text-xs text-slate-500">Secure P2P Sharing</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="hidden sm:flex items-center space-x-2 px-3 py-1 bg-emerald-50 rounded-full">
+                        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                        <span class="text-sm text-emerald-700 font-medium" data-bind="connectionStatus">Connected</span>
+                    </div>
+                    <button data-event="click:openSettings" class="p-2 text-slate-400 hover:text-slate-600 transition-colors">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- @COMPONENT: ConnectionStatus -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Device Info Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-slate-900">Your Device</h3>
+                    <i class="fas fa-laptop text-blue-600"></i>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-slate-600">Device Name</span>
+                        <span class="text-sm font-medium text-slate-900" data-bind="deviceName">MacBook Pro</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-slate-600">Network</span>
+                        <span class="text-sm font-medium text-slate-900" data-bind="networkName">WiFi-Network</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-slate-600">ID</span>
+                        <span class="text-sm font-mono text-slate-900" data-bind="deviceId">A1B2C3</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Room Join Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-slate-900">Join Room</h3>
+                    <i class="fas fa-door-open text-amber-600"></i>
+                </div>
+                <div class="space-y-3">
+                    <input 
+                        type="text" 
+                        placeholder="Enter room name" 
+                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        data-bind="roomName"
+                    >
+                    <button 
+                        data-event="click:joinRoom"
+                        class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
+                        Join Room
+                    </button>
+                    <div class="text-xs text-slate-500 text-center">
+                        Share room name with remote users
+                    </div>
+                </div>
+            </div>
+
+            <!-- Network Stats Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-slate-900">Network Stats</h3>
+                    <i class="fas fa-signal text-emerald-600"></i>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-slate-600">Devices Found</span>
+                        <span class="text-sm font-medium text-slate-900" data-bind="devicesCount">3</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-slate-600">Connection Type</span>
+                        <span class="text-sm font-medium text-emerald-600" data-bind="connectionType">P2P Direct</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-slate-600">Encryption</span>
+                        <span class="text-sm font-medium text-emerald-600">
+                            <i class="fas fa-lock mr-1"></i>
+                            AES-256
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: ConnectionStatus -->
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- @COMPONENT: DeviceDiscovery -->
+            <div class="space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+                    <div class="p-6 border-b border-slate-200">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-xl font-semibold text-slate-900">Available Devices</h2>
+                            <button 
+                                data-event="click:refreshDevices"
+                                class="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        <p class="text-sm text-slate-600 mt-1">Devices on your network and room</p>
+                    </div>
+                    
+                    <div class="p-6 space-y-4">
+                        <!-- @MAP: devices.map(device => ( -->
+                        <div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" data-event="click:selectDevice">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-mobile-alt text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-slate-900" data-bind="device.name">iPhone 14</h4>
+                                    <p class="text-sm text-slate-600" data-bind="device.type">Mobile • Same Network</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                                <span class="text-sm text-emerald-600 font-medium">Online</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" data-event="click:selectDevice">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-desktop text-purple-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-slate-900" data-bind="device.name">Desktop-PC</h4>
+                                    <p class="text-sm text-slate-600" data-bind="device.type">Desktop • Same Network</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                                <span class="text-sm text-emerald-600 font-medium">Online</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" data-event="click:selectDevice">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-tablet-alt text-amber-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-slate-900" data-bind="device.name">iPad Air</h4>
+                                    <p class="text-sm text-slate-600" data-bind="device.type">Tablet • Room: work-team</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-amber-500 rounded-full"></div>
+                                <span class="text-sm text-amber-600 font-medium">Remote</span>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+
+                        <div class="text-center py-8 text-slate-500" data-mock="true" style="display: none;">
+                            <i class="fas fa-search text-3xl mb-3"></i>
+                            <p>No devices found</p>
+                            <p class="text-sm">Make sure devices are on the same network</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: DeviceDiscovery -->
+
+            <!-- @COMPONENT: FileTransferArea -->
+            <div class="space-y-6">
+                <!-- File Transfer Zone -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+                    <div class="p-6 border-b border-slate-200">
+                        <h2 class="text-xl font-semibold text-slate-900">File Transfer</h2>
+                        <p class="text-sm text-slate-600 mt-1">Drag files here or click to select</p>
+                    </div>
+                    
+                    <div class="p-6">
+                        <!-- @FUNCTIONALITY: This drop zone should handle file drag-drop events and file selection -->
+                        <div 
+                            class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer"
+                            data-event="drop:handleFileDrop,click:openFileSelector"
+                        >
+                            <div class="space-y-4">
+                                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                                    <i class="fas fa-cloud-upload-alt text-blue-600 text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-medium text-slate-900">Drop files here</h3>
+                                    <p class="text-sm text-slate-600">or click to browse</p>
+                                </div>
+                                <div class="text-xs text-slate-500">
+                                    Max file size: 100MB • All file types supported
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Selected Files List -->
+                        <div class="mt-6 space-y-3" data-mock="true">
+                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-file-pdf text-red-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-slate-900">presentation.pdf</h4>
+                                        <p class="text-sm text-slate-600">2.4 MB</p>
+                                    </div>
+                                </div>
+                                <button class="text-slate-400 hover:text-red-600 transition-colors">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-file-image text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-slate-900">photo.jpg</h4>
+                                        <p class="text-sm text-slate-600">5.1 MB</p>
+                                    </div>
+                                </div>
+                                <button class="text-slate-400 hover:text-red-600 transition-colors">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Send Button -->
+                        <div class="mt-6 flex items-center justify-between">
+                            <div class="text-sm text-slate-600">
+                                <span data-bind="selectedFiles.length">2</span> files selected
+                            </div>
+                            <button 
+                                data-event="click:sendFiles"
+                                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                            >
+                                Send Files
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Text Message -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+                    <div class="p-6 border-b border-slate-200">
+                        <h2 class="text-xl font-semibold text-slate-900">Quick Message</h2>
+                        <p class="text-sm text-slate-600 mt-1">Send text or links instantly</p>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <textarea 
+                                placeholder="Type your message or paste a link..." 
+                                class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                rows="3"
+                                data-bind="messageText"
+                            ></textarea>
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm text-slate-600">
+                                    <span data-bind="messageLength">0</span>/500 characters
+                                </div>
+                                <button 
+                                    data-event="click:sendMessage"
+                                    class="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition-colors font-medium"
+                                >
+                                    Send Message
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: FileTransferArea -->
+        </div>
+
+        <!-- @COMPONENT: TransferHistory -->
+        <div class="mt-8 bg-white rounded-xl shadow-sm border border-slate-200">
+            <div class="p-6 border-b border-slate-200">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-semibold text-slate-900">Recent Activity</h2>
+                    <button 
+                        data-event="click:clearHistory"
+                        class="text-sm text-slate-600 hover:text-red-600 transition-colors"
+                    >
+                        Clear History
+                    </button>
+                </div>
+                <p class="text-sm text-slate-600 mt-1">Transfer history (not stored on server)</p>
+            </div>
+            
+            <div class="divide-y divide-slate-200">
+                <!-- @MAP: transferHistory.map(transfer => ( -->
+                <div class="p-6 hover:bg-slate-50 transition-colors" data-mock="true">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-check text-emerald-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-slate-900">Sent to iPhone 14</h4>
+                                <p class="text-sm text-slate-600">presentation.pdf • 2.4 MB</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-emerald-600 font-medium">Completed</p>
+                            <p class="text-xs text-slate-500">2 min ago</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 hover:bg-slate-50 transition-colors" data-mock="true">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-download text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-slate-900">Received from Desktop-PC</h4>
+                                <p class="text-sm text-slate-600">Message: "Here's the project link: https://github.com/..."</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-emerald-600 font-medium">Received</p>
+                            <p class="text-xs text-slate-500">5 min ago</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 hover:bg-slate-50 transition-colors" data-mock="true">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-clock text-amber-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-slate-900">Sending to iPad Air</h4>
+                                <p class="text-sm text-slate-600">photo.jpg • 5.1 MB</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-amber-600 font-medium">In Progress</p>
+                            <p class="text-xs text-slate-500">65% complete</p>
+                        </div>
+                    </div>
+                    <!-- Progress Bar -->
+                    <div class="mt-3 bg-slate-200 rounded-full h-2">
+                        <div class="bg-amber-600 h-2 rounded-full" style="width: 65%"></div>
+                    </div>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+        </div>
+        <!-- @END_COMPONENT: TransferHistory -->
+    </main>
+
+    <!-- @COMPONENT: TransferModal -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display: none;" data-modal="transferConfirm">
+        <div class="bg-white rounded-xl shadow-lg max-w-md w-full mx-4">
+            <div class="p-6">
+                <div class="flex items-center space-x-4 mb-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-file-alt text-blue-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900">Incoming File</h3>
+                        <p class="text-sm text-slate-600">From: iPhone 14</p>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-50 rounded-lg p-4 mb-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-medium text-slate-900">document.pdf</h4>
+                            <p class="text-sm text-slate-600">Size: 3.2 MB</p>
+                        </div>
+                        <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-file-pdf text-red-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex space-x-3">
+                    <button 
+                        data-event="click:declineTransfer"
+                        class="flex-1 bg-slate-200 text-slate-700 py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors font-medium"
+                    >
+                        Decline
+                    </button>
+                    <button 
+                        data-event="click:acceptTransfer"
+                        class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    >
+                        Accept
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: TransferModal -->
+
+    <!-- @COMPONENT: ProgressModal -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display: none;" data-modal="transferProgress">
+        <div class="bg-white rounded-xl shadow-lg max-w-md w-full mx-4">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-slate-900">Transfer in Progress</h3>
+                    <button 
+                        data-event="click:cancelTransfer"
+                        class="text-slate-400 hover:text-red-600 transition-colors"
+                    >
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-slate-600">Sending to iPhone 14</span>
+                        <span class="text-sm font-medium text-slate-900" data-bind="transferProgress">75%</span>
+                    </div>
+                    
+                    <div class="bg-slate-200 rounded-full h-3">
+                        <div class="bg-blue-600 h-3 rounded-full transition-all duration-300" style="width: 75%"></div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between text-sm text-slate-600">
+                        <span>document.pdf (3.2 MB)</span>
+                        <span data-bind="transferSpeed">2.1 MB/s</span>
+                    </div>
+                    
+                    <div class="text-xs text-slate-500 text-center">
+                        Estimated time remaining: <span data-bind="timeRemaining">30 seconds</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: ProgressModal -->
+
+    <script>
+        // TODO: Implement WebRTC peer-to-peer connection logic
+        // TODO: Implement WebSocket signaling server connection
+        // TODO: Implement device discovery and room management
+        // TODO: Implement file transfer with progress tracking
+        // TODO: Implement end-to-end encryption for transfers
+        // TODO: Implement drag-and-drop file handling
+        // TODO: Implement real-time messaging
+        // TODO: Implement transfer history management
+        // TODO: Implement modal management for transfer confirmations
+
+        (function() {
+            'use strict';
+            
+            // Mock data for demonstration
+            const mockData = {
+                deviceName: 'MacBook Pro',
+                networkName: 'WiFi-Network',
+                deviceId: 'A1B2C3',
+                connectionStatus: 'Connected',
+                devicesCount: 3,
+                connectionType: 'P2P Direct'
+            };
+
+            // Simple demo interactions
+            document.addEventListener('DOMContentLoaded', function() {
+                // Update mock data bindings
+                Object.keys(mockData).forEach(key => {
+                    const elements = document.querySelectorAll(`[data-bind="${key}"]`);
+                    elements.forEach(el => {
+                        el.textContent = mockData[key];
+                    });
+                });
+
+                // Character counter for message textarea
+                const messageTextarea = document.querySelector('[data-bind="messageText"]');
+                const messageLength = document.querySelector('[data-bind="messageLength"]');
+                
+                if (messageTextarea && messageLength) {
+                    messageTextarea.addEventListener('input', function() {
+                        messageLength.textContent = this.value.length;
+                    });
+                }
+
+                // Demo modal interactions
+                const transferModal = document.querySelector('[data-modal="transferConfirm"]');
+                const progressModal = document.querySelector('[data-modal="transferProgress"]');
+                
+                // Show transfer confirmation modal (for demo)
+                setTimeout(() => {
+                    if (transferModal) {
+                        transferModal.style.display = 'flex';
+                    }
+                }, 3000);
+
+                // Close modals on backdrop click
+                [transferModal, progressModal].forEach(modal => {
+                    if (modal) {
+                        modal.addEventListener('click', function(e) {
+                            if (e.target === this) {
+                                this.style.display = 'none';
+                            }
+                        });
+                    }
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
